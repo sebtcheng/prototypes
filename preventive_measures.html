@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>School Electrical and Fire Safety Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#08315F;--blue:#075985;--blue-600:#0284C7;--blue-100:#E0F2FE;--blue-50:#F0F9FF;
+  --gold:#FBBF24;--amber:#D97706;--red:#B91C1C;--green:#16A34A;--purple:#7C3AED;
+  --card:#FFFFFF;--text:#0F172A;--muted:#64748B;--line:#BAE6FD;--soft:#F8FCFF;
+  --heading:"Plus Jakarta Sans",ui-sans-serif,system-ui,sans-serif;
+  --body:"DM Sans",ui-sans-serif,system-ui,sans-serif;
+  --radius:22px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:auto}
+body{
+  margin:0;min-height:100vh;color:var(--text);font-family:var(--body);
+  background-color:var(--blue-50);
+  background-image:
+    radial-gradient(52% 36% at 8% 4%,rgba(7,89,133,.28) 0 34%,transparent 78%),
+    radial-gradient(42% 42% at 94% 6%,rgba(251,191,36,.42) 0 34%,transparent 80%),
+    radial-gradient(50% 44% at 88% 96%,rgba(125,211,252,.32) 0 34%,transparent 78%);
+}
+button,input,select,textarea{font:inherit}
+button{border:0;cursor:pointer}
+input,select,textarea{
+  width:100%;min-height:48px;border:1.5px solid var(--line);border-radius:16px;background:white;color:var(--text);
+  padding:12px 13px;outline:none;font-size:16px;
+}
+textarea{min-height:96px;resize:vertical}
+input:focus,select:focus,textarea:focus{border-color:var(--blue-600);box-shadow:0 0 0 3px rgba(2,132,199,.16)}
+.field.field-error input,.field.field-error select,.field.field-error textarea{
+  border-color:var(--red);background:#FFF1F2;box-shadow:0 0 0 3px rgba(185,28,28,.14);
+}
+.field-error-message{
+  margin-top:2px;color:var(--red);font-size:12px;font-weight:900;line-height:1.35;
+}
+.group-error-message{
+  display:block;margin-top:4px;margin-bottom:2px;color:var(--red);font-size:12px;font-weight:900;line-height:1.35;padding:6px 10px;background:#FFF1F2;border:1.5px solid #FECACA;border-radius:12px;
+}
+.assistance-options{display:grid;gap:6px;margin-top:8px;padding:10px 12px;background:#F0F9FF;border:1.5px solid var(--line);border-radius:16px;}
+.check-option{display:flex;align-items:center;gap:10px;padding:4px 0;cursor:pointer;}
+.check-option input[type="checkbox"]{width:20px;min-height:20px;height:20px;border-radius:6px;cursor:pointer;accent-color:var(--blue-600);flex-shrink:0;border:1.5px solid var(--line);}
+.check-option .check-label{font-size:14px;font-weight:700;color:var(--navy);cursor:pointer;text-transform:none;letter-spacing:0;}
+.app{width:min(100%,920px);margin:0 auto;padding:14px 14px 104px}
+.hero{
+  position:relative;isolation:isolate;overflow:hidden;
+  border-radius:calc(var(--radius) + 6px);padding:22px 20px 22px;margin-bottom:14px;
+  border:2.5px solid color-mix(in srgb,var(--blue) 64%,var(--navy) 36%);
+  background:
+    radial-gradient(circle at 92% 50%,rgba(251,191,36,.18) 0 7%,rgba(251,191,36,.08) 7.2% 13%,transparent 13.2%),
+    radial-gradient(circle at 98% 46%,rgba(251,191,36,.28) 0 10%,transparent 10.5%),
+    linear-gradient(112deg,var(--navy) 0 70%,rgba(255,255,255,.96) 70.2% 100%);
+}
+.hero::before{
+  content:"";position:absolute;inset:0 auto 0 0;width:70%;
+  background:linear-gradient(135deg,var(--navy),var(--blue));
+  clip-path:polygon(0 0,88% 0,100% 100%,0 100%);
+  z-index:-2;pointer-events:none;
+}
+.hero::after{
+  content:"";position:absolute;top:0;bottom:0;left:61%;width:13%;
+  background:color-mix(in srgb,var(--navy) 88%,#000 12%);
+  clip-path:polygon(0 0,58% 0,100% 100%,42% 100%);
+  z-index:-1;pointer-events:none;
+}
+.eyebrow{position:relative;color:var(--gold)!important;font-size:10px!important;font-weight:800;letter-spacing:.14em;text-transform:uppercase;line-height:1.5;max-width:63%;}
+h1{position:relative;margin:8px 0 6px;color:#E0F2FE;font:800 clamp(20px,4vw,32px)/1.05 var(--heading);letter-spacing:-0.03em;text-shadow:0 2px 0 rgba(15,23,42,.28);max-width:63%;}
+.hero p{position:relative;margin:0;color:#DFF6FF;font-size:13px;font-weight:700;line-height:1.35;max-width:min(63%,520px);}
+.progress{
+  position:sticky;top:0;z-index:40;margin:0 -14px 14px;padding:10px 14px;
+  background:rgba(240,249,255,.88);backdrop-filter:blur(14px);border-bottom:1px solid rgba(186,230,253,.8);
+  display:flex;gap:8px;overflow:auto;
+}
+.progress a{
+  white-space:nowrap;text-decoration:none;color:var(--blue);background:white;border:1.5px solid var(--line);
+  border-radius:999px;padding:9px 12px;font-size:13px;font-weight:900;
+}
+.card{
+  background:var(--card);border:2.5px solid color-mix(in srgb,var(--blue) 64%,var(--navy) 36%);
+  border-radius:var(--radius);padding:16px;margin:14px 0;box-shadow:none;
+}
+.section-title{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+h2{font:800 21px/1.1 var(--heading);margin:0;color:var(--navy)}
+h3{font:800 17px/1.1 var(--heading);margin:0;color:var(--navy)}
+.help{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.45}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:900;white-space:nowrap}
+.badge.ok{color:var(--green);background:#DCFCE7}.badge.warn{color:var(--amber);background:#FEF3C7}.badge.risk{color:var(--red);background:#FEE2E2}.badge.info{color:var(--blue);background:var(--blue-100)}
+.grid{display:grid;gap:12px}
+.field{display:grid;gap:6px}
+label{color:var(--muted);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.06em}
+.inline{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.summary{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:12px;
+}
+.metric{border:2.5px solid color-mix(in srgb,var(--blue) 64%,var(--navy) 36%);border-radius:var(--radius);background:var(--card);padding:14px 16px;position:relative;overflow:visible;}
+.metric small{display:block;color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;font-family:var(--heading);}
+.metric b{display:block;margin-top:6px;color:var(--navy);font-family:var(--heading);font-size:clamp(32px,2.5vw,40px);font-weight:800;line-height:1;}
+.equipment-list{display:grid;gap:12px}
+.item{
+  border:1.5px solid var(--line);border-radius:20px;background:#fff;padding:13px;
+}
+.item-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:12px}
+.item-title b{display:block;color:var(--navy);font-weight:900}.item-title span{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.defective-panel{
+  display:none;margin-top:12px;padding:12px;border-radius:18px;background:#FFF7ED;border:1.5px solid #FED7AA;
+}
+.item.has-defective{border-color:#FDBA74;background:linear-gradient(180deg,#fff 0,#fff7ed 100%)}
+.item.has-defective .defective-panel{display:grid;gap:12px}
+.conditional-note{color:#9A3412;font-size:13px;line-height:1.4;margin:0}
+.count-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.group-title{font-size:12px;font-weight:900;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin:4px 0 -2px}
+.validation{margin-top:10px;font-size:13px;font-weight:800}
+.validation.ok{color:var(--green)}.validation.bad{color:var(--red)}
+.notice{border-radius:18px;background:var(--soft);border:1.5px dashed var(--line);padding:13px;color:var(--muted);font-size:14px;line-height:1.45}
+.actions{
+  position:fixed;left:0;right:0;bottom:0;z-index:60;padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  background:rgba(240,249,255,.92);backdrop-filter:blur(16px);border-top:1px solid rgba(186,230,253,.9);
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+}
+.btn{min-height:50px;border-radius:16px;padding:12px 14px;font-weight:900;background:var(--blue);color:white}
+.btn.secondary{background:white;color:var(--blue);border:1.5px solid var(--line)}
+.btn.gold{background:var(--gold);color:var(--navy)}
+#message{margin-top:12px}
+.hidden{display:none!important}
+/* filter bar */
+.filter-bar{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin:12px 0 4px;scrollbar-width:none;}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-pill{white-space:nowrap;border:1.5px solid var(--line);border-radius:999px;padding:8px 14px;font-size:12px;font-weight:900;background:white;color:var(--blue);cursor:pointer;transition:background .15s,color .15s,border-color .15s;}
+.filter-pill.active{background:var(--blue);color:white;border-color:var(--blue);}
+.filter-pill.cat-done{border-color:#86EFAC;background:#DCFCE7;color:var(--green);}
+.filter-pill.cat-done.active{background:var(--green);border-color:var(--green);color:white;}
+/* device grid cards */
+.device-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.device-card{border:1.5px solid var(--line);border-radius:18px;background:white;padding:13px;cursor:pointer;transition:border-color .18s,box-shadow .18s;user-select:none;-webkit-tap-highlight-color:transparent;}
+.device-card:hover{border-color:var(--blue-600);box-shadow:0 0 0 3px rgba(2,132,199,.1);}
+.device-card:active{transform:scale(.98);}
+.device-card.state-ok{border-color:#86EFAC;background:linear-gradient(160deg,#fff 55%,#F0FDF4);}
+.device-card.state-warn{border-color:#FDBA74;background:linear-gradient(160deg,#fff 55%,#FFF7ED);}
+.device-card.state-done{border-color:#16A34A;border-width:2px;background:linear-gradient(160deg,#fff 40%,#DCFCE7);}
+.dc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;}
+.dc-name{font-weight:900;font-size:13px;color:var(--navy);line-height:1.3;}
+.dc-cat{font-size:11px;color:var(--muted);margin-top:2px;}
+.dc-cta{font-size:12px;color:var(--blue-600);font-weight:700;}
+.dc-summary{display:grid;gap:3px;}
+.dc-row{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;line-height:1.5;gap:4px;}
+.dc-row .dk{color:var(--muted);font-weight:700;white-space:nowrap;}
+.dc-row .dv{color:var(--navy);font-weight:900;text-align:right;}
+.dc-chips{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px;}
+.dc-chip{font-size:10px;font-weight:900;border-radius:999px;padding:2px 7px;background:var(--blue-100);color:var(--blue);}
+.dc-chip.a{background:#FEF3C7;color:var(--amber);}
+.dc-subhead{margin-top:7px;padding-top:6px;border-top:1px dashed var(--line);font-size:10px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.dc-edit-hint{font-size:10px;color:var(--muted);margin-top:5px;font-weight:700;}
+.dc-toggle{margin-top:7px;background:none;border:1.5px solid var(--line);border-radius:999px;padding:3px 10px;font-size:11px;font-weight:900;color:var(--blue-600);cursor:pointer;display:inline-block;line-height:1.6;}
+.dc-toggle:hover{background:var(--blue-50);border-color:var(--blue-600);}
+.dev-progress{display:flex;align-items:center;gap:8px;padding:5px 2px;}
+.dev-progress-label{font-size:12px;font-weight:900;color:var(--muted);white-space:nowrap;transition:color .3s;}
+.dev-progress-track{flex:1;height:5px;background:var(--line);border-radius:999px;overflow:hidden;}
+.dev-progress-fill{height:100%;width:0%;background:var(--blue-600);border-radius:999px;transition:width .4s ease;}
+.dev-progress.all-done .dev-progress-label{color:var(--green);}
+.dev-progress.all-done .dev-progress-fill{background:var(--green);}
+.input-green{border-color:#86EFAC!important;background:#F0FDF4!important;color:var(--green)!important;font-weight:900!important;}
+.input-red{border-color:#F87171!important;background:#FFF1F2!important;color:#FF1F1F!important;font-weight:900!important;}
+/* modal */
+.modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(8,49,95,.48);backdrop-filter:blur(5px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;}
+.modal-overlay.open{opacity:1;pointer-events:auto;}
+.modal-sheet{width:min(100%,580px);max-height:93dvh;background:white;border-radius:28px 28px 0 0;display:flex;flex-direction:column;transform:translateY(48px);transition:transform .26s cubic-bezier(.22,1,.36,1);overflow:hidden;}
+.modal-overlay.open .modal-sheet{transform:translateY(0);}
+.modal-handle{width:40px;height:4px;border-radius:999px;background:var(--line);margin:12px auto 0;flex-shrink:0;}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 16px;border-bottom:1px solid var(--line);flex-shrink:0;}
+.modal-device-name{font:800 17px/1.2 var(--heading);color:var(--navy);}
+.modal-device-cat{font-size:12px;color:var(--muted);margin-top:2px;}
+.modal-close{width:34px;height:34px;border-radius:50%;background:var(--blue-50);color:var(--navy);font-size:18px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--line);flex-shrink:0;}
+.modal-body{flex:1;overflow-y:auto;padding:16px;display:grid;gap:12px;}
+.modal-footer{padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:10px;flex-shrink:0;}
+.subgroup{border:1.5px solid var(--line);border-radius:16px;padding:13px;display:grid;gap:10px;}
+.subgroup.action-group{border-color:#FED7AA;background:#FFFBF5;}
+.subgroup.assist-group{background:#F8FCFF;}
+.subgroup-title{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:900;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;}
+.subgroup-title .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;}
+.dot.action{background:var(--amber);}.dot.assist{background:var(--blue-600);}
+.subgroup-title .hint{font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;font-size:11px;}
+.count-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(min-width:460px){.count-row.four{grid-template-columns:1fr 1fr 1fr 1fr;}}
+@media(min-width:760px){
+  .app{padding:24px 24px 118px}
+  .hero{padding:28px 44px;}
+  .grid.two{grid-template-columns:1fr 1fr}
+  .grid.three{grid-template-columns:repeat(3,1fr)}
+  .device-grid{grid-template-columns:1fr 1fr 1fr;}
+  .summary{grid-template-columns:repeat(4,1fr)}
+  .modal-overlay{align-items:center;}
+  .modal-sheet{border-radius:28px;max-height:88dvh;}
+  .actions{left:50%;transform:translateX(-50%);width:min(920px,100%);border:1.5px solid var(--line);border-bottom:0;border-radius:24px 24px 0 0}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hero">
+    <div class="eyebrow">Department of Education | Human Resource and Organizational Development and Infrastructure</div>
+    <h1>School Electrical and Fire Safety Audit</h1>
+    <p>Mobile-first prototype for encoding electrical equipment, defective-unit actions, electrical safety findings, and fire readiness.</p>
+  </header>
+
+
+
+  <form id="inventoryForm" novalidate>
+
+
+    <section class="card" id="equipment">
+      <div class="section-title">
+        <div>
+          <h2>1. Equipment Inventory</h2>
+          <p class="help">Defective-unit action and assistance fields appear only when “Has defective units?” is set to Yes.</p>
+        </div>
+        <span class="badge warn" id="equipmentBadge">0 defective</span>
+      </div>
+
+      <div class="notice">
+        For each equipment type, enter total units first. If there are no defective units, keep the answer as No and the follow-up action fields stay hidden.
+      </div>
+
+      <div class="summary" aria-live="polite">
+        <div class="metric"><small>Total units</small><b id="totalUnitsMetric">0</b></div>
+        <div class="metric"><small>Functional</small><b id="functionalMetric">0</b></div>
+        <div class="metric"><small>Defective</small><b id="defectiveMetric">0</b></div>
+        <div class="metric"><small>Needs Assistance</small><b id="assistanceMetric">0 items</b></div>
+      </div>
+
+      <div class="filter-bar" id="categoryFilterBar"></div>
+      <div class="dev-progress" id="deviceProgress">
+        <span class="dev-progress-label" id="deviceProgressText">0 / 18 answered</span>
+        <div class="dev-progress-track"><div class="dev-progress-fill" id="deviceProgressFill"></div></div>
+      </div>
+      <div class="device-grid" id="equipmentList"></div>
+    </section>
+
+    <section class="card" id="electrical">
+      <div class="section-title">
+        <div>
+          <h2>2. Electrical Safety Findings</h2>
+          <p class="help">Use counts only. Non-zero safety hazards are highlighted in the summary.</p>
+        </div>
+      </div>
+      <div class="grid two">
+        <div class="field"><label>Classrooms with exposed wires</label><input data-safety="classroomsWithExposedWires" type="number" min="0" value="0"></div>
+        <div class="field"><label>Damaged outlets/switches</label><input data-safety="damagedOutletsSwitches" type="number" min="0" value="0"></div>
+        <div class="field"><label>Defective lighting fixtures</label><input data-safety="defectiveLightingFixtures" type="number" min="0" value="0"></div>
+        <div class="field"><label>Overloaded extension cords</label><input data-safety="overloadedExtensionCords" type="number" min="0" value="0"></div>
+        <div class="field"><label>Illegal/unauthorized connections</label><input data-safety="illegalUnauthorizedConnections" type="number" min="0" value="0"></div>
+        <div class="field"><label>Year of last electrical inspection</label><input data-safety="electricalInspectionYear" type="number" min="2000" max="2099" value="0" inputmode="numeric"></div>
+        <div class="field"><label>Electrical remarks</label><textarea data-safety="electricalRemarks" placeholder="Optional explanation or location notes"></textarea></div>
+      </div>
+    </section>
+
+    <section class="card" id="fire">
+      <div class="section-title">
+        <div>
+          <h2>3. Fire Safety</h2>
+          <p class="help">The form checks that valid plus due-for-refilling extinguishers do not exceed available extinguishers.</p>
+        </div>
+      </div>
+      <div class="grid two">
+        <div class="field"><label>Fire extinguishers available</label><input data-safety="fireExtinguishersAvailable" type="number" min="0" value="0"></div>
+        <div class="field"><label>Fire extinguishers valid</label><input data-safety="fireExtinguishersValid" type="number" min="0" value="0"></div>
+        <div class="field"><label>Due for refilling/maintenance</label><input data-safety="fireExtinguishersDueForRefilling" type="number" min="0" value="0"></div>
+        <div class="field"><label>Emergency exits with obstruction</label><input data-safety="emergencyExitsWithObstruction" type="number" min="0" value="0"></div>
+        <div class="field"><label>Operational fire exits</label><input data-safety="operationalFireExits" type="number" min="0" value="0"></div>
+        <div class="field"><label>Smoke detectors</label><input data-safety="smokeDetectors" type="number" min="0" value="0"></div>
+        <div class="field"><label>Emergency lights</label><input data-safety="emergencyLights" type="number" min="0" value="0"></div>
+        <div class="field"><label>Fire hose reels / hydrants</label><input data-safety="fireHoseHydrants" type="number" min="0" value="0"></div>
+        <div class="field"><label>Year of last fire safety inspection</label><input data-safety="fireSafetyInspectionYear" type="number" min="2000" max="2099" value="0" inputmode="numeric"></div>
+        <div class="field"><label>Fire safety remarks</label><textarea data-safety="fireSafetyRemarks" placeholder="Optional explanation or location notes"></textarea></div>
+      </div>
+    </section>
+
+    <section class="card" id="general-safety">
+      <div class="section-title">
+        <div>
+          <h2>4. General Safety</h2>
+          <p class="help">Count-based audit of safety infrastructure, emergency preparedness items, and compliance markers (maps to <em>u9_general</em>).</p>
+        </div>
+      </div>
+      <div class="grid two">
+        <div class="field"><label>First aid kits available</label><input data-safety="firstAidKits" type="number" min="0" value="0"></div>
+        <div class="field"><label>Evacuation plans posted</label><input data-safety="evacuationPlansPosted" type="number" min="0" value="0"></div>
+        <div class="field"><label>Fire drills conducted this year</label><input data-safety="fireDrillsThisYear" type="number" min="0" value="0"></div>
+        <div class="field"><label>Safety signage boards</label><input data-safety="safetySignageBoards" type="number" min="0" value="0"></div>
+        <div class="field"><label>Year of last general safety audit</label><input data-safety="generalSafetyAuditYear" type="number" min="2000" max="2099" value="0" inputmode="numeric"></div>
+        <div class="field"><label>General safety remarks</label><textarea data-safety="generalSafetyRemarks" placeholder="Other safety-related observations or findings"></textarea></div>
+      </div>
+    </section>
+
+    <div id="message" class="notice">Ready. Save Draft is allowed anytime. Submit checks equipment and fire-safety validation rules.</div>
+  </form>
+</div>
+
+<!-- Item Modal -->
+<div id="itemModal" class="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div>
+        <div class="modal-device-name" id="modalTitle"></div>
+        <div class="modal-device-cat" id="modalCat"></div>
+      </div>
+      <button class="modal-close" type="button" onclick="closeModal()" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn secondary" type="button" onclick="closeModal()">Cancel</button>
+      <button class="btn" type="button" onclick="saveFromModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="btn secondary" type="button" onclick="saveDraft()">Save Draft</button>
+  <button class="btn gold" type="button" onclick="submitForm()">Submit</button>
+</div>
+
+<script>
+
+
+// ── In-memory state ──
+const itemState=[];
+let modalIdx=null;
+
+const equipmentTypes=[
+  ["Ceiling/Orbit Fans","Ventilation"],["Stand Fans","Ventilation"],["Wall Fans","Ventilation"],["Air Conditioning Units","Ventilation"],
+  ["Water Dispensers","Appliance"],["Refrigerators/Freezers","Appliance"],["Desktop Computers","ICT"],["Printers/Photocopiers","ICT"],
+  ["LCD TVs/Monitors","ICT"],["Projectors","ICT"],["Extension Cords","Electrical Accessory"],["AVR/UPS/Router","ICT"],["CCTV","Safety / ICT"],
+  ["Charging Stations for Laptops","ICT"],["Water Pump","Utility"],["Electric Stove","Appliance"],["Air Purifier","Appliance"],["Other Electrical Appliances","Other"]
+];
+
+const byId=id=>document.getElementById(id);
+const num=v=>Math.max(0,Number(v)||0);
+
+function normalizeNumberInput(el){
+  if(!el || el.type!=="number")return;
+  const raw=String(el.value);
+  if(raw===""||raw==="-"){el.value="0";return;}
+  const cleaned=String(num(raw));
+  if(raw!==cleaned)el.value=cleaned;
+}
+
+
+/* ── Category filter ── */
+function initCategoryFilter(){
+  const cats=["All",...[...new Set(equipmentTypes.map(([,c])=>c))]];
+  const bar=byId("categoryFilterBar");
+  bar.innerHTML=cats.map(c=>`<button class="filter-pill${c==="All"?" active":""}" data-cat="${c}" type="button" onclick="filterCategory('${c}')">${c}</button>`).join("");
+}
+function filterCategory(cat){
+  document.querySelectorAll(".filter-pill").forEach(p=>p.classList.toggle("active",p.dataset.cat===cat));
+  equipmentTypes.forEach(([,c],i)=>{
+    const el=document.querySelector(`[data-item="${i}"]`);
+    if(el)el.closest(".item")?el.style.display=(cat==="All"||c===cat?"":"none"):null;
+    if(el)el.style.display=(cat==="All"||c===cat?"":"none");
+  });
+}
+
+/* ── Device cards ── */
+function initEquipmentState(){
+  equipmentTypes.forEach(()=>itemState.push({
+    totalUnits:0,hasDefective:'no',defectiveUnits:0,functionalUnits:0,
+    forRepair:0,condemned:0,forReplacement:0,forDisposal:0,
+    assistanceNeeded:'no',assistBySDO:false,assistByLGU:false,assistByEFD:false,
+    remarks:'',_saved:false
+  }));
+}
+
+function updateDeviceCard(i){
+  const s=itemState[i];
+  const card=document.querySelector(`[data-item="${i}"]`);
+  if(!card)return;
+  const hasD=s.hasDefective==="yes";
+  card.className="device-card state-done";
+  const badge=byId("dcBadge_"+i);
+  if(badge){badge.className="badge ok";badge.textContent="✓";}
+  const cta=byId("dcCta_"+i);if(cta)cta.classList.add("hidden");
+  const edit=byId("dcEdit_"+i);if(edit)edit.classList.remove("hidden");
+  const summary=byId("dcSummary_"+i);
+  if(summary){summary.classList.remove("hidden");summary.innerHTML=buildCardSummary(s,i);}
+}
+
+function buildCardSummary(s,i){
+  const hasD=s.hasDefective==="yes";
+  let h=`<div class="dc-row"><span class="dk">Total</span><span class="dv">${s.totalUnits}</span></div>`;
+  if(hasD){
+    h+=`<div class="dc-row"><span class="dk">Functional</span><span class="dv" style="color:var(--green)">${s.functionalUnits}</span></div>`;
+    h+=`<div class="dc-row"><span class="dk">Defective</span><span class="dv" style="color:#FF1F1F">${s.defectiveUnits}</span></div>`;
+    h+=`<button type="button" class="dc-toggle" id="dcToggle_${i}" onclick="toggleCardDetails(${i},event)">Show more &#9662;</button>`;
+    h+=`<div class="hidden" id="dcDetails_${i}">`;
+    const actLabels=[["forRepair","For repair"],["condemned","Condemned"],["forReplacement","For replacement"],["forDisposal","For disposal"]];
+    const acts=actLabels.filter(a=>s[a[0]]);
+    if(acts.length){
+      h+=`<div class="dc-subhead">Action Taken</div>`;
+      acts.forEach(a=>{h+=`<div class="dc-row"><span class="dk">${a[1]}</span><span class="dv">${s[a[0]]}</span></div>`;});
+    }
+    h+=`<div class="dc-subhead">Assistance Needed</div>`;
+    if(s.assistanceNeeded==="no"){
+      h+=`<div class="dc-chips"><span class="dc-chip">School MOOE</span></div>`;
+    }else{
+      const chips=[];
+      if(s.assistBySDO)chips.push('<span class="dc-chip a">Repair / Replacement by SDO</span>');
+      if(s.assistByLGU)chips.push('<span class="dc-chip a">LGU Assistance</span>');
+      if(s.assistByEFD)chips.push('<span class="dc-chip a">EFD / CO Funding</span>');
+      h+=`<div class="dc-chips">${chips.length?chips.join(""):'<span class="dc-chip a">External funding</span>'}</div>`;
+    }
+    if(s.remarks)h+=`<div style="margin-top:4px;font-size:11px;color:var(--muted);font-style:italic;">&ldquo;${s.remarks.slice(0,60)}${s.remarks.length>60?"&hellip;":""}&rdquo;</div>`;
+    h+=`</div>`;
+  }else{
+    if(s.remarks)h+=`<div style="margin-top:4px;font-size:11px;color:var(--muted);font-style:italic;">&ldquo;${s.remarks.slice(0,60)}${s.remarks.length>60?"&hellip;":""}&rdquo;</div>`;
+  }
+  return h;
+}
+function smoothScrollTo(id,e){
+  e.preventDefault();
+  const el=byId(id);
+  if(el)el.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function toggleCardDetails(i,e){
+  e.stopPropagation();
+  e.preventDefault();
+  const det=byId("dcDetails_"+i);
+  const btn=byId("dcToggle_"+i);
+  if(!det||!btn)return;
+  const hidden=det.classList.toggle("hidden");
+  btn.innerHTML=hidden?"Show more &#9662;":"Hide details &#9652;";
+}
+
+/* ── Modal ── */
+function buildModalFormHTML(i){
+  var I=i;
+  return '<div class="count-row">'
+    +'<div class="field"><label>Total</label><input type="number" min="0" value="0" data-key="totalUnits" data-index="'+I+'" inputmode="numeric"></div>'
+    +'<div class="field"><label>Has defective units?</label>'
+    +'<select data-key="hasDefective" data-index="'+I+'"><option value="no">No</option><option value="yes">Yes</option></select>'
+    +'</div></div>'
+    +'<div id="mDefPanel" style="display:none;gap:12px;">'
+    +'<div class="count-row">'
+    +'<div class="field"><label>Defective</label><input type="number" min="1" value="1" class="input-red" data-key="defectiveUnits" data-index="'+I+'" inputmode="numeric"></div>'
+    +'<div class="field"><label>Functional</label><input type="number" value="0" class="input-green" data-key="functionalUnits" data-index="'+I+'" readonly></div>'
+    +'</div>'
+    +'<div class="subgroup action-group">'
+    +'<div class="subgroup-title group-title"><span class="dot action"></span>Action Taken<span class="hint">&nbsp;&middot; must equal defective count</span></div>'
+    +'<div class="count-row four">'
+    +'<div class="field"><label>For repair</label><input type="number" min="0" value="0" data-key="forRepair" data-index="'+I+'" inputmode="numeric"></div>'
+    +'<div class="field"><label>Condemned</label><input type="number" min="0" value="0" data-key="condemned" data-index="'+I+'" inputmode="numeric"></div>'
+    +'<div class="field"><label>Replacement</label><input type="number" min="0" value="0" data-key="forReplacement" data-index="'+I+'" inputmode="numeric"></div>'
+    +'<div class="field"><label>Disposal</label><input type="number" min="0" value="0" data-key="forDisposal" data-index="'+I+'" inputmode="numeric"></div>'
+    +'</div></div>'
+    +'<div class="subgroup assist-group">'
+    +'<div class="subgroup-title group-title"><span class="dot assist"></span>Assistance Needed</div>'
+    +'<div class="field"><label>Is external assistance needed?</label>'
+    +'<select data-key="assistanceNeeded" data-index="'+I+'">'
+    +'<option value="no">No — School MOOE will cover this</option>'
+    +'<option value="yes">Yes — External funding is needed</option>'
+    +'</select></div>'
+    +'<div class="assistance-options hidden" data-assistance-panel="'+I+'">'
+    +'<div class="check-option"><input type="checkbox" data-key="assistBySDO" data-index="'+I+'" id="mSDO_'+I+'"><label class="check-label" for="mSDO_'+I+'">Repair / Replacement by SDO</label></div>'
+    +'<div class="check-option"><input type="checkbox" data-key="assistByLGU" data-index="'+I+'" id="mLGU_'+I+'"><label class="check-label" for="mLGU_'+I+'">LGU Assistance</label></div>'
+    +'<div class="check-option"><input type="checkbox" data-key="assistByEFD" data-index="'+I+'" id="mEFD_'+I+'"><label class="check-label" for="mEFD_'+I+'">EFD / CO Funding</label></div>'
+    +'</div></div>'
+    +'<div class="field"><label>Remarks <span id="mCounter" style="font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;">0/150</span></label>'
+    +'<textarea data-key="remarks" data-index="'+I+'" maxlength="150" placeholder="Explain condition, location, or assistance needed"></textarea>'
+    +'</div>'
+    +'</div>';
+}
+
+function openModal(i){
+  modalIdx=i;
+  byId("modalTitle").textContent=equipmentTypes[i][0];
+  byId("modalCat").textContent=equipmentTypes[i][1];
+  byId("modalBody").innerHTML=buildModalFormHTML(i);
+  const s=itemState[i];
+  setValue(i,"totalUnits",s.totalUnits);
+  setValue(i,"hasDefective",s.hasDefective);
+  setValue(i,"defectiveUnits",s.defectiveUnits||1);
+  setValue(i,"functionalUnits",s.functionalUnits);
+  setValue(i,"forRepair",s.forRepair);setValue(i,"condemned",s.condemned);
+  setValue(i,"forReplacement",s.forReplacement);setValue(i,"forDisposal",s.forDisposal);
+  setValue(i,"assistanceNeeded",s.assistanceNeeded);setValue(i,"remarks",s.remarks);
+  const setCb=(key,val)=>{const el=fieldEl(i,key);if(el)el.checked=val;};
+  setCb("assistBySDO",s.assistBySDO);setCb("assistByLGU",s.assistByLGU);setCb("assistByEFD",s.assistByEFD);
+  const defPanel=byId("mDefPanel");
+  if(defPanel)defPanel.style.display=s.hasDefective==="yes"?"grid":"none";
+  if(s.assistanceNeeded==="yes"){const ap=document.querySelector(`[data-assistance-panel="${i}"]`);if(ap)ap.classList.remove("hidden");}
+  byId("modalBody").querySelectorAll("[data-key]").forEach(el=>{el.addEventListener("input",handleEquipmentChange);el.addEventListener("change",handleEquipmentChange);});
+  byId("modalBody").querySelectorAll('input[type="number"]').forEach(el=>{
+    el.addEventListener("input",()=>normalizeNumberInput(el));
+    el.addEventListener("blur",()=>{normalizeNumberInput(el);readModalIntoState(i);refreshItem(i);});
+  });
+  const ta=fieldEl(i,"remarks"),counter=byId("mCounter");
+  if(ta&&counter){const upd=()=>{const l=ta.value.length;counter.textContent=l+"/150";counter.style.color=l>=140?"var(--red)":"var(--muted)";};ta.addEventListener("input",upd);upd();}
+  byId("itemModal").classList.add("open");
+  document.body.style.overflow="hidden";
+  byId("modalBody").scrollTop=0;
+}
+
+function closeModal(){
+  byId("itemModal").classList.remove("open");
+  document.body.style.overflow="";
+  modalIdx=null;
+}
+
+function readModalIntoState(i){
+  const s=itemState[i];
+  s.totalUnits=num(valueOf(i,"totalUnits"));
+  s.hasDefective=valueOf(i,"hasDefective");
+  const total=s.totalUnits;
+  let def=s.hasDefective==="yes"?num(valueOf(i,"defectiveUnits")):0;
+  if(def>total&&s.hasDefective==="yes"){def=total;setValue(i,"defectiveUnits",def);}
+  s.defectiveUnits=def;
+  s.functionalUnits=Math.max(0,total-def);
+  setValue(i,"functionalUnits",s.functionalUnits);
+  s.forRepair=num(valueOf(i,"forRepair"));s.condemned=num(valueOf(i,"condemned"));
+  s.forReplacement=num(valueOf(i,"forReplacement"));s.forDisposal=num(valueOf(i,"forDisposal"));
+  s.assistanceNeeded=valueOf(i,"assistanceNeeded");
+  s.assistBySDO=!!valueOf(i,"assistBySDO");s.assistByLGU=!!valueOf(i,"assistByLGU");s.assistByEFD=!!valueOf(i,"assistByEFD");
+  s.remarks=valueOf(i,"remarks")||"";
+}
+
+function saveFromModal(){
+  if(modalIdx===null)return;
+  const i=modalIdx;
+  readModalIntoState(i);
+  const errors=validateItem(i);
+  if(errors.length)return;
+  itemState[i]._saved=true;
+  localStorage.setItem("shieldItem_"+i,JSON.stringify(itemState[i]));
+  updateDeviceCard(i);
+  refreshSummary();
+  closeModal();
+}
+
+/* ── Per-item save/restore (superseded by override functions at bottom) ── */
+function restoreItems(){
+  equipmentTypes.forEach((_,i)=>{
+    const raw=localStorage.getItem("shieldItem_"+i);
+    if(!raw)return;
+    try{
+      const d=JSON.parse(raw);
+      setValue(i,"totalUnits",d._totalUnits??0);
+      setValue(i,"hasDefective",d._hasDefective??"no");
+      if(d._hasDefective==="yes"){
+        setValue(i,"defectiveUnits",d._defectiveUnits??1);
+        setValue(i,"forRepair",d._forRepair??0);
+        setValue(i,"condemned",d._condemned??0);
+        setValue(i,"forReplacement",d._forReplacement??0);
+        setValue(i,"forDisposal",d._forDisposal??0);
+        setValue(i,"assistanceNeeded",d._assistanceNeeded??"no");
+        const cb_sdo=fieldEl(i,"assistBySDO");if(cb_sdo)cb_sdo.checked=!!d._assistBySDO;
+        const cb_lgu=fieldEl(i,"assistByLGU");if(cb_lgu)cb_lgu.checked=!!d._assistByLGU;
+        const cb_efd=fieldEl(i,"assistByEFD");if(cb_efd)cb_efd.checked=!!d._assistByEFD;
+        if(d._assistanceNeeded==="yes"){
+          const panel=document.querySelector(`[data-assistance-panel="${i}"]`);
+          if(panel)panel.classList.remove("hidden");
+        }
+      }
+      setValue(i,"remarks",d._remarks??"");
+    }catch(e){}
+  });
+}
+
+function initEquipment(){
+  byId("equipmentList").innerHTML=equipmentTypes.map(([name,cat],i)=>`
+    <article class="item" data-item="${i}">
+      <div class="item-head">
+        <div class="item-title"><b>${name}</b><span>${cat}</span></div>
+        <span class="badge ok" data-status="${i}">OK</span>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label>Total units</label>
+          <input type="number" min="0" value="0" data-key="totalUnits" data-index="${i}" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label>Has defective units?</label>
+          <select data-key="hasDefective" data-index="${i}">
+            <option value="no" selected>No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="defective-panel">
+        <p class="conditional-note"><b>Follow-up fields shown because defective units were reported.</b> Action Taken and Assistance Needed must each total the defective-unit count.</p>
+
+        <div class="count-row">
+          <div class="field"><label>Defective units</label><input type="number" min="1" value="1" data-key="defectiveUnits" data-index="${i}" inputmode="numeric"></div>
+          <div class="field"><label>Functional units</label><input type="number" min="0" value="0" data-key="functionalUnits" data-index="${i}" readonly></div>
+        </div>
+
+        <div class="group-title">Action taken</div>
+        <div class="count-row">
+          <div class="field"><label>For repair</label><input type="number" min="0" value="0" data-key="forRepair" data-index="${i}" inputmode="numeric"></div>
+          <div class="field"><label>Condemned</label><input type="number" min="0" value="0" data-key="condemned" data-index="${i}" inputmode="numeric"></div>
+          <div class="field"><label>For replacement</label><input type="number" min="0" value="0" data-key="forReplacement" data-index="${i}" inputmode="numeric"></div>
+          <div class="field"><label>For disposal</label><input type="number" min="0" value="0" data-key="forDisposal" data-index="${i}" inputmode="numeric"></div>
+        </div>
+
+
+
+        <div class="group-title">Assistance needed</div>
+        <div class="field" style="margin-top:6px;">
+          <label>Is external assistance needed?</label>
+          <select data-key="assistanceNeeded" data-index="${i}">
+            <option value="no" selected>No — Covered by School MOOE</option>
+            <option value="yes">Yes — External assistance required</option>
+          </select>
+        </div>
+        <div class="assistance-options hidden" data-assistance-panel="${i}">
+          <div class="check-option"><input type="checkbox" data-key="assistBySDO" data-index="${i}" id="assistSDO_${i}"><label class="check-label" for="assistSDO_${i}">Repair / Replacement by SDO</label></div>
+          <div class="check-option"><input type="checkbox" data-key="assistByLGU" data-index="${i}" id="assistLGU_${i}"><label class="check-label" for="assistLGU_${i}">LGU Assistance</label></div>
+          <div class="check-option"><input type="checkbox" data-key="assistByEFD" data-index="${i}" id="assistEFD_${i}"><label class="check-label" for="assistEFD_${i}">EFD / CO Funding</label></div>
+        </div>
+
+        <div class="field">
+          <label>Remarks <span data-remarks-counter="${i}" style="font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;">0/150</span></label>
+          <textarea data-key="remarks" data-index="${i}" maxlength="150" placeholder="Explain condition, location, or assistance needed"></textarea>
+        </div>
+      </div>
+
+      <div class="validation ok" data-validation="${i}">No defective units reported.</div>
+      <div class="card-save-row">
+        <button class="card-save-btn" type="button" onclick="saveItem(${i})" id="saveBtn_${i}">
+          <span>&#x1F4BE;</span> Save this item
+        </button>
+        <span class="item-saved-chip" id="savedChip_${i}">Saved!</span>
+      </div>
+    </article>
+  `).join("");
+
+  document.querySelectorAll("[data-key]").forEach(el=>{
+    el.addEventListener("input",handleEquipmentChange);
+    el.addEventListener("change",handleEquipmentChange);
+  });
+  refreshAllEquipment();
+}
+
+function fieldEl(i,key){
+  return document.querySelector(`[data-index="${i}"][data-key="${key}"]`);
+}
+function valueOf(i,key){
+  const el=fieldEl(i,key);
+  if(!el)return 0;
+  if(el.type==="checkbox") return el.checked;
+  return el.tagName==="SELECT"||el.tagName==="TEXTAREA"?el.value:num(el.value);
+}
+function setValue(i,key,value){
+  const el=fieldEl(i,key);
+  if(el)el.value=value;
+}
+function clearFieldErrors(i){
+  const container=byId("modalBody");
+  if(!container)return;
+  container.querySelectorAll("[data-key]").forEach(el=>{
+    el.removeAttribute("aria-invalid");
+    const field=el.closest(".field");
+    if(!field)return;
+    field.classList.remove("field-error");
+    field.querySelectorAll(".field-error-message").forEach(m=>m.remove());
+  });
+  container.querySelectorAll(".group-error-message").forEach(m=>m.remove());
+}
+function markFieldError(i,key){
+  const el=fieldEl(i,key);
+  const field=el?.closest(".field");
+  if(!el||!field)return;
+  el.setAttribute("aria-invalid","true");
+  field.classList.add("field-error");
+}
+function setFieldError(i,key,message){
+  const el=fieldEl(i,key);
+  const field=el?.closest(".field");
+  if(!el||!field)return;
+  markFieldError(i,key);
+  if(!field.querySelector(".field-error-message")){
+    const msg=document.createElement("div");
+    msg.className="field-error-message";
+    msg.textContent=message;
+    field.appendChild(msg);
+  }
+}
+function setGroupError(i,keys,groupTitleEl,message){
+  keys.forEach(key=>markFieldError(i,key));
+  // place error message right after the group-title element
+  if(groupTitleEl && !groupTitleEl.nextElementSibling?.classList?.contains("group-error-message")){
+    const msg=document.createElement("div");
+    msg.className="group-error-message";
+    msg.textContent=message;
+    groupTitleEl.insertAdjacentElement("afterend",msg);
+  }
+}
+function handleEquipmentChange(e){
+  normalizeNumberInput(e.target);
+  const i=Number(e.target.dataset.index);
+  if(e.target.dataset.key==="hasDefective"){
+    const defPanel=byId("mDefPanel");
+    if(defPanel)defPanel.style.display=e.target.value==="yes"?"grid":"none";
+    if(e.target.value==="no"){
+      ["defectiveUnits","functionalUnits","forRepair","condemned","forReplacement","forDisposal"].forEach(k=>setValue(i,k,0));
+      setValue(i,"remarks","");setValue(i,"assistanceNeeded","no");
+      const ap=document.querySelector(`[data-assistance-panel="${i}"]`);if(ap)ap.classList.add("hidden");
+      ["assistBySDO","assistByLGU","assistByEFD"].forEach(k=>{const cb=fieldEl(i,k);if(cb)cb.checked=false;});
+    }
+    if(e.target.value==="yes"&&num(valueOf(i,"totalUnits"))===0){setValue(i,"totalUnits",1);setValue(i,"defectiveUnits",1);}
+  }
+  if(e.target.dataset.key==="assistanceNeeded"){
+    const ap=document.querySelector(`[data-assistance-panel="${i}"]`);
+    if(ap){
+      if(e.target.value==="no"){ap.classList.add("hidden");["assistBySDO","assistByLGU","assistByEFD"].forEach(k=>{const cb=fieldEl(i,k);if(cb)cb.checked=false;});}
+      else ap.classList.remove("hidden");
+    }
+  }
+  readModalIntoState(i);
+  refreshItem(i);
+}
+
+function refreshItem(i){
+  const s=itemState[i];
+  setValue(i,"functionalUnits",s.functionalUnits);
+  // Live action-sum check
+  const container=byId("modalBody");
+  if(!container||s.hasDefective!=="yes")return;
+  const actionKeys=["forRepair","condemned","forReplacement","forDisposal"];
+  const action=actionKeys.reduce((sum,k)=>sum+s[k],0);
+  const groupTitles=[...container.querySelectorAll(".group-title")];
+  const actionTitleEl=groupTitles.find(el=>el.textContent.toLowerCase().includes("action"));
+  // clear previous action-group error state
+  if(actionTitleEl){const nx=actionTitleEl.nextElementSibling;if(nx&&nx.classList.contains("group-error-message"))nx.remove();}
+  actionKeys.forEach(k=>{const el=fieldEl(i,k);const f=el&&el.closest(".field");if(f){f.classList.remove("field-error");el.removeAttribute("aria-invalid");}});
+  // show live error if sum doesn't match
+  if(action!==s.defectiveUnits){
+    const msg="Action Taken total is "+action+"; must equal "+s.defectiveUnits+" defective unit(s).";
+    setGroupError(i,actionKeys,actionTitleEl,msg);
+  }
+}
+
+function validateItem(i){
+  clearFieldErrors(i);
+  const s=itemState[i];
+  const has=s.hasDefective==="yes";
+  const errors=[];
+
+  if(has&&s.defectiveUnits<1){
+    const msg="Enter at least 1 defective unit.";errors.push(msg);setFieldError(i,"defectiveUnits",msg);
+  }
+  if(s.defectiveUnits>s.totalUnits){
+    const msg="Defective units cannot exceed total units.";errors.push(msg);setFieldError(i,"defectiveUnits",msg);
+  }
+
+  const container=byId("modalBody");
+  const groupTitles=container?[...container.querySelectorAll(".group-title")]:[];
+  const actionTitleEl=groupTitles.find(el=>el.textContent.toLowerCase().includes("action"));
+  const assistanceTitleEl=groupTitles.find(el=>el.textContent.toLowerCase().includes("assistance"));
+
+  const actionKeys=["forRepair","condemned","forReplacement","forDisposal"];
+  const action=actionKeys.reduce((sum,k)=>sum+s[k],0);
+
+  if(has&&action!==s.defectiveUnits){
+    const msg="Action Taken total is "+action+"; must equal "+s.defectiveUnits+" defective unit(s).";
+    errors.push(msg);setGroupError(i,actionKeys,actionTitleEl,msg);
+  }
+
+  if(has&&s.assistanceNeeded==="yes"){
+    if(!s.assistBySDO&&!s.assistByLGU&&!s.assistByEFD){
+      const msg="Please select at least one type of external assistance.";
+      errors.push(msg);
+      if(assistanceTitleEl&&!assistanceTitleEl.nextElementSibling?.classList?.contains("group-error-message")){
+        const msgEl=document.createElement("div");msgEl.className="group-error-message";msgEl.textContent=msg;
+        assistanceTitleEl.insertAdjacentElement("afterend",msgEl);
+      }
+    }
+  }
+  return errors;
+}
+
+// collectEquipment() override is at bottom — reads from itemState
+
+function refreshSummary(){
+  const rows=collectEquipment();
+  const sum=k=>rows.reduce((a,b)=>a+num(b[k]),0);
+  const assistance=rows.filter(r=>r.assistanceNeeded).length;
+  byId("totalUnitsMetric").textContent=sum("totalUnits");
+  byId("functionalMetric").textContent=sum("functionalUnits");
+  byId("defectiveMetric").textContent=sum("defectiveUnits");
+  byId("assistanceMetric").textContent=assistance;
+  const defective=sum("defectiveUnits");
+  byId("equipmentBadge").textContent=defective+" defective";
+  byId("equipmentBadge").className=defective>0?"badge warn":"badge ok";
+  const _total=equipmentTypes.length;
+  const _answered=itemState.filter(s=>s._saved).length;
+  const _allDone=_answered===_total;
+  const _prog=byId("deviceProgress");
+  const _progText=byId("deviceProgressText");
+  const _progFill=byId("deviceProgressFill");
+  if(_prog&&_progText&&_progFill){
+    _progText.textContent=(_allDone?"✓ All "+_total+" devices answered":_answered+" / "+_total+" answered");
+    _progFill.style.width=((_answered/_total)*100)+"%";
+    _prog.className="dev-progress"+(_allDone?" all-done":"");
+  }
+  updateCategoryBadges();
+}
+function updateCategoryBadges(){
+  document.querySelectorAll(".filter-pill").forEach(pill=>{
+    const cat=pill.dataset.cat;
+    if(!cat)return;
+    let allDone=false;
+    if(cat==="All"){
+      allDone=itemState.length>0&&itemState.every(s=>s._saved);
+    }else{
+      const idxs=equipmentTypes.map(([,c],i)=>c===cat?i:-1).filter(i=>i>=0);
+      allDone=idxs.length>0&&idxs.every(i=>itemState[i]&&itemState[i]._saved);
+    }
+    if(allDone){
+      pill.classList.add("cat-done");
+      if(!pill.dataset.origLabel)pill.dataset.origLabel=pill.textContent.replace(/^✓\s*/,"");
+      pill.innerHTML="✓ "+pill.dataset.origLabel;
+    }else{
+      pill.classList.remove("cat-done");
+      if(pill.dataset.origLabel)pill.textContent=pill.dataset.origLabel;
+    }
+  });
+}
+
+function validateForm(){
+  const errors=[];
+  equipmentTypes.forEach(([name],i)=>{
+    const s=itemState[i];const has=s.hasDefective==="yes";
+    if(has&&s.defectiveUnits<1)errors.push(name+": Enter at least 1 defective unit.");
+    if(s.defectiveUnits>s.totalUnits)errors.push(name+": Defective units exceed total.");
+    const action=s.forRepair+s.condemned+s.forReplacement+s.forDisposal;
+    if(has&&action!==s.defectiveUnits)errors.push(name+": Action Taken ("+action+") must equal defective ("+s.defectiveUnits+").");
+    if(has&&s.assistanceNeeded==="yes"&&!s.assistBySDO&&!s.assistByLGU&&!s.assistByEFD)
+      errors.push(name+": Select at least one assistance type.");
+  });
+  const fire=collectSafety();
+  if(num(fire.fireExtinguishersValid)+num(fire.fireExtinguishersDueForRefilling)>num(fire.fireExtinguishersAvailable))
+    errors.push("Fire extinguisher counts are inconsistent.");
+  return[...new Set(errors)];
+}
+
+function collectSafety(){
+  const o={};
+  document.querySelectorAll("[data-safety]").forEach(el=>o[el.dataset.safety]=el.tagName==="TEXTAREA"?el.value:num(el.value));
+  return o;
+}
+
+
+function payload(status){
+  return {
+    status,
+    equipment:collectEquipment(),
+    safety:collectSafety(),
+    savedAt:new Date().toISOString()
+  };
+}
+
+function saveDraft(){
+  localStorage.setItem("shieldSchoolInventoryDraft",JSON.stringify(payload("Draft")));
+  byId("message").innerHTML="<b>Draft saved locally.</b>";
+}
+
+function submitForm(){
+  const errors=validateForm();
+  if(errors.length){
+    byId("message").innerHTML="<b>Cannot submit yet.</b><br>"+errors.slice(0,8).join("<br>");
+    byId("message").scrollIntoView({behavior:"smooth",block:"center"});return;
+  }
+  localStorage.setItem("shieldSchoolInventorySubmission",JSON.stringify(payload("Submitted")));
+  byId("message").innerHTML="<b>Submitted successfully.</b> All checks passed.";
+  byId("message").scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+// close modal on backdrop click / Escape
+byId("itemModal").addEventListener("click",e=>{if(e.target===byId("itemModal"))closeModal();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&modalIdx!==null)closeModal();});
+// safety inputs sanitize
+document.querySelectorAll('[data-safety]').forEach(el=>{
+  if(el.type==="number"){el.addEventListener("input",()=>normalizeNumberInput(el));el.addEventListener("blur",()=>normalizeNumberInput(el));}
+});
+
+// ── Overrides: final versions replace duplicates above ──
+function initEquipment(){
+  byId("equipmentList").innerHTML=equipmentTypes.map(([name,cat],i)=>`<div class="device-card" data-item="${i}" data-cat="${cat}" onclick="openModal(${i})" role="button" tabindex="0"><div class="dc-head"><div><div class="dc-name">${name}</div><div class="dc-cat">${cat}</div></div><span class="badge info" id="dcBadge_${i}">&ndash;</span></div><div class="dc-cta" id="dcCta_${i}">Tap to enter data &#8250;</div><div class="dc-summary hidden" id="dcSummary_${i}"></div><div class="dc-edit-hint hidden" id="dcEdit_${i}">Tap to edit &#8250;</div></div>`).join("");
+  document.querySelectorAll(".device-card").forEach(card=>{card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();card.click();}});});
+  restoreItems();
+}
+function filterCategory(cat){
+  document.querySelectorAll(".filter-pill").forEach(p=>p.classList.toggle("active",p.dataset.cat===cat));
+  document.querySelectorAll(".device-card").forEach(card=>{card.style.display=(cat==="All"||card.dataset.cat===cat)?"":"none";});
+}
+function restoreItems(){
+  equipmentTypes.forEach((_,i)=>{
+    const raw=localStorage.getItem("shieldItem_"+i);
+    if(!raw)return;
+    try{
+      const d=JSON.parse(raw);
+      Object.assign(itemState[i],{
+        totalUnits:d._totalUnits??d.totalUnits??0,
+        hasDefective:d._hasDefective??d.hasDefective??"no",
+        defectiveUnits:d._defectiveUnits??d.defectiveUnits??0,
+        functionalUnits:d.functionalUnits??0,
+        forRepair:d._forRepair??d.forRepair??0,condemned:d._condemned??d.condemned??0,
+        forReplacement:d._forReplacement??d.forReplacement??0,forDisposal:d._forDisposal??d.forDisposal??0,
+        assistanceNeeded:d._assistanceNeeded??(d.assistanceNeeded===true?"yes":d.assistanceNeeded)??"no",
+        assistBySDO:d._assistBySDO??d.assistBySDO??false,
+        assistByLGU:d._assistByLGU??d.assistByLGU??false,
+        assistByEFD:d._assistByEFD??d.assistByEFD??false,
+        remarks:d._remarks??d.remarks??"",_saved:true
+      });
+      updateDeviceCard(i);
+    }catch(e){}
+  });
+}
+function collectEquipment(){
+  return itemState.map((s,i)=>({
+    equipmentName:equipmentTypes[i][0],equipmentCategory:equipmentTypes[i][1],
+    totalUnits:s.totalUnits,functionalUnits:s.functionalUnits,
+    defectiveUnits:s.hasDefective==="yes"?s.defectiveUnits:0,
+    forRepair:s.forRepair,condemned:s.condemned,forReplacement:s.forReplacement,forDisposal:s.forDisposal,
+    assistanceNeeded:s.assistanceNeeded==="yes",
+    assistBySDO:s.assistBySDO,assistByLGU:s.assistByLGU,assistByEFD:s.assistByEFD,
+    remarks:s.remarks
+  }));
+}
+
+initEquipmentState();
+initEquipment();
+initCategoryFilter();
+refreshSummary();
+</script>
+</body>
+</html>
