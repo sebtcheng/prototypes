@@ -378,9 +378,11 @@ tbody tr.clickable-row:hover td{background:#E0F2FE}
 .result-banner.qualified{border-color:#22C55E;background:linear-gradient(135deg,#F0FDF4,#DCFCE7)}
 .result-banner.disqualified{border-color:#EF4444;background:linear-gradient(135deg,#FEF2F2,#FEE2E2)}
 .result-banner.excluded{border-color:#94A3B8;background:linear-gradient(135deg,#F8FAFC,#E2E8F0)}
+.result-banner.pending,.result-banner.pending_qs_review{border-color:#7DD3FC;background:linear-gradient(135deg,#F0F9FF,#E0F2FE)}
 .result-banner.qualified .badge{background:#16A34A;color:white}
 .result-banner.disqualified .badge{background:#B91C1C;color:white}
 .result-banner.excluded .badge{background:#64748B;color:white}
+.result-banner.pending .badge,.result-banner.pending_qs_review .badge{background:#0284C7;color:white}
 .status-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
 .status-actions button{min-height:46px;border:3px solid rgba(8,49,95,.16)}
 @media(max-width:760px){.position-meta,.status-actions{grid-template-columns:1fr}}
@@ -475,6 +477,42 @@ tbody tr.clickable-row:hover td{background:#E0F2FE}
   margin:5px 0 0;font-size:12px;font-weight:800;color:#E0F2FE;line-height:1.35
 }
 .qs-matrix-wrap>.qs-matrix-head .position-detail-eyebrow{color:var(--gold);margin:0 0 5px}
+.doc-checklist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 8px;margin-top:2px}
+.doc-check-item{display:grid;grid-template-columns:18px 1fr;gap:7px;align-items:start;padding:7px 9px;border:1.5px solid var(--line);border-radius:12px;background:#F8FCFF;cursor:pointer;transition:border-color .15s ease,background .15s ease}
+.doc-check-item:hover{border-color:var(--blue-600);background:#F0F9FF}
+.doc-check-item input{width:15px;height:15px;margin-top:1px;accent-color:var(--blue-600)}
+.doc-check-item:has(input:checked){border-color:#86EFAC;background:#F0FDF4}
+.doc-check-item:has(input:checked) .doc-req-text{color:var(--navy)}
+.doc-req-text{font-size:10.8px;font-weight:800;color:var(--muted);line-height:1.25;letter-spacing:.02em}
+@media(max-width:760px){.doc-checklist{grid-template-columns:1fr}.doc-check-item{padding:8px 10px}.doc-req-text{font-size:11.5px}}
+@media(max-width:760px){
+.modal{padding:10px;align-items:flex-end}
+.modal-box{width:100%;max-width:100%;max-height:92vh;padding:14px;border-radius:18px 18px 0 0}
+.modal-head{flex-wrap:wrap;gap:8px}
+.modal-head h2{font-size:16px;line-height:1.25}
+.qs-grid{grid-template-columns:1fr}
+.compare{grid-template-columns:1fr}
+.toggle-group{grid-template-columns:1fr}
+.cal-fields{flex-wrap:wrap;gap:8px}
+.cal-field{max-width:100%;flex:1 1 100%}
+.cal-arrow{display:none}
+.qs-matrix-wrap{padding:14px}
+.qs-matrix-wrap>.qs-matrix-head{margin:-14px -14px 14px;padding:14px}
+.qs-matrix-head{flex-direction:column;align-items:stretch}
+.qs-matrix-summary{width:100%}
+.qs-score-card{min-width:0;width:100%;align-items:flex-start;text-align:left}
+.decision-row{flex-direction:column;align-items:stretch}
+.decision-row button{width:100%}
+.status-command{padding:12px}
+.status-actions{gap:8px}
+.qualified-card-head{padding:14px;min-height:0}
+.qualified-card-head p{max-width:none}
+.qualified-save-top{width:100%;justify-content:center}
+.position-info-grid{grid-template-columns:1fr}
+.posting-card-head{margin:-14px -14px 14px}
+.comparative-assessment-grid input{font-size:20px!important}
+.pager-controls{gap:10px}
+}
 </style>
 </head>
 <body>
@@ -639,6 +677,7 @@ tbody tr.clickable-row:hover td{background:#E0F2FE}
         <select id="statusFilter" onchange="page=1;renderApps()">
           <option value="">All application statuses</option>
           <option value="pending">Pending</option>
+          <option value="pending_qs_review">Pending QS Review</option>
           <option value="qualified">Qualified</option>
           <option value="disqualified">Disqualified</option>
           <option value="excluded">Excluded</option>
@@ -941,7 +980,7 @@ tbody tr.clickable-row:hover td{background:#E0F2FE}
     <h2>Welcome to the AGAP Portal</h2>
     <p>Monitor openings, screen applicants against qualification standards, and track hiring from application through to appointment — all in one place.</p>
     <div class="welcome-highlights">
-      <div class="welcome-hi"><b>Screen</b><span>Review applicants vs. QS and mark Pass / Fail.</span></div>
+      <div class="welcome-hi"><b>Screen</b><span>Review applicants vs. QS and mark whether requirements are met.</span></div>
       <div class="welcome-hi"><b>Analyze</b><span>KPIs, charts, and filters across every module.</span></div>
       <div class="welcome-hi"><b>Decide</b><span>Advance the pipeline through to appointment.</span></div>
     </div>
@@ -967,9 +1006,22 @@ tbody tr.clickable-row:hover td{background:#E0F2FE}
   <div class="modal-box">
     <div class="modal-head">
       <h2 id="modalTitle"></h2>
-      <button class="secondary" onclick="closeModal()">Close</button>
+      <button class="secondary" onclick="attemptCloseModal()">Close</button>
     </div>
     <div id="modalBody"></div>
+  </div>
+</div>
+<div class="modal" id="confirmCloseModal">
+  <div class="modal-box" style="width:min(460px,94vw)">
+    <div class="modal-head">
+      <h2>Unsaved changes</h2>
+      <button class="secondary" onclick="cancelCloseReview()">Keep Editing</button>
+    </div>
+    <p class="small" style="font-size:14px;font-weight:800;color:var(--navy);line-height:1.5">You have unsaved evaluation changes. Save first, or discard the changes and close this review.</p>
+    <div class="decision-row" style="justify-content:flex-end">
+      <button class="secondary" onclick="discardReviewChanges()">Discard Changes</button>
+      <button class="good" onclick="saveReviewChanges(currentReviewId);discardReviewChanges()">Save & Close</button>
+    </div>
   </div>
 </div>
 
@@ -1004,6 +1056,19 @@ const DB={
 };
 
 const DOCS={loi:"Letter of Intent",pds:"PDS",wes:"Work Experience Sheet",prc:"PRC License",tor:"TOR",diploma:"Diploma",oss:"Omnibus Sworn Statement"};
+const DOC_REQUIREMENTS=[
+  {key:"loi",label:"Letter of intent addressed to the Head of Office or highest human resource officer"},
+  {key:"pds",label:"Duly accomplished Personal Data Sheet (PDS, CS Form No. 212, Revised 2017) and Work Experience Sheet, if applicable"},
+  {key:"prc",label:"Photocopy of valid and updated PRC License/ID, if applicable"},
+  {key:"eligibility",label:"Photocopy of Certificate of Eligibility/Report of Rating, if applicable"},
+  {key:"tor",label:"Photocopy of scholastic/academic records such as Transcript of Records (TOR) and Diploma, including graduate and post-graduate units/degrees, if available"},
+  {key:"training",label:"Photocopy of Certificate/s of Training, if applicable"},
+  {key:"employment",label:"Photocopy of Certificate of Employment, Contract of Service, or duly signed Service Record, whichever is/are applicable"},
+  {key:"appointment",label:"Photocopy of latest appointment, if applicable"},
+  {key:"performance",label:"Photocopy of the Performance Rating in the last rating period(s) covering one (1) year performance prior to the deadline of submission, if applicable"},
+  {key:"cav",label:"Checklist of Requirements and Omnibus Sworn Statement on the CAV of documents submitted and Data Privacy Consent Form"},
+  {key:"other",label:"Other documents as may be required for comparative assessment (e.g. MOVs, or Performance Rating from relevant work experience)"}
+];
 let sortKey="dateApplied", sortDir="desc", page=1;
 let multiSort=false;
 let sortStack=[];
@@ -1028,6 +1093,11 @@ let rjFilterTimer=null;
 const appointmentColumns=[["applicant","Applicant"],["vacancy","Position"],["itemNo","Item No."],["fit","Average Score"],["appointmentStatus","Appointment Status"],["date","Date"]];
 let homeDetailColumnFilters={};
 let homeDetailFilterTimer=null;
+let currentReviewId=null;
+let reviewDirty=false;
+let reviewBaseline="";
+let reviewPendingState=null;
+let criteriaSelections={crit_degree:null,crit_experience:null,crit_training:null,crit_eligibility:null};
 
 const columns=[
   ["rowNo","No."],
@@ -1038,12 +1108,13 @@ const columns=[
   ["yearsExperience","Years Experience"],
   ["trainingHours","Hours Training"],
   ["vacancy","Vacancy"],
+  ["itemNo","Item No."],
   ["status","Application Status"]
 ];
 const columnTypes={yearsExperience:"numeric",trainingHours:"numeric",vacancy:"categorical",status:"categorical"};
 function columnOptions(key){
   if(key==="vacancy") return [...new Set(DB.get("vacancies").map(v=>v.title))].filter(Boolean).sort().map(v=>[v,v]);
-  if(key==="status") return ["pending","qualified","disqualified","excluded"].map(s=>[s,titleCase(s)]);
+  if(key==="status") return ["pending","pending_qs_review","qualified","disqualified","excluded"].map(s=>[s,titleCase(s)]);
   return [];
 }
 
@@ -1250,7 +1321,7 @@ function homeDetailColumnOptions(key){
   if(key==="itemStatus") return [["filled","Filled"],["unfilled","Unfilled"]];
   if(key==="postingStatus") return [["open","Open for Application"],["closed","Closed"]];
   if(key==="vacancy") return [...new Set(DB.get("vacancies").map(v=>v.title))].filter(Boolean).sort().map(v=>[v,v]);
-  if(key==="status") return ["pending","qualified","disqualified","excluded"].map(s=>[s,titleCase(s)]);
+  if(key==="status") return ["pending","pending_qs_review","qualified","disqualified","excluded"].map(s=>[s,titleCase(s)]);
   if(key==="assessmentStatus") return [["marked_qualified","No Assessment"],["assessment_started","Assessment Started"],["assessment_completed","Assessment Completed"]];
   return [];
 }
@@ -1301,10 +1372,11 @@ function setColumnFilterSelect(key,value){
 }
 
 function cls(s){
-  return {open:"green",pending:"blue",qualified:"green",disqualified:"red",excluded:"gray",for_comparative_assessment:"blue"}[s]||"gray";
+  return {open:"green",pending:"blue",pending_qs_review:"blue",qualified:"green",disqualified:"red",excluded:"gray",for_comparative_assessment:"blue"}[s]||"gray";
 }
 
 function titleCase(s){
+  if(s==="pending_qs_review") return "Pending QS Review";
   return String(s||"").replaceAll("_"," ").replace(/\w\S*/g,w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase());
 }
 
@@ -1510,8 +1582,9 @@ function renderApps(){
     <td class="num-col"><span class="qs-number ${r.fitObj.experienceScore>=60?"qs-pass":"qs-fail"}">${r.yearsExperience}</span></td>
     <td class="num-col"><span class="qs-number ${r.fitObj.trainingScore>=60?"qs-pass":"qs-fail"}">${r.trainingHours}</span></td>
     <td>${r.vacancy}</td>
+    <td>${r.itemNo||"—"}</td>
     <td><span class="badge ${cls(r.status)}">${titleCase(r.status)}</span></td>
-  </tr>`).join("")||`<tr><td colspan="9">No records match the filters.</td></tr>`;
+  </tr>`).join("")||`<tr><td colspan="10">No records match the filters.</td></tr>`;
   pageSelect.innerHTML=Array.from({length:maxPage},(_,i)=>`<option value="${i+1}" ${page===i+1?"selected":""}>Page ${i+1}</option>`).join("");
   pageInfo.textContent=`Page ${page} of ${maxPage} · ${rows.length} records`;
   renderKpis();
@@ -1551,10 +1624,10 @@ function scoreTone(score){
 function defaultAreaScores(r){
   const saved=r.latestEval?.areaScores||{};
   return {
-    education:saved.education ?? r.fitObj.degreeScore,
-    experience:saved.experience ?? r.fitObj.experienceScore,
-    training:saved.training ?? r.fitObj.trainingScore,
-    eligibility:saved.eligibility ?? r.fitObj.eligibilityScore,
+    education:saved.education ?? "",
+    experience:saved.experience ?? "",
+    training:saved.training ?? "",
+    eligibility:saved.eligibility ?? "",
     outstandingAccomplishment:saved.outstandingAccomplishment ?? "",
     documentCompleteness:saved.documentCompleteness ?? "",
     applicationEducation:saved.applicationEducation ?? "",
@@ -1618,12 +1691,17 @@ function refreshScoreSummary(){
 }
 
 function openReview(id){
+  criteriaSelections={crit_degree:null,crit_experience:null,crit_training:null,crit_eligibility:null};
   const r=rowData(DB.get("applications").find(a=>a.id===id));
   const f=r.fitObj;
   const areaScores=defaultAreaScores(r);
   const initialOverall=computeOverallAreaScore(areaScores);
   const scoredCount=Object.values(areaScores).filter(v=>v!==""&&Number.isFinite(Number(v))).length;
-  const docsComplete=typeof r.appObj.documentaryComplete==="boolean"?r.appObj.documentaryComplete:Object.values(r.appObj.documents||{}).every(Boolean);
+  const savedChecklist=r.appObj.docChecklist||null;
+  const baseDocsComplete=typeof r.appObj.documentaryComplete==="boolean"?r.appObj.documentaryComplete:Object.values(r.appObj.documents||{}).every(Boolean);
+  const docChecklistState={};
+  DOC_REQUIREMENTS.forEach(d=>{docChecklistState[d.key]=savedChecklist?!!savedChecklist[d.key]:baseDocsComplete;});
+  const docsComplete=DOC_REQUIREMENTS.every(d=>docChecklistState[d.key]);
   modalTitle.textContent=`Initial Evaluation Review — ${r.applicant}`;
   modalBody.innerHTML=`
     <div class="qs-matrix-wrap"><div class="qs-matrix-head"><div><div class="position-detail-eyebrow">Qualification Standards</div><h3>Qualification Standards Matrix</h3><p class="small">Matrix view of the applicant against the position’s qualification standards.</p></div></div><div class="qs-matrix-meta"><div class="meta-tile"><b>Applicant</b>${r.applicant}</div><div class="meta-tile"><b>Applicant code</b>${r.code}</div><div class="meta-tile"><b>Vacancy</b>${r.vacancy}</div><div class="meta-tile"><b>Deadline</b>${r.deadline||"—"}</div></div><div class="qs-matrix-table-wrap"><table class="qs-matrix-table"><thead><tr><th>Criterion</th><th>Applicant</th><th>Qualification Standard</th></tr></thead><tbody><tr><td>Bachelor’s Degree</td><td>${r.applicantObj.bachelorDegree||"—"}${r.applicantObj.major?`<br><span class="small">${r.applicantObj.major}</span>`:""}</td><td>${r.positionObj.requiredBachelorDegree||"No minimum specified"}</td></tr><tr><td>Years of Experience</td><td>${r.yearsExperience} year(s)</td><td>${r.positionObj.minYearsExperience||0} minimum year(s)</td></tr><tr><td>Hours of Training</td><td>${r.trainingHours} hour(s)</td><td>${r.positionObj.minTrainingHours||0} minimum hour(s)</td></tr><tr><td>Eligibility</td><td>${r.applicantObj.eligibility||"—"}</td><td>${r.positionObj.eligibilityRequired||"Not specified"}</td></tr></tbody></table></div></div>
@@ -1637,7 +1715,7 @@ function openReview(id){
     </div>
     -->
     <div class="qs-matrix-wrap" id="qsEvaluationSection" style="${docsComplete?"":"display:none"}">
-      <div class="qs-matrix-head"><div><div class="position-detail-eyebrow">QS Evaluation</div><h3>QS Evaluation — Pass / Fail</h3><p class="small">Review the applicant's details against each qualification standard, then mark Pass or Fail.</p></div></div>
+      <div class="qs-matrix-head"><div><div class="position-detail-eyebrow">QS Evaluation</div><h3>QS Evaluation</h3><p class="small">Review the applicant's details against each qualification standard, then mark whether each was Met or Did Not Meet the Requirements.</p></div></div>
       <div class="qs-grid">
         <div class="qs-card">
           <h3>Bachelor's Degree</h3>
@@ -1646,8 +1724,8 @@ function openReview(id){
             <div class="compare-box"><b>Qualification Standard</b><br>${r.positionObj.requiredBachelorDegree||"No minimum specified"}</div>
           </div>
           <div class="toggle-group">
-            <label class="toggle-choice pass"><input type="radio" name="crit_degree" value="pass" ${f.degreeScore>=60?"checked":""} onchange="applyReviewStatus('${id}')"><span>Pass</span></label>
-            <label class="toggle-choice fail"><input type="radio" name="crit_degree" value="fail" ${f.degreeScore>=60?"":"checked"} onchange="applyReviewStatus('${id}')"><span>Fail</span></label>
+            <label class="toggle-choice pass" onclick="handleCriteriaClick(event,'${id}','crit_degree','pass')"><input type="radio" name="crit_degree" value="pass"><span>Met the Requirements</span></label>
+            <label class="toggle-choice fail" onclick="handleCriteriaClick(event,'${id}','crit_degree','fail')"><input type="radio" name="crit_degree" value="fail"><span>Did Not Meet the Requirements</span></label>
           </div>
         </div>
         <div class="qs-card">
@@ -1657,8 +1735,8 @@ function openReview(id){
             <div class="compare-box"><b>Qualification Standard</b><br>${r.positionObj.minYearsExperience||0} minimum year(s)</div>
           </div>
           <div class="toggle-group">
-            <label class="toggle-choice pass"><input type="radio" name="crit_experience" value="pass" ${f.experienceScore>=60?"checked":""} onchange="applyReviewStatus('${id}')"><span>Pass</span></label>
-            <label class="toggle-choice fail"><input type="radio" name="crit_experience" value="fail" ${f.experienceScore>=60?"":"checked"} onchange="applyReviewStatus('${id}')"><span>Fail</span></label>
+            <label class="toggle-choice pass" onclick="handleCriteriaClick(event,'${id}','crit_experience','pass')"><input type="radio" name="crit_experience" value="pass"><span>Met the Requirements</span></label>
+            <label class="toggle-choice fail" onclick="handleCriteriaClick(event,'${id}','crit_experience','fail')"><input type="radio" name="crit_experience" value="fail"><span>Did Not Meet the Requirements</span></label>
           </div>
         </div>
         <div class="qs-card">
@@ -1668,8 +1746,8 @@ function openReview(id){
             <div class="compare-box"><b>Qualification Standard</b><br>${r.positionObj.minTrainingHours||0} minimum hour(s)</div>
           </div>
           <div class="toggle-group">
-            <label class="toggle-choice pass"><input type="radio" name="crit_training" value="pass" ${f.trainingScore>=60?"checked":""} onchange="applyReviewStatus('${id}')"><span>Pass</span></label>
-            <label class="toggle-choice fail"><input type="radio" name="crit_training" value="fail" ${f.trainingScore>=60?"":"checked"} onchange="applyReviewStatus('${id}')"><span>Fail</span></label>
+            <label class="toggle-choice pass" onclick="handleCriteriaClick(event,'${id}','crit_training','pass')"><input type="radio" name="crit_training" value="pass"><span>Met the Requirements</span></label>
+            <label class="toggle-choice fail" onclick="handleCriteriaClick(event,'${id}','crit_training','fail')"><input type="radio" name="crit_training" value="fail"><span>Did Not Meet the Requirements</span></label>
           </div>
         </div>
         <div class="qs-card">
@@ -1679,38 +1757,54 @@ function openReview(id){
             <div class="compare-box"><b>Qualification Standard</b><br>${r.positionObj.eligibilityRequired||"Not specified"}</div>
           </div>
           <div class="toggle-group">
-            <label class="toggle-choice pass"><input type="radio" name="crit_eligibility" value="pass" ${f.eligibilityScore>=60?"checked":""} onchange="applyReviewStatus('${id}')"><span>Pass</span></label>
-            <label class="toggle-choice fail"><input type="radio" name="crit_eligibility" value="fail" ${f.eligibilityScore>=60?"":"checked"} onchange="applyReviewStatus('${id}')"><span>Fail</span></label>
+            <label class="toggle-choice pass" onclick="handleCriteriaClick(event,'${id}','crit_eligibility','pass')"><input type="radio" name="crit_eligibility" value="pass"><span>Met the Requirements</span></label>
+            <label class="toggle-choice fail" onclick="handleCriteriaClick(event,'${id}','crit_eligibility','fail')"><input type="radio" name="crit_eligibility" value="fail"><span>Did Not Meet the Requirements</span></label>
           </div>
         </div>
       </div>
     </div>
     <div class="qs-matrix-wrap" id="documentaryRequirementsSection">
-      <div class="qs-matrix-head"><div><div class="position-detail-eyebrow">Documentary Screening</div><h3>Documentary Requirements</h3><p class="small">Has the applicant submitted complete documentary requirements?</p></div></div>
-      <div class="toggle-group">
-        <label class="toggle-choice pass"><input type="radio" name="doc_complete" value="yes" ${docsComplete?"checked":""} onchange="handleDocumentaryRequirementChoice('${id}')"><span>Yes</span></label>
-        <label class="toggle-choice fail"><input type="radio" name="doc_complete" value="no" ${docsComplete?"":"checked"} onchange="handleDocumentaryRequirementChoice('${id}')"><span>No</span></label>
+      <div class="qs-matrix-head"><div><div class="position-detail-eyebrow">Documentary Screening</div><h3>Documentary Requirements</h3><p class="small">Tick each documentary requirement the applicant has submitted. The QS Evaluation is unlocked automatically once every requirement is complete.</p></div></div>
+      <div class="doc-checklist" id="docChecklist">
+        ${DOC_REQUIREMENTS.map(d=>`<label class="doc-check-item"><input type="checkbox" class="doc-req-check" data-doc-key="${d.key}" ${docChecklistState[d.key]?"checked":""} onchange="handleDocumentaryChecklistChange('${id}')"><span class="doc-req-text">${d.label}</span></label>`).join("")}
       </div>
-      <p class="small" style="margin:0">Select <b>Yes</b> to reveal the QS Evaluation pass/fail assessment. Select <b>No</b> to immediately mark the applicant as Excluded.</p>
+      <p class="small" id="docChecklistStatus" style="margin:8px 0 0"></p>
     </div>
 
     <div class="status-command">
       <h3>Evaluation Result</h3>
-      <p class="small">The status is set automatically: incomplete documentary requirements result in Excluded; otherwise any QS Fail results in Disqualified and all QS Pass results in Qualified.</p>
-      <div id="qsResultBanner" class="result-banner ${!docsComplete?'excluded':(f.degreeScore>=60&&f.experienceScore>=60&&f.trainingScore>=60&&f.eligibilityScore>=60)?'qualified':'disqualified'}">${!docsComplete?'<span class="badge gray">Excluded</span> <span class="small"><b>Excluded:</b> Documentary requirements are incomplete.</span>':(f.degreeScore>=60&&f.experienceScore>=60&&f.trainingScore>=60&&f.eligibilityScore>=60)?'<span class="badge green">Qualified</span> <span class="small"><b>Qualified:</b> Documents are complete and all qualification standards are marked Pass.</span>':'<span class="badge red">Disqualified</span> <span class="small"><b>Disqualified:</b> Documents are complete, but at least one qualification standard is marked Fail.</span>'}</div>
+      <p class="small">The status is set automatically: incomplete documentary requirements result in Excluded; otherwise any criterion marked "Did Not Meet the Requirements" results in Disqualified and all criteria marked "Met the Requirements" result in Qualified.</p>
+      <div id="qsResultBanner" class="result-banner ${!docsComplete?'excluded':'pending_qs_review'}">${!docsComplete?'<span class="badge gray">Excluded</span> <span class="small"><b>Excluded:</b> Documentary requirements are incomplete.</span>':'<span class="badge blue">Pending QS Review</span> <span class="small"><b>Pending QS Review:</b> Select Met the Requirements or Did Not Meet the Requirements for every qualification standard.</span>'}</div>
+      <div class="decision-row" style="justify-content:flex-end"><button id="saveReviewBtn" class="good" onclick="saveReviewChanges('${id}')" disabled>Saved</button></div>
     </div>`;
   modal.classList.add("open");
   const docSection=document.getElementById("documentaryRequirementsSection");
   const qsSection=document.getElementById("qsEvaluationSection");
   if(docSection&&qsSection) qsSection.parentNode.insertBefore(docSection,qsSection);
   toggleQsEvaluationVisibility(docsComplete);
+  updateDocChecklistStatus();
+  currentReviewId=id;
+  reviewBaseline=reviewStateSignature(buildReviewState(id));
+  reviewPendingState=buildReviewState(id);
+  reviewDirty=false;
+  updateSaveButtonState();
   refreshScoreSummary();
 }
 
+function nullifyPipelineIfDisqualified(app){
+  if(!app||app.status!=="disqualified") return;
+  app.assessmentStatus=null;
+  app.comparativeAssessmentScores=null;
+  app.appointmentStatus=null;
+  app.appointmentDate=null;
+  app.appointmentItemNo=null;
+  app.appointmentReferenceCode=null;
+}
 function updateStatus(id,status,reason=""){
   const apps=DB.get("applications");
   const app=apps.find(a=>a.id===id);
   app.status=status;
+  nullifyPipelineIfDisqualified(app);
   if(reason) app.reason=reason;
   app.history=app.history||[];
   app.history.push({at:DB.now(),text:"HRMO set status to "+status.replaceAll("_"," ")+(reason?" — "+reason:"")});
@@ -1725,38 +1819,60 @@ function toggleQsEvaluationVisibility(show){
   if(section) section.style.display=show?"":"none";
 }
 
-function handleDocumentaryRequirementChoice(id){
-  const docEl=document.querySelector('input[name="doc_complete"]:checked');
-  const docsComplete=docEl?docEl.value==="yes":false;
-  toggleQsEvaluationVisibility(docsComplete);
+function docChecklistComplete(){
+  const checks=[...document.querySelectorAll(".doc-req-check")];
+  return checks.length?checks.every(c=>c.checked):false;
+}
+
+function collectDocChecklist(){
+  const state={};
+  document.querySelectorAll(".doc-req-check").forEach(c=>{state[c.dataset.docKey]=c.checked;});
+  return state;
+}
+
+function updateDocChecklistStatus(){
+  const el=document.getElementById("docChecklistStatus");
+  if(!el) return;
+  const checks=[...document.querySelectorAll(".doc-req-check")];
+  const total=checks.length;
+  const done=checks.filter(c=>c.checked).length;
+  if(total&&done===total) el.innerHTML=`<b style="color:var(--green)">All ${total} requirements complete.</b> The QS Evaluation is unlocked below.`;
+  else el.innerHTML=`<b>${done} of ${total}</b> requirement(s) ticked. Complete all requirements to unlock the QS Evaluation — incomplete requirements mark the applicant as <b style="color:var(--red)">Excluded</b>.`;
+}
+
+function handleDocumentaryChecklistChange(id){
+  const complete=docChecklistComplete();
+  toggleQsEvaluationVisibility(complete);
+  updateDocChecklistStatus();
   applyReviewStatus(id);
 }
 
-function applyReviewStatus(id){
+function buildReviewState(id){
   const r=rowData(DB.get("applications").find(a=>a.id===id));
-  const getDecision=(name,fallbackScore)=>{
+  const getDecision=(name)=>{
     const el=document.querySelector('input[name="'+name+'"]:checked');
-    return el?el.value:(fallbackScore>=60?"pass":"fail");
+    return el?el.value:null;
   };
-  const degreeDecision=getDecision("crit_degree",r.fitObj.degreeScore);
-  const experienceDecision=getDecision("crit_experience",r.fitObj.experienceScore);
-  const trainingDecision=getDecision("crit_training",r.fitObj.trainingScore);
-  const eligibilityDecision=getDecision("crit_eligibility",r.fitObj.eligibilityScore);
+  const degreeDecision=getDecision("crit_degree");
+  const experienceDecision=getDecision("crit_experience");
+  const trainingDecision=getDecision("crit_training");
+  const eligibilityDecision=getDecision("crit_eligibility");
   const decisions=[degreeDecision,experienceDecision,trainingDecision,eligibilityDecision];
-  const qsResult=decisions.includes("fail")?"disqualified":"qualified";
-  const docEl=document.querySelector('input[name="doc_complete"]:checked');
-  const docsComplete=docEl?docEl.value==="yes":(typeof r.appObj.documentaryComplete==="boolean"?r.appObj.documentaryComplete:Object.values(r.appObj.documents||{}).every(Boolean));
+  const allCriteriaReviewed=decisions.every(Boolean);
+  const qsResult=!allCriteriaReviewed?"pending_qs_review":decisions.includes("fail")?"disqualified":"qualified";
+  const checklistPresent=document.querySelector(".doc-req-check");
+  const docsComplete=checklistPresent?docChecklistComplete():(typeof r.appObj.documentaryComplete==="boolean"?r.appObj.documentaryComplete:Object.values(r.appObj.documents||{}).every(Boolean));
+  const docChecklist=checklistPresent?collectDocChecklist():(r.appObj.docChecklist||null);
   const result=docsComplete?qsResult:"excluded";
-  toggleQsEvaluationVisibility(docsComplete);
-  const overallFit=r.fitObj.overall;
   const remarksEl=document.getElementById("remarks");
-  const remarks=remarksEl?remarksEl.value:"";
-  const evals=DB.get("qual_evals").filter(e=>e.applicationId!==id);
-  evals.push({
-    id:DB.id(),
-    applicationId:id,
+  return {
+    id,
     result,
-    overallFit,
+    allCriteriaReviewed,
+    docsComplete,
+    docChecklist,
+    remarks:remarksEl?remarksEl.value:"",
+    overallFit:r.fitObj.overall,
     degreeScore:r.fitObj.degreeScore,
     experienceScore:r.fitObj.experienceScore,
     trainingScore:r.fitObj.trainingScore,
@@ -1764,32 +1880,135 @@ function applyReviewStatus(id){
     degreeDecision,
     experienceDecision,
     trainingDecision,
-    eligibilityDecision,
-    documentaryComplete:docsComplete,
-    remarks,
+    eligibilityDecision
+  };
+}
+
+function reviewStateSignature(state){
+  if(!state) return "";
+  return JSON.stringify({
+    result:state.result,
+    docsComplete:state.docsComplete,
+    docChecklist:state.docChecklist,
+    degreeDecision:state.degreeDecision,
+    experienceDecision:state.experienceDecision,
+    trainingDecision:state.trainingDecision,
+    eligibilityDecision:state.eligibilityDecision,
+    remarks:state.remarks||""
+  });
+}
+
+function updateSaveButtonState(){
+  const btn=document.getElementById("saveReviewBtn");
+  if(!btn) return;
+  const needsCriteria=false;
+  const currentApp=currentReviewId?(DB.get("applications").find(a=>a.id===currentReviewId)||null):null;
+  const canSaveExcluded=reviewPendingState&&reviewPendingState.result==="excluded"&&currentApp&&currentApp.status!=="excluded";
+  const canSavePendingQs=reviewPendingState&&reviewPendingState.result==="pending_qs_review"&&currentApp&&currentApp.status!=="pending_qs_review";
+  btn.disabled=needsCriteria||(!reviewDirty&&!canSaveExcluded&&!canSavePendingQs);
+  btn.textContent=canSavePendingQs?"Save Pending QS Review":canSaveExcluded?"Save Excluded":reviewDirty?"Save Changes":"Saved";
+  btn.classList.toggle("gold",(reviewDirty||canSaveExcluded||canSavePendingQs)&&!needsCriteria);
+  btn.classList.toggle("good",(!reviewDirty&&!canSaveExcluded&&!canSavePendingQs)||needsCriteria);
+}
+
+function handleCriteriaClick(e,id,name,value){
+  e.preventDefault();
+  const input=e.currentTarget.querySelector('input[type="radio"]');
+  if(!input) return;
+  if(criteriaSelections[name]===value){
+    input.checked=false;
+    criteriaSelections[name]=null;
+  }else{
+    input.checked=true;
+    criteriaSelections[name]=value;
+  }
+  applyReviewStatus(id);
+}
+function applyReviewStatus(id){
+  const state=buildReviewState(id);
+  reviewPendingState=state;
+  reviewDirty=reviewStateSignature(state)!==reviewBaseline;
+  toggleQsEvaluationVisibility(state.docsComplete);
+  const banner=document.getElementById("qsResultBanner");
+  if(banner){
+    const label=state.result==="excluded"?"Excluded":state.result==="pending_qs_review"?"Pending QS Review":state.result==="disqualified"?"Disqualified":"Qualified";
+    const color=state.result==="excluded"?"gray":state.result==="pending_qs_review"?"blue":state.result==="disqualified"?"red":"green";
+    const note=state.result==="excluded"?"Documentary requirements are incomplete.":state.result==="pending_qs_review"?"Select Met the Requirements or Did Not Meet the Requirements for every qualification standard.":state.result==="disqualified"?"Documents are complete, but at least one qualification standard is marked Did Not Meet the Requirements.":"Documents are complete and all qualification standards are marked Met the Requirements.";
+    banner.className=`result-banner ${state.result}`;
+    banner.innerHTML=`<span class="badge ${color}">${label}</span> <span class="small"><b>${label}:</b> ${note}</span>`;
+  }
+  updateSaveButtonState();
+}
+
+function saveReviewChanges(id){
+  if(!id) return;
+  const r=rowData(DB.get("applications").find(a=>a.id===id));
+  const state=reviewPendingState||buildReviewState(id);
+  if(false){
+    alert("Please mark every qualification standard before saving the QS Evaluation.");
+    return;
+  }
+  const evals=DB.get("qual_evals").filter(e=>e.applicationId!==id);
+  evals.push({
+    id:DB.id(),
+    applicationId:id,
+    result:state.result,
+    overallFit:state.overallFit,
+    degreeScore:state.degreeScore,
+    experienceScore:state.experienceScore,
+    trainingScore:state.trainingScore,
+    eligibilityScore:state.eligibilityScore,
+    degreeDecision:state.degreeDecision,
+    experienceDecision:state.experienceDecision,
+    trainingDecision:state.trainingDecision,
+    eligibilityDecision:state.eligibilityDecision,
+    documentaryComplete:state.docsComplete,
+    remarks:state.remarks,
     at:DB.now()
   });
   DB.set("qual_evals",evals);
   const apps=DB.get("applications");
   const app=apps.find(a=>a.id===id);
   if(app){
-    app.status=result;
-    app.documentaryComplete=docsComplete;
-    if(remarks) app.reason=remarks;
+    app.status=state.result;
+    nullifyPipelineIfDisqualified(app);
+    app.documentaryComplete=state.docsComplete;
+    app.docChecklist=state.docChecklist;
+    if(state.remarks) app.reason=state.remarks;
     app.history=app.history||[];
-    app.history.push({at:DB.now(),text:"Documentary requirements / QS evaluation set status to "+result});
+    app.history.push({at:DB.now(),text:"Saved documentary requirements / QS evaluation status as "+state.result});
     DB.set("applications",apps);
-    notify(app.applicantId,"Application update",app.applicationNumber+" is now "+result);
+    notify(app.applicantId,"Application update",app.applicationNumber+" is now "+state.result);
   }
-  const banner=document.getElementById("qsResultBanner");
-  if(banner){
-    const label=result==="excluded"?"Excluded":result==="disqualified"?"Disqualified":"Qualified";
-    const color=result==="excluded"?"gray":result==="disqualified"?"red":"green";
-    const note=result==="excluded"?"Documentary requirements are incomplete.":result==="disqualified"?"Documents are complete, but at least one qualification standard is marked Fail.":"Documents are complete and all qualification standards are marked Pass.";
-    banner.className=`result-banner ${result}`;
-    banner.innerHTML=`<span class="badge ${color}">${label}</span> <span class="small"><b>${label}:</b> ${note}</span>`;
-  }
+  reviewBaseline=reviewStateSignature(state);
+  reviewDirty=false;
+  updateSaveButtonState();
   renderApps();
+}
+
+function attemptCloseModal(){
+  if(currentReviewId&&reviewDirty){
+    const confirmModal=document.getElementById("confirmCloseModal");
+    if(confirmModal) confirmModal.classList.add("open");
+    return;
+  }
+  currentReviewId=null;
+  reviewPendingState=null;
+  reviewDirty=false;
+  closeModal();
+}
+
+function cancelCloseReview(){
+  const confirmModal=document.getElementById("confirmCloseModal");
+  if(confirmModal) confirmModal.classList.remove("open");
+}
+
+function discardReviewChanges(){
+  cancelCloseReview();
+  currentReviewId=null;
+  reviewPendingState=null;
+  reviewDirty=false;
+  closeModal();
 }
 
 function notify(userId,title,message){
@@ -3408,6 +3627,7 @@ renderHomeDashboard=function(...args){
 
 function homeApplicationStatusSegments(){
   return [
+    ["pending_qs_review","Pending QS Review","seg-submitted","#0284C7"],
     ["qualified","Qualified","seg-qualified","#16A34A"],
     ["disqualified","Disqualified","seg-disqualified","#B91C1C"],
     ["excluded","Excluded","seg-excluded","#64748B"]
@@ -3481,7 +3701,7 @@ function homeRowsForDimension(dimension){
         itemStatus:(filledVacancyIds.has(v.id)||(v.itemNo&&filledItemNos.has(v.itemNo)))?"filled":"unfilled"
       }));
   }
-  let rows=apps.map(rowData).filter(r=>["qualified","disqualified","excluded"].includes(r.status));
+  let rows=apps.map(rowData).filter(r=>["pending_qs_review","qualified","disqualified","excluded"].includes(r.status));
   if(appStatus) rows=rows.filter(r=>r.status===appStatus);
   if(positionId) rows=rows.filter(r=>r.positionObj?.id===positionId);
   if(dimension==="assessment_status") rows=rows.filter(r=>r.status==="qualified").map(r=>({...r,assessmentStatus:homeAssessmentStatusKey(r)}));
@@ -3618,7 +3838,7 @@ function renderHomeUnifiedDashboard(){
   const filledVacancyIds=new Set(appointedApps.map(a=>a.vacancyId).filter(Boolean));
   const isFilledItem=v=>filledVacancyIds.has(v.id)||(v.itemNo&&filledItemNos.has(v.itemNo));
 
-  const qualifiedAppRows=apps.map(rowData).filter(r=>["qualified","disqualified","excluded"].includes(r.status));
+  const qualifiedAppRows=apps.map(rowData).filter(r=>["pending_qs_review","qualified","disqualified","excluded"].includes(r.status));
   const filteredQualifiedRows=qualifiedAppRows.filter(r=>(!currentPosition||r.positionObj?.id===currentPosition)&&(!appStatus||r.status===appStatus));
   const itemRows=vacancies
     .filter(v=>!currentPosition||v.positionId===currentPosition)
@@ -3771,7 +3991,7 @@ renderHomeDashboard=function(...args){
   }
   const segMap={
     item_status:[["filled","Filled","seg-appointed","#15803D"],["unfilled","Unfilled","seg-excluded","#64748B"]],
-    status:[["qualified","Qualified","seg-qualified","#16A34A"],["disqualified","Disqualified","seg-disqualified","#B91C1C"],["excluded","Excluded","seg-excluded","#64748B"]],
+    status:[["pending_qs_review","Pending QS Review","seg-submitted","#0284C7"],["qualified","Qualified","seg-qualified","#16A34A"],["disqualified","Disqualified","seg-disqualified","#B91C1C"],["excluded","Excluded","seg-excluded","#64748B"]],
     assessment_status:[["marked_qualified","Marked Qualified","seg-submitted","#0284C7"],["assessment_started","Assessment Started","seg-docs","#D97706"],["assessment_completed","Assessment Completed","seg-qualified","#16A34A"]]
   };
   const segs=segMap[dimension]||segMap.item_status;
@@ -3792,7 +4012,7 @@ renderHomeDashboard=function(...args){
         const filtered=appStatus?items.filter(v=>apps.some(a=>a.vacancyId===v.id&&a.status===appStatus)):items;
         rows=filtered.map(v=>({dimKey:isFilledItem(v)?"filled":"unfilled"}));
       }else{
-        let appRows=apps.map(rowData).filter(r=>["qualified","disqualified","excluded"].includes(r.status)&&r.positionObj&&r.positionObj.id===p.id);
+        let appRows=apps.map(rowData).filter(r=>["pending_qs_review","qualified","disqualified","excluded"].includes(r.status)&&r.positionObj&&r.positionObj.id===p.id);
         if(appStatus) appRows=appRows.filter(r=>r.status===appStatus);
         if(dimension==="assessment_status") appRows=appRows.filter(r=>r.status==="qualified");
         rows=appRows.map(r=>({dimKey:dimension==="assessment_status"?assessmentKey(r):r.status}));
@@ -3891,7 +4111,7 @@ renderHomeDashboard=function(){
     positionFilter.innerHTML='<option value="">All positions</option>'+positions.map(p=>`<option value="${p.id}" ${p.id===currentPosition?"selected":""}>${p.title}</option>`).join("");
   }
   if(statusFilter){
-    statusFilter.innerHTML=`<option value="">All application statuses</option><option value="qualified" ${currentStatus==="qualified"?"selected":""}>Qualified</option><option value="disqualified" ${currentStatus==="disqualified"?"selected":""}>Disqualified</option><option value="excluded" ${currentStatus==="excluded"?"selected":""}>Excluded</option>`;
+    statusFilter.innerHTML=`<option value="">All application statuses</option><option value="pending_qs_review" ${currentStatus==="pending_qs_review"?"selected":""}>Pending QS Review</option><option value="qualified" ${currentStatus==="qualified"?"selected":""}>Qualified</option><option value="disqualified" ${currentStatus==="disqualified"?"selected":""}>Disqualified</option><option value="excluded" ${currentStatus==="excluded"?"selected":""}>Excluded</option>`;
     const statusLabel=statusFilter.closest("div")?.querySelector("label");
     if(statusLabel) statusLabel.textContent="Application Status";
   }
@@ -3918,7 +4138,7 @@ renderHomeDashboard=function(){
 
   let filteredAppsByPosition=apps;
   if(currentPosition) filteredAppsByPosition=apps.filter(a=>vacancyPositionId(a.vacancyId)===currentPosition);
-  let qualifiedRows=filteredAppsByPosition.map(rowData).filter(r=>["qualified","disqualified","excluded"].includes(r.status));
+  let qualifiedRows=filteredAppsByPosition.map(rowData).filter(r=>["pending_qs_review","qualified","disqualified","excluded"].includes(r.status));
   if(currentStatus) qualifiedRows=qualifiedRows.filter(r=>r.status===currentStatus);
 
   const filteredVacancies=vacancies
@@ -4000,15 +4220,16 @@ renderHomeDashboard=function(){
     status:{
       rows:qualifiedRows,
       segments:[
+        ["pending_qs_review","Pending QS Review","seg-submitted","#0284C7"],
         ["qualified","Qualified","seg-qualified","#16A34A"],
         ["disqualified","Disqualified","seg-disqualified","#B91C1C"],
         ["excluded","Excluded","seg-excluded","#64748B"]
       ],
       getKey:row=>row.status,
       chartTitle:"Applications by Application Status per Position",
-      chartSubtitle:"Split by Qualified, Disqualified, and Excluded",
+      chartSubtitle:"Split by Pending QS Review, Qualified, Disqualified, and Excluded",
       overallTitle:"Overall Application Status Distribution",
-      overallSubtitle:"Qualified, disqualified, and excluded applications",
+      overallSubtitle:"Pending QS Review, qualified, disqualified, and excluded applications",
       tableTitle:"Application Status — Individual Records",
       centerLabel:"applications",
       tableLabel:"Application Status",
