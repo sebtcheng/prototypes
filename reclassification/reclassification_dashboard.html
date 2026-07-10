@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ECP Reclassification Funding Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#08315F;
+    --blue:#075985;
+    --blue-600:#0284C7;
+    --blue-400:#7DD3FC;
+    --blue-100:#E0F2FE;
+    --blue-50:#F0F9FF;
+    --gold:#FBBF24;
+    --amber:#D97706;
+    --red:#B91C1C;
+    --green:#16A34A;
+    --purple:#7C3AED;
+    --card:#FFFFFF;
+    --text:#0F172A;
+    --muted:#64748B;
+    --line:#BAE6FD;
+    --ink:var(--text);
+    --ink2:var(--muted);
+    --canvas:var(--card);
+    --soft:#F8FAFC;
+    --soft2:#E0F2FE;
+    --border:var(--line);
+    --blue-soft:var(--blue-100);
+    --green-soft:#DCFCE7;
+    --orange:var(--amber);
+    --orange-soft:#FEF3C7;
+    --red-soft:#FEE2E2;
+    --navy2:#075985;
+    --radius:22px;
+    --radius-lg:28px;
+    --font-heading:"Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-body:"DM Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --sans:var(--font-body);
+    --shadow:none;
+    --c1:#0284C7; --c2:#FBBF24; --c3:#16A34A; --c4:#7C3AED; --c5:#D97706; --c6:#B91C1C; --c7:#7DD3FC; --c8:#BAE6FD;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    color:var(--text);
+    font-family:var(--font-body);
+    background-color:var(--blue-50);
+    background-attachment:fixed;
+    background-image:
+      radial-gradient(43.5% 49.5% at 10% 12%, rgba(7,89,133,.30) 0 34%, transparent 78%),
+      radial-gradient(46.5% 54% at 92% 10%, rgba(251,191,36,.42) 0 36%, transparent 80%),
+      radial-gradient(40.5% 48% at 84% 92%, rgba(125,211,252,.30) 0 34%, transparent 78%),
+      radial-gradient(45% 52.5% at 8% 92%, rgba(217,119,6,.26) 0 28%, rgba(251,191,36,.18) 42%, transparent 80%);
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{display:grid;grid-template-columns:72px 1fr;min-height:100vh;}
+  .shell{min-width:0;}
+  .wrap{width:min(1500px,calc(100% - 56px));margin:0 auto;padding:24px 0 64px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .dash-main{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0;}
+  /* HOVER-EXPAND SIDEBAR: grid rail keeps main panel at full 1fr width; expansion overlays */
+  .side-tabs{position:relative;z-index:50;width:72px;overflow:hidden;transition:width .18s ease,padding .18s ease;background:linear-gradient(180deg,var(--navy),var(--blue));border-right:1px solid rgba(255,255,255,.24);box-shadow:18px 0 42px rgba(11,31,77,.16);color:#E0F2FE;padding:22px 12px;display:flex;flex-direction:column;gap:20px;}
+  .side-tabs:hover{width:260px;padding-left:18px;padding-right:18px;}
+  .side-tabs .side-title{font-family:var(--font-heading);font-size:10px;font-weight:950;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:2px 4px;line-height:1.25;white-space:nowrap;}
+  .brand-tile{display:flex;align-items:center;justify-content:center;background:transparent;border:0;border-radius:0;padding:0;color:var(--navy);flex:0 0 auto;min-height:48px;box-shadow:none;overflow:visible;}
+  .side-tabs:hover .brand-tile{justify-content:center;padding:0;min-height:92px;}
+  .brand-logo{display:block;width:44px;height:44px;object-fit:contain;object-position:center;transition:width .18s ease,height .18s ease;filter:drop-shadow(0 8px 16px rgba(0,0,0,.18));}
+  .side-tabs:hover .brand-logo{width:220px;height:86px;}
+  .brand-mark{width:38px;height:38px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;border-radius:12px;background:var(--navy);color:#fff;font-family:var(--font-heading);font-size:15px;font-weight:950;letter-spacing:-.02em;}
+  .brand-horizontal{display:block;min-width:0;}
+  .brand-horizontal b{display:block;font-family:var(--font-heading);font-size:15px;font-weight:950;line-height:1;color:var(--navy);}
+  .brand-horizontal span{display:block;font-size:9.5px;font-weight:900;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:4px;}
+  .nav-list{display:flex;flex-direction:column;gap:10px;}
+  .tab-btn{width:100%;min-height:46px;border:1.5px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:#EAF6FF;border-radius:16px;padding:10px 12px;text-align:left;font-family:var(--font-body);transition:.14s;display:grid;grid-template-columns:28px minmax(0,1fr);align-items:center;gap:11px;white-space:nowrap;}
+  .nav-icon{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:10px;background:rgba(255,255,255,.16);color:var(--gold);font-size:15px;font-weight:950;line-height:1;flex:0 0 auto;}
+  .nav-label{min-width:0;display:block;}
+  .tab-btn b{display:block;font-family:var(--font-heading);font-size:12.5px;font-weight:950;line-height:1.15;color:inherit;white-space:normal;}
+  .tab-btn .nav-label > span{display:block;font-size:10px;font-weight:800;line-height:1.25;color:rgba(224,242,254,.78);margin-top:3px;white-space:normal;}
+  .side-tabs:not(:hover) .nav-label,.side-tabs:not(:hover) .side-title,.side-tabs:not(:hover) .brand-horizontal{display:none;}
+  .side-tabs:not(:hover) .tab-btn{grid-template-columns:1fr;justify-items:center;padding:10px;}
+  .tab-btn:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.28);}
+  .tab-btn.active{background:#fff;color:var(--navy);border-color:var(--gold);box-shadow:inset 0 -3px 0 var(--gold),0 0 18px rgba(125,211,252,.26);}
+  .tab-btn.active .nav-icon{background:var(--blue-100);color:var(--navy);}
+  .tab-btn.active .nav-label > span{color:var(--muted);}
+  .tab-mode .dataset-field,.tab-mode .table-view-field{display:none;}
+  .card{grid-column:1 / -1;background:var(--card);border:2.5px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%);border-radius:var(--radius);padding:18px 20px;box-shadow:none;}
+  .half{grid-column:span 1;}
+  h1,h2,h3,h4{margin:0;font-family:var(--font-heading);font-weight:800;letter-spacing:-.025em;color:var(--text);}
+  .muted{color:var(--muted);}
+  button{font-family:var(--font-body);cursor:pointer;}
+
+  /* INSIGHTED COMMAND HEADER */
+  .hero{grid-column:1 / -1;position:relative;isolation:isolate;min-height:118px;margin:0;padding:28px 44px;display:flex;align-items:center;justify-content:space-between;gap:18px;overflow:hidden;border:2.5px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%);border-radius:calc(var(--radius) + 6px);box-shadow:none;background:radial-gradient(circle at 92% 50%, rgba(251,191,36,.18) 0 7%, rgba(251,191,36,.08) 7.2% 13%, transparent 13.2%),radial-gradient(circle at 98% 46%, rgba(251,191,36,.28) 0 10%, transparent 10.5%),linear-gradient(112deg, var(--navy) 0 70%, rgba(255,255,255,.96) 70.2% 100%);color:#fff;}
+  .hero::before{content:"";position:absolute;inset:0 auto 0 0;width:70%;background:linear-gradient(135deg,var(--navy),var(--blue));clip-path:polygon(0 0,88% 0,100% 100%,0 100%);z-index:-2;pointer-events:none;}
+  .hero::after{content:"";position:absolute;top:0;bottom:0;left:61%;width:13%;background:color-mix(in srgb,var(--navy) 88%,#000 12%);clip-path:polygon(0 0,58% 0,100% 100%,42% 100%);z-index:-1;pointer-events:none;}
+  .hero > div:first-child{max-width:min(70%,860px);min-width:0;}
+  .hero .eyebrow{color:var(--gold)!important;font-size:10px!important;font-family:var(--font-body);font-weight:800;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;max-width:100%;line-height:1.2;}
+  .hero h1{margin:7px 0 5px;color:#E0F2FE;font-family:var(--font-heading);font-size:clamp(24px,2.2vw,34px);font-weight:800;letter-spacing:-.03em;line-height:1.05;text-shadow:0 2px 0 rgba(15,23,42,.28);}
+  .hero .sub{max-width:720px;color:#DFF6FF;font-family:var(--font-body);font-size:14px;font-weight:700;line-height:1.35;}
+  .pill{position:relative;z-index:1;background:#fff;border:2px solid var(--line);border-radius:18px;padding:13px 16px;width:fit-content;text-align:right;min-width:230px;color:var(--text);box-shadow:none;}
+  .pill .plabel{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:900;font-family:var(--font-heading);}
+  .pill .pnum{font-size:clamp(28px,2.2vw,38px);font-family:var(--font-heading);font-weight:900;line-height:1.02;margin:4px 0 3px;color:var(--navy);background:none;-webkit-text-fill-color:currentColor;}
+  .pill .pscope{font-size:12px;color:var(--muted);font-weight:700;}
+  .pill .pbar{height:6px;border-radius:999px;background:var(--blue-100);margin-top:9px;overflow:hidden;}
+  .pill .pbar > i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--amber));border-radius:999px;}
+
+  /* CONTROLS / FILTER BAR */
+  .ctl-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:14px;}
+  .ctl-head h3,.chart-head h3{font-size:16px;color:var(--navy);}
+  .ctl-head .sub{font-size:13px;margin-top:2px;color:var(--muted);}
+  .toggle{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:800;user-select:none;}
+  .switch{width:40px;height:23px;border-radius:999px;background:var(--blue-100);border:1.5px solid var(--line);position:relative;transition:.15s;flex:0 0 auto;}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(15,23,42,.20);transition:.15s;}
+  .switch.on{background:var(--blue-600);border-color:var(--blue-600);}
+  .switch.on::after{left:19px;}
+  .searchrow{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:12px;}
+  input,select{font-family:var(--font-body);font-size:14px;color:var(--text);background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 12px;width:100%;min-height:42px;outline:none;}
+  input:focus,select:focus{border-color:var(--blue-600);box-shadow:0 0 0 4px rgba(125,211,252,.30);}
+  .btn,.gearbtn{background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 16px;font-size:14px;font-weight:900;color:var(--blue);white-space:nowrap;transition:.12s;box-shadow:none;}
+  .btn:hover,.gearbtn:hover{background:var(--blue-100);}
+  .btn-primary{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .btn-primary:hover{background:var(--blue-600);}
+  .filters{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .field label{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-family:var(--font-heading);font-weight:950;margin-bottom:5px;}
+  .field .inline{display:flex;gap:6px;}
+  .adv{margin-top:14px;padding:14px;border:2px dashed var(--gold);background:#FFFBEB;border-radius:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .adv.hidden{display:none;}
+  .gearbtn{flex:0 0 auto;width:42px;display:flex;align-items:center;justify-content:center;font-size:16px;padding:0;}
+
+  /* KPI */
+  .kpi-card{grid-column:1 / -1;padding:0;overflow:visible;position:relative;z-index:1;}
+  .kpi-card-head{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:16px 24px;border-bottom:4px solid var(--gold);border-radius:calc(var(--radius) - 3px) calc(var(--radius) - 3px) 0 0;}
+  .kpi-card-head h2{font-family:var(--font-heading);font-size:20px;font-weight:950;color:#E0F2FE;letter-spacing:-.02em;line-height:1.1;}
+  .kpi-card-head .ksub{font-size:12.5px;color:rgba(224,242,254,.82);font-weight:700;margin-top:4px;}
+  .kpi-card .kpis{padding:18px 20px;}
+  .kpis{grid-column:1 / -1;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;background:transparent;border:none;box-shadow:none;padding:0;overflow:visible;}
+  .kpi{position:relative;overflow:visible;min-width:0;background:var(--card);border:2.5px solid color-mix(in srgb, var(--blue) 64%, var(--navy) 36%);border-top:7px solid var(--blue-600);border-radius:var(--radius);padding:14px 16px;box-shadow:none;}
+  .kpi .num{font-family:var(--font-heading);font-size:clamp(32px,2.5vw,43px);font-weight:950;letter-spacing:-.045em;line-height:1;color:var(--navy);white-space:nowrap;}
+  .kpi .lab{font-family:var(--font-heading);font-size:12px;font-weight:950;margin-top:8px;color:var(--text);line-height:1.25;}
+  .kpi .cap{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.35;font-weight:700;}
+  .kpi.total{border-top-color:var(--navy);background:#fff;}
+  .kpi.k-red{border-top-color:var(--red);}
+  .kpi.k-green{border-top-color:var(--green);}
+  .kpi.k-orange{border-top-color:var(--amber);}
+  .kpi.k-blue{border-top-color:var(--blue-600);}
+  .kpi::after{content:attr(data-breakdown);position:absolute;left:10px;right:10px;top:calc(100% + 12px);z-index:200;max-height:280px;overflow:auto;white-space:pre-line;background:#fff;color:var(--text);border:2px solid var(--blue-600);border-top:5px solid var(--navy);border-radius:14px;padding:12px 14px 12px;font-size:11.5px;font-weight:700;line-height:1.55;box-shadow:0 24px 54px rgba(8,49,95,.32);opacity:0;visibility:hidden;transform:translateY(-4px);transition:.14s;}
+  .kpi::before{content:"";position:absolute;left:26px;top:100%;margin-top:2px;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:7px solid var(--navy);z-index:201;opacity:0;visibility:hidden;transition:.14s;}
+  .kpi:hover::after{opacity:1;visibility:visible;transform:translateY(0);}
+  .kpi:hover::before{opacity:1;visibility:visible;}
+
+  /* CHART CARDS */
+  .chart-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap;}
+  .chart-head .csub{font-size:12px;color:var(--muted);margin-top:2px;font-weight:700;}
+  .seg{display:inline-flex;background:var(--blue-100);border:2px solid var(--line);border-radius:14px;overflow:hidden;}
+  .seg button{background:transparent;border:none;padding:7px 12px;font-size:12.5px;font-weight:950;color:var(--muted);}
+  .seg button.on{background:#fff;color:var(--blue);box-shadow:inset 0 -3px 0 var(--gold);border-radius:11px;}
+  .crumbs{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:12.5px;}
+  .crumb{background:var(--blue-100);color:var(--blue);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-weight:900;}
+  .crumb.plain{background:#fff;color:var(--muted);}
+  .legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:12.5px;color:var(--muted);font-weight:800;}
+  .legend:empty{display:none;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .dot{display:inline-block;width:11px;height:11px;border-radius:4px;flex:0 0 auto;vertical-align:-1px;}
+  svg{display:block;width:100%;overflow:visible;font-family:var(--font-body);}
+  .bar-seg,.arc,.hbar,.rowhit{cursor:pointer;transition:opacity .12s;}
+  .bar-seg:hover,.arc:hover,.hbar:hover{opacity:.82;}
+  .rowlabel{cursor:pointer;font-size:11.5px;fill:var(--text);font-weight:800;}
+  .rowlabel:hover{fill:var(--blue);text-decoration:underline;}
+  .axis{stroke:var(--line);stroke-width:1;}
+  .gridline{stroke:#E2E8F0;stroke-width:1;}
+  .axistxt{font-size:10.5px;fill:var(--muted);font-weight:700;}
+  .barlbl{font-size:9.5px;font-family:var(--font-heading);font-weight:950;fill:#fff;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.35);}
+  .thresh{stroke:var(--red);stroke-width:1.5;stroke-dasharray:5 4;}
+
+  /* DONUT / LEGEND TABLE */
+  .donut-card{min-height:390px;}
+  .donut-card .chart-head{margin-bottom:14px;}
+  .donut-layout{display:grid;grid-template-columns:minmax(230px,.92fr) minmax(320px,1.35fr);gap:28px;align-items:center;margin-top:12px;min-height:300px;}
+  .donut-visual{min-width:0;display:flex;align-items:center;justify-content:center;padding:8px 0;}
+  .donut-table{min-width:0;align-self:stretch;display:block;max-height:300px;overflow-y:auto;padding-right:6px;scrollbar-gutter:stable;}
+  .donut-table .legtable{margin-top:0;}
+  .donut-table .legtable thead th{position:sticky;top:0;background:#fff;z-index:1;}
+  .donut-table::-webkit-scrollbar{width:9px;}
+  .donut-table::-webkit-scrollbar-thumb{background:var(--line);border-radius:999px;}
+  .donut-table::-webkit-scrollbar-track{background:var(--blue-50);border-radius:999px;}
+  .legtable{width:100%;max-width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px;table-layout:fixed;}
+  .legtable th,.legtable td{display:table-cell;text-align:left;padding:8px 10px;border-bottom:1px solid #E2E8F0;vertical-align:middle;overflow-wrap:anywhere;word-break:break-word;}
+  .legtable th{color:var(--muted);font-family:var(--font-heading);font-weight:950;font-size:10.5px;text-transform:uppercase;letter-spacing:.13em;white-space:normal;}
+  .legtable td.n,.legtable th.n{text-align:center;font-variant-numeric:tabular-nums;}
+
+  /* TABLE */
+  .tbl-controls{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 10px;font-size:13px;color:var(--muted);font-weight:800;}
+  .table-actions{display:flex;align-items:end;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+  .table-view-field{min-width:310px;}
+  .table-view-field label{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-family:var(--font-heading);font-weight:950;margin-bottom:5px;}
+  .table-view-field select{min-height:40px;font-size:13px;}
+  .tablewrap{max-width:100%;overflow:auto;border:2px solid var(--line);border-radius:16px;background:#fff;}
+  table.data{width:100%;max-width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;white-space:normal;}
+  table.data th,table.data td{display:table-cell;padding:10px 8px;border-bottom:1px solid #E2E8F0;text-align:center;vertical-align:middle;overflow-wrap:anywhere;word-break:break-word;font-variant-numeric:tabular-nums;}
+  table.data th:first-child,table.data td:first-child{text-align:left;position:sticky;left:0;background:#fff;z-index:2;min-width:170px;box-shadow:1px 0 0 #E2E8F0;}
+  table.data thead th{position:sticky;top:0;background:var(--blue-50);z-index:3;cursor:pointer;user-select:none;color:var(--muted);font-family:var(--font-heading);font-size:10.5px;font-weight:950;text-transform:uppercase;letter-spacing:.13em;white-space:normal;}
+  table.data thead th:first-child{z-index:4;background:var(--blue-50);}
+  table.data thead tr.frow th{cursor:default;background:#fff;padding:6px 8px;top:38px;}
+  table.data thead tr.frow input,table.data thead tr.frow select{padding:6px 7px;font-size:12px;border-radius:10px;min-height:34px;}
+  table.data tbody tr{cursor:pointer;}
+  table.data tbody tr:hover td{background:var(--blue-100);}
+  table.data tbody tr:hover td:first-child{background:var(--blue-100);}
+  .sortcaret{font-size:9px;margin-left:3px;color:var(--blue-600);}
+  .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:900;}
+  .b-red{background:var(--red-soft);color:var(--red);}
+  .b-green{background:var(--green-soft);color:var(--green);}
+  .pager{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;font-size:13px;color:var(--muted);font-weight:800;flex-wrap:wrap;}
+  .pager .pg{display:flex;gap:6px;align-items:center;}
+  .empty{padding:34px;text-align:center;color:var(--muted);font-size:14px;font-weight:800;}
+
+  /* MODAL */
+  .backdrop{position:fixed;inset:0;background:rgba(8,49,95,.42);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;}
+  .backdrop.open{display:flex;}
+  .modal{background:var(--card);border:2.5px solid color-mix(in srgb,var(--blue) 64%,var(--navy) 36%);border-radius:22px;width:min(860px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(8,49,95,.28);}
+  .modal .mhead{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;}
+  .modal .mhead h3{font-size:18px;color:#E0F2FE;}
+  .modal .mhead .msub{font-size:12.5px;color:#DFF6FF;margin-top:3px;font-weight:700;}
+  .modal .mclose{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);color:#fff;width:34px;height:34px;border-radius:12px;font-size:17px;flex:0 0 auto;}
+  .modal .mbody{padding:20px 22px;overflow-y:auto;}
+  .mgroup{margin-bottom:20px;}
+  .mgroup h4{font-size:11px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin-bottom:9px;}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+  .tile{background:var(--blue-50);border:2px solid var(--line);border-radius:16px;padding:11px 13px;}
+  .tile .tl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;font-weight:950;}
+  .tile .tv{font-size:17px;font-family:var(--font-heading);font-weight:900;margin-top:3px;font-variant-numeric:tabular-nums;color:var(--text);}
+  .msearch{margin-bottom:12px;}
+  table.dis{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
+  table.dis th,table.dis td{display:table-cell;padding:9px 11px;border-bottom:1px solid #E2E8F0;text-align:center;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+  table.dis th:first-child,table.dis td:first-child{text-align:left;}
+  table.dis thead th{font-size:10.5px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);font-family:var(--font-heading);font-weight:950;cursor:pointer;}
+  table.dis tfoot td{font-weight:950;border-top:2px solid var(--line);border-bottom:none;background:var(--blue-50);}
+  .reconcile{font-size:12px;color:var(--muted);margin-top:8px;text-align:right;font-weight:800;}
+  .reconcile b{color:var(--green);}
+
+  /* TOOLTIP */
+  #tip{position:fixed;pointer-events:none;z-index:80;background:#0F172A;color:#fff;font-size:12px;border-radius:12px;padding:9px 12px;box-shadow:0 8px 20px rgba(15,23,42,.28);display:none;max-width:280px;line-height:1.4;border:1px solid rgba(255,255,255,.18);}
+  #tip .tt{font-family:var(--font-heading);font-weight:900;margin-bottom:3px;}
+  #tip .tr{display:flex;justify-content:space-between;gap:14px;}
+  #tip .tr span:last-child{font-variant-numeric:tabular-nums;font-weight:900;}
+
+  /* FLOATING PDF SLIDESHOW */
+  .pdf-fab{position:fixed;right:24px;bottom:24px;z-index:90;border:none;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:0;display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-heading);box-shadow:0 18px 44px rgba(8,49,95,.28);border:2px solid rgba(255,255,255,.55);}
+  .pdf-fab:hover{transform:translateY(-1px);box-shadow:0 22px 52px rgba(8,49,95,.34);background:linear-gradient(135deg,var(--blue),var(--blue-600));}
+  .pdf-fab .pdf-ico{width:38px;height:38px;border-radius:14px;background:var(--gold);color:var(--navy);display:inline-flex;align-items:center;justify-content:center;font-size:18px;font-weight:950;line-height:1;}
+  .pdf-fab .pdf-label{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+  .pdf-deck{position:fixed;inset:0;z-index:120;display:none;background:rgba(8,49,95,.88);backdrop-filter:blur(8px);padding:18px;}
+  .pdf-deck.open{display:grid;grid-template-rows:auto 1fr auto;gap:12px;}
+  .pdf-deck-head{display:flex;align-items:center;justify-content:space-between;gap:14px;color:#fff;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:12px 14px;}
+  .pdf-deck-title{min-width:0;}
+  .pdf-deck-title b{display:block;font-family:var(--font-heading);font-size:15px;font-weight:950;line-height:1.2;color:#E0F2FE;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pdf-deck-title span{display:block;font-size:12px;font-weight:800;color:rgba(224,242,254,.78);margin-top:2px;}
+  .pdf-close{width:38px;height:38px;border-radius:13px;border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.14);color:#fff;font-size:18px;font-weight:950;}
+  .pdf-close:hover,.pdf-nav button:hover{background:#fff;color:var(--navy);}
+  .pdf-stage{min-height:0;display:flex;align-items:center;justify-content:center;overflow:auto;border-radius:22px;background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.14);padding:18px;}
+  #pdfCanvas{display:block;max-width:100%;height:auto;background:#fff;border-radius:10px;box-shadow:0 18px 60px rgba(0,0,0,.34);}
+  .pdf-status{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100% - 36px));background:#fff;color:var(--text);border-radius:18px;padding:18px 20px;text-align:center;font-size:14px;font-weight:800;box-shadow:0 24px 60px rgba(0,0,0,.28);}
+  .pdf-status:empty{display:none;}
+  .pdf-nav{display:flex;align-items:center;justify-content:center;gap:12px;color:#E0F2FE;}
+  .pdf-nav button{border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.14);color:#fff;border-radius:14px;padding:11px 16px;font-family:var(--font-heading);font-size:13px;font-weight:950;}
+  .pdf-nav button:disabled{opacity:.38;cursor:not-allowed;}
+  .pdf-counter{min-width:92px;text-align:center;font-family:var(--font-heading);font-size:13px;font-weight:950;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:11px 14px;}
+  @media(max-width:1000px){.pdf-fab{right:18px;bottom:112px;width:54px;height:54px;} .pdf-fab .pdf-ico{width:36px;height:36px;} .pdf-deck{padding:10px;} .pdf-stage{padding:10px;}}
+
+  @media(max-width:1180px){.filters{grid-template-columns:repeat(2,1fr);} .adv{grid-template-columns:1fr 1fr;} }
+  @media(max-width:1000px){
+    .app{grid-template-columns:1fr;}
+    .side-tabs,.side-tabs:hover{position:fixed;top:auto;left:12px;right:12px;bottom:10px;width:auto;height:auto;border:0;border-radius:22px;padding:8px;padding-bottom:calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,1fr);align-items:stretch;gap:8px;overflow:visible;box-shadow:0 -18px 44px rgba(11,31,77,.26);}
+    .brand-tile,.side-title{display:none!important;}
+    .nav-list{display:contents;}
+    .tab-btn,.side-tabs:not(:hover) .tab-btn{grid-template-columns:1fr;justify-items:center;text-align:center;padding:8px 6px;gap:5px;border-radius:16px;}
+    .tab-btn b{font-size:10.5px;line-height:1.05;white-space:normal;}
+    .nav-label,.side-tabs:not(:hover) .nav-label{display:block!important;}
+    .tab-btn .nav-label > span{display:none;}
+    .nav-icon{width:26px;height:26px;font-size:13px;}
+  }
+  @media(max-width:1000px){
+    body{padding-bottom:104px;background-attachment:scroll;}
+    .wrap{width:min(920px,100% - 32px);margin:0 auto;padding:15px 0 118px;}
+    .hero{min-height:104px;padding:15px 23px;}
+    .hero::before{width:68%;}
+    .hero::after{left:59%;width:14%;}
+    .hero > div:first-child{max-width:68%;}
+    .card{border-width:2px;border-radius:18px;}
+  }
+  @media(max-width:900px){.half{grid-column:1 / -1;} .donut-layout{grid-template-columns:minmax(240px,.8fr) minmax(320px,1.25fr);}}
+  @media(max-width:760px){
+    .wrap{width:min(680px,100% - 28px);grid-template-columns:1fr;}
+    .hero{display:grid;gap:12px;}
+    .hero::before{width:100%;clip-path:none;}
+    .hero::after{display:none;}
+    .hero > div:first-child{max-width:100%;}
+    .hero .eyebrow{white-space:normal;}
+    .pill{display:block;text-align:left;min-width:0;width:100%;background:rgba(255,255,255,.95);}
+    .filters{grid-template-columns:1fr;} .adv{grid-template-columns:1fr;}
+    .searchrow{grid-template-columns:1fr;}
+    .kpis{grid-template-columns:1fr;}
+    .donut-layout{grid-template-columns:1fr;}
+    .donut-table{max-height:360px;}
+  }
+</style>
+</head>
+<body class="tab-mode">
+<div class="app" id="app">
+  <nav class="side-tabs" aria-label="Dashboard sections">
+      <div class="brand-tile"><img class="brand-logo" src="./hrod_logo.png" alt="HROD logo"></div>
+      <div class="side-title">Dashboard Sections</div>
+      <div class="nav-list">
+        <button class="tab-btn active" data-tab="gaps"><span class="nav-icon">₱</span><span class="nav-label"><b>FY 2026 Fund Gaps</b><span>Budget, chargeable cost, and deficit by region</span></span></button>
+        <button class="tab-btn" data-tab="strategy"><span class="nav-icon">↔</span><span class="nav-label"><b>Proposed NSPP Strategy</b><span>Filling-up rate, chargeable amount, and balance</span></span></button>
+        <button class="tab-btn" data-tab="apps"><span class="nav-icon">▦</span><span class="nav-label"><b>Pending Applications</b><span>DBM and CAReER financial requirement by region</span></span></button>
+      </div>
+  </nav>
+  <div class="shell">
+  <div class="wrap">
+  <!-- HERO -->
+  <div class="hero">
+    <div>
+      <div class="eyebrow">DEPARTMENT OF EDUCATION | HUMAN RESOURCE AND ORGANIZATIONAL DEVELOPMENT AND INFRASTRUCTURE</div>
+      <h1>ECP Reclassification Funding Dashboard</h1>
+      <div class="sub">Consolidated view of FY 2026 reclassification funding gaps, the proposed NSPP funding strategy, and pending reclassification applications across all 17 regions.</div>
+    </div>
+    <div class="pill">
+      <div class="plabel">FY 2026 Overall Deficit</div>
+      <div class="pnum" id="heroNum">–</div>
+      <div class="pscope" id="heroScope">across deficit regions</div>
+      <div class="pbar"><i id="heroBar" style="width:0%"></i></div>
+    </div>
+  </div>
+
+  <div class="dash-main">
+
+  <!-- KPI ROW -->
+  <div class="card kpi-card">
+    <div class="kpi-card-head"><h2 id="kpiSectionTitle">Dashboard</h2><div class="ksub" id="kpiSectionSub"></div></div>
+    <div class="kpis" id="kpis"></div>
+  </div>
+
+  <!-- PRIMARY CHART -->
+  <div class="card primary-card tab-card-gaps">
+    <div class="chart-head">
+      <div>
+        <h3 id="primTitle">–</h3>
+        <div class="csub" id="primSub"></div>
+      </div>
+      <div class="seg" id="primMode">
+        <button data-m="stacked" class="on">Stacked</button>
+        <button data-m="grouped">Grouped</button>
+      </div>
+    </div>
+    <div class="crumbs" id="crumbs"></div>
+    <div id="primChart"></div>
+    <div class="legend" id="primLegend"></div>
+  </div>
+
+  <!-- NSPP FILLING-UP RATE -->
+  <div class="card half nsp-card">
+    <div class="chart-head"><div><h3>NSPP filling-up rate by region</h3><div class="csub">Regions below the 10% benchmark may augment funding deficits</div></div></div>
+    <div class="legend" id="nspFillLegend"></div>
+    <div id="nspFillChart"></div>
+  </div>
+<!-- PROPOSED CHARGEABLE VS REMAINING BALANCE -->
+<div class="card half strategy-balance-card">
+<div class="chart-head"><div><h3>Proposed chargeable vs. remaining balance</h3><div class="csub">Chargeable against unreleased appropriations per region</div></div></div>
+<div id="strategyBalanceChart"></div>
+</div>
+
+
+  <!-- APPLICATION VOLUME BY PROCESSING STAGE -->
+  <div class="card app-volume-card">
+    <div class="chart-head"><div><h3 id="appsVolTitle">Financial requirement by processing stage</h3><div class="csub" id="appsVolSub">Financial requirement under DBM approval and remaining in CAReER, per region.</div></div>
+      <div class="seg" id="appsUnit">
+        <button data-u="financial" class="on">Financial (₱)</button>
+        <button data-u="apps">Applications</button>
+      </div>
+    </div>
+    <div class="legend" id="appsVolumeLegend"></div>
+    <div id="appsVolumeChart"></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card table-card">
+    <div class="chart-head"><div><h3 id="tblTitle">Regional records</h3><div class="csub" id="tblSub">Sortable and filterable. Select a table view to keep the card focused.</div></div>
+      <div class="table-actions">
+        <div class="table-view-field">
+          <label>Table view</label>
+          <select id="tableView">
+            <option value="gaps">Funding gaps by region</option>
+            <option value="strategy">NSPP & unreleased appropriations by region</option>
+            <option value="apps">Pending applications by region</option>
+          </select>
+        </div>
+        <button class="btn" id="csv">Export CSV</button>
+      </div>
+    </div>
+    <div class="tbl-controls"><span id="tblCount"></span></div>
+    <div class="tablewrap"><table class="data" id="table"></table></div>
+    <div class="pager" id="pager"></div>
+  </div>
+  </div>
+  </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="backdrop" id="backdrop"><div class="modal" id="modal"></div></div>
+<div id="tip"></div>
+
+<!-- PDF SLIDESHOW -->
+<button class="pdf-fab" id="pdfFab" type="button" aria-label="Open PDF slideshow">
+  <span class="pdf-ico">▣</span>
+  <span class="pdf-label">Open PDF slides</span>
+</button>
+<div class="pdf-deck" id="pdfDeck" aria-hidden="true">
+  <div class="pdf-deck-head">
+    <div class="pdf-deck-title">
+      <b>DepEd-DBM Consultation Meeting</b>
+      <span>ECP Reclass Funding Gaps and Strategies</span>
+    </div>
+    <button class="pdf-close" id="pdfClose" type="button" aria-label="Close PDF slideshow">✕</button>
+  </div>
+  <div class="pdf-stage" id="pdfStage">
+    <canvas id="pdfCanvas"></canvas>
+    <div class="pdf-status" id="pdfStatus"></div>
+  </div>
+  <div class="pdf-nav">
+    <button id="pdfPrev" type="button">← Previous</button>
+    <div class="pdf-counter" id="pdfCounter">– / –</div>
+    <button id="pdfNext" type="button">Next →</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+const RAW = [
+{code:'CAR', name:'Cordillera Administrative Region', short:'CAR',
+ g_budget:137836658, g_unfunded:1189087476.42, g_expenses:2757648, g_charge:1191845124.42, g_deficit:1054008466.42,
+ s_fill:14.5, s_unreleased:263295690, s_charge:0, s_balance:263295690,
+ a_dbm_p:15, a_dbm_f:3546332.18, a_car_p:856, a_car_f:79866884.90, a_tot_p:871, a_tot_f:83413217.08, a_t1:79866885, a_t2:131046226, a_2027:210913111, a_remain:127499893.92},
+{code:'NCR', name:'National Capital Region', short:'NCR',
+ g_budget:499611962, g_unfunded:0, g_expenses:0, g_charge:0, g_deficit:0,
+ s_fill:-3.9, s_unreleased:3492708933, s_charge:2223216295.27, s_balance:1269492637.73,
+ a_dbm_p:31, a_dbm_f:1093961.48, a_car_p:1120, a_car_f:75710895.30, a_tot_p:1151, a_tot_f:76804856.78, a_t1:3113703, a_t2:468296218, a_2027:471409921, a_remain:394605064.22},
+{code:'NIR', name:'Negros Island Region', short:'NIR',
+ g_budget:303340364, g_unfunded:0, g_expenses:0, g_charge:0, g_deficit:0,
+ s_fill:-1.2, s_unreleased:1690085165, s_charge:523216295.27, s_balance:1166868869.73,
+ a_dbm_p:6965, a_dbm_f:624533671.76, a_car_p:155, a_car_f:14540391.64, a_tot_p:7120, a_tot_f:639074063.40, a_t1:14540392, a_t2:281109172, a_2027:295649564, a_remain:-343424499.40},
+{code:'R1', name:'Region I', short:'Region I',
+ g_budget:355304277, g_unfunded:806300995.47, g_expenses:1256689087.08, g_charge:2062990082.55, g_deficit:1707685805.55,
+ s_fill:11.8, s_unreleased:1587473000, s_charge:0, s_balance:1587473000,
+ a_dbm_p:792, a_dbm_f:74569178.66, a_car_p:5100, a_car_f:510491563.70, a_tot_p:5892, a_tot_f:585060742.36, a_t1:510491564, a_t2:343901757, a_2027:854393321, a_remain:269332578.64},
+{code:'R2', name:'Region II', short:'Region II',
+ g_budget:261171874, g_unfunded:138110901.73, g_expenses:347773547.70, g_charge:485884449.43, g_deficit:224712575.43,
+ s_fill:10.5, s_unreleased:763571845, s_charge:0, s_balance:763571845,
+ a_dbm_p:10, a_dbm_f:387172.52, a_car_p:4927, a_car_f:494651063.80, a_tot_p:4937, a_tot_f:495038236.32, a_t1:489407173, a_t2:253852297, a_2027:743259470, a_remain:248221233.68},
+{code:'R3', name:'Region III', short:'Region III',
+ g_budget:635165477, g_unfunded:0, g_expenses:0, g_charge:0, g_deficit:0,
+ s_fill:13.4, s_unreleased:1368439492, s_charge:0, s_balance:1368439492,
+ a_dbm_p:14902, a_dbm_f:1503725889.58, a_car_p:19721, a_car_f:2015700932.54, a_tot_p:34623, a_tot_f:3519426822.12, a_t1:1665653622, a_t2:606097621, a_2027:2271751243, a_remain:-1247675579.12},
+{code:'R4A', name:'Region IV-A', short:'Region IV-A',
+ g_budget:725931825, g_unfunded:0, g_expenses:0, g_charge:0, g_deficit:0,
+ s_fill:7.4, s_unreleased:3269042000, s_charge:2023216295.27, s_balance:1245825704.73,
+ a_dbm_p:331, a_dbm_f:15599536.24, a_car_p:15778, a_car_f:1420711492.62, a_tot_p:16109, a_tot_f:1436311028.86, a_t1:1069230768, a_t2:698963223, a_2027:1768193991, a_remain:331882962.14},
+{code:'R4B', name:'Region IV-B', short:'Region IV-B',
+ g_budget:243271054, g_unfunded:965000602.45, g_expenses:98336355.58, g_charge:1063336958.03, g_deficit:820065904.03,
+ s_fill:-0.1, s_unreleased:1296308964, s_charge:423216295.27, s_balance:873092668.73,
+ a_dbm_p:17, a_dbm_f:458758.04, a_car_p:26, a_car_f:2350831.96, a_tot_p:43, a_tot_f:2809590.00, a_t1:2350832, a_t2:238952625, a_2027:241303457, a_remain:238493867.00},
+{code:'R9', name:'Region IX', short:'Region IX',
+ g_budget:303186364, g_unfunded:217563479.19, g_expenses:254403216.05, g_charge:471966695.25, g_deficit:168780331.25,
+ s_fill:0.1, s_unreleased:881749786, s_charge:223216295.27, s_balance:658533490.73,
+ a_dbm_p:35, a_dbm_f:1235117.80, a_car_p:3, a_car_f:333325.98, a_tot_p:38, a_tot_f:1568443.78, a_t1:333326, a_t2:322618890, a_2027:322952216, a_remain:321383772.22},
+{code:'R5', name:'Region V', short:'Region V',
+ g_budget:477703549, g_unfunded:567652697.00, g_expenses:730360990.00, g_charge:1298013687.00, g_deficit:820310138.00,
+ s_fill:3.0, s_unreleased:1094008837, s_charge:423216295.27, s_balance:670792541.73,
+ a_dbm_p:479, a_dbm_f:31527078.34, a_car_p:1806, a_car_f:180789592.78, a_tot_p:2285, a_tot_f:212316671.12, a_t1:180789593, a_t2:461932934, a_2027:642722527, a_remain:430405855.88},
+{code:'R6', name:'Region VI', short:'Region VI',
+ g_budget:308657495, g_unfunded:94695075.69, g_expenses:2415964877.85, g_charge:2510659953.54, g_deficit:2202002458.54,
+ s_fill:22.5, s_unreleased:1496360365, s_charge:0, s_balance:1496360365,
+ a_dbm_p:581, a_dbm_f:51791195.06, a_car_p:441, a_car_f:41697967.28, a_tot_p:1022, a_tot_f:93489162.34, a_t1:41697967, a_t2:302167455, a_2027:343865422, a_remain:250376259.66},
+{code:'R7', name:'Region VII', short:'Region VII',
+ g_budget:392518233, g_unfunded:233250330.80, g_expenses:792524119.06, g_charge:1025774449.86, g_deficit:633256216.86,
+ s_fill:3.0, s_unreleased:1352483431, s_charge:723216295.27, s_balance:629267135.73,
+ a_dbm_p:19, a_dbm_f:670492.52, a_car_p:3317, a_car_f:295415906.68, a_tot_p:3336, a_tot_f:296086399.20, a_t1:295415907, a_t2:380020202, a_2027:675436109, a_remain:379349709.80},
+{code:'R8', name:'Region VIII', short:'Region VIII',
+ g_budget:394325256, g_unfunded:0, g_expenses:0, g_charge:0, g_deficit:0,
+ s_fill:-4.7, s_unreleased:1069378877, s_charge:223216295.27, s_balance:846162581.73,
+ a_dbm_p:1168, a_dbm_f:89609866.20, a_car_p:12033, a_car_f:1034848005.46, a_tot_p:13201, a_tot_f:1124457871.66, a_t1:807189512, a_t2:383565610, a_2027:1190755122, a_remain:66297250.34},
+{code:'R10', name:'Region X', short:'Region X',
+ g_budget:303670924, g_unfunded:694649542.58, g_expenses:290911128.94, g_charge:985560671.52, g_deficit:681889747.52,
+ s_fill:1.7, s_unreleased:1698776000, s_charge:523216295.27, s_balance:1175559704.73,
+ a_dbm_p:31, a_dbm_f:1093961.48, a_car_p:4991, a_car_f:481613810.68, a_tot_p:5022, a_tot_f:482707772.16, a_t1:481683381, a_t2:292251518, a_2027:773934899, a_remain:291227126.84},
+{code:'R11', name:'Region XI', short:'Region XI',
+ g_budget:317180863, g_unfunded:463534532.61, g_expenses:211481839.43, g_charge:675016372.05, g_deficit:357835509.05,
+ s_fill:3.8, s_unreleased:1737526000, s_charge:623216295.27, s_balance:1114309704.73,
+ a_dbm_p:504, a_dbm_f:40460299.60, a_car_p:3610, a_car_f:347852788.02, a_tot_p:4114, a_tot_f:388313087.62, a_t1:347811250, a_t2:304503527, a_2027:652314777, a_remain:264001689.38},
+{code:'R12', name:'Region XII', short:'Region XII',
+ g_budget:275174564, g_unfunded:271895722.90, g_expenses:11327231.73, g_charge:283222954.63, g_deficit:8048390.63,
+ s_fill:4.3, s_unreleased:1318607923, s_charge:523216295.27, s_balance:795391627.73,
+ a_dbm_p:3, a_dbm_f:105867.24, a_car_p:0, a_car_f:0, a_tot_p:3, a_tot_f:105867.24, a_t1:47309, a_t2:263870369, a_2027:263917678, a_remain:263811810.76},
+{code:'CARAGA', name:'Region XIII - CARAGA', short:'CARAGA',
+ g_budget:214382261, g_unfunded:0, g_expenses:0, g_charge:0, g_deficit:0,
+ s_fill:6.2, s_unreleased:492640679, s_charge:223216295.27, s_balance:269424383.73,
+ a_dbm_p:93, a_dbm_f:6911969.16, a_car_p:1678, a_car_f:158809816.06, a_tot_p:1771, a_tot_f:165721785.22, a_t1:158809816, a_t2:208369525, a_2027:367179341, a_remain:201457555.78}
+];
+
+/* ---------- formatting ---------- */
+const peso = v => '₱' + (Math.abs(v)>=1e9 ? (v/1e9).toFixed(2)+'B' : Math.abs(v)>=1e6 ? (v/1e6).toFixed(1)+'M' : Math.round(v).toLocaleString());
+const full = v => '₱' + Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const intc = v => Number(v).toLocaleString();
+const pctf = v => v.toFixed(1)+'%';
+const C=['var(--c1)','var(--c2)','var(--c3)','var(--c4)','var(--c5)','var(--c6)','var(--c7)','var(--c8)','#0F766E','#A855F7','#F97316','#2563EB','#84CC16','#EC4899','#14B8A6','#F43F5E','#64748B'];
+
+/* ---------- PDF slideshow ---------- */
+const PDF_FILENAME='DepEd-DBM Consultation Meeting - ECP Reclass Funding Gaps and Strategies.pdf';
+const PDF_URL='./'+encodeURI(PDF_FILENAME);
+let pdfDoc=null,pdfPageNum=1,pdfRendering=false,pdfPendingPage=null;
+if(window.pdfjsLib){
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+function setupPdfSlideshow(){
+  const fab=$('#pdfFab'),deck=$('#pdfDeck'),close=$('#pdfClose'),prev=$('#pdfPrev'),next=$('#pdfNext');
+  if(!fab||!deck)return;
+  fab.onclick=openPdfSlideshow;
+  close.onclick=closePdfSlideshow;
+  prev.onclick=()=>queuePdfPage(pdfPageNum-1);
+  next.onclick=()=>queuePdfPage(pdfPageNum+1);
+  window.addEventListener('resize',()=>{if(deck.classList.contains('open')&&pdfDoc)queuePdfPage(pdfPageNum);});
+  document.addEventListener('keydown',e=>{
+    if(!deck.classList.contains('open'))return;
+    if(e.key==='Escape'){closePdfSlideshow();return;}
+    if(e.key==='ArrowLeft')queuePdfPage(pdfPageNum-1);
+    if(e.key==='ArrowRight'||e.key===' ')queuePdfPage(pdfPageNum+1);
+  });
+}
+function openPdfSlideshow(){
+  const deck=$('#pdfDeck'),status=$('#pdfStatus');
+  deck.classList.add('open');deck.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+  status.textContent='Loading PDF slideshow…';
+  if(!window.pdfjsLib){
+    status.innerHTML='PDF.js could not load. If you are offline, connect to the internet or host the PDF.js library locally.';
+    return;
+  }
+  if(pdfDoc){renderPdfPage(pdfPageNum);return;}
+  pdfjsLib.getDocument(PDF_URL).promise.then(doc=>{
+    pdfDoc=doc;pdfPageNum=1;renderPdfPage(pdfPageNum);
+  }).catch(err=>{
+    status.innerHTML=`Could not open <b>${PDF_FILENAME}</b>.<br><br>Make sure the PDF is in the same folder as this HTML file and, if opening directly from your computer fails, run the file through VS Code <b>Live Server</b>.`;
+    console.error(err);
+    updatePdfCounter();
+  });
+}
+function closePdfSlideshow(){
+  const deck=$('#pdfDeck');
+  if(!deck)return;
+  deck.classList.remove('open');deck.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+}
+function queuePdfPage(num){
+  if(!pdfDoc)return;
+  if(num<1||num>pdfDoc.numPages)return;
+  if(pdfRendering){pdfPendingPage=num;return;}
+  renderPdfPage(num);
+}
+function renderPdfPage(num){
+  if(!pdfDoc)return;
+  pdfRendering=true;pdfPageNum=num;
+  const status=$('#pdfStatus'),canvas=$('#pdfCanvas'),stage=$('#pdfStage'),ctx=canvas.getContext('2d');
+  status.textContent='Rendering slide…';
+  pdfDoc.getPage(num).then(page=>{
+    const base=page.getViewport({scale:1});
+    const maxW=Math.max(320,stage.clientWidth-36),maxH=Math.max(320,stage.clientHeight-36);
+    const scale=Math.min(maxW/base.width,maxH/base.height,1.7);
+    const viewport=page.getViewport({scale});
+    canvas.width=viewport.width;canvas.height=viewport.height;
+    return page.render({canvasContext:ctx,viewport}).promise;
+  }).then(()=>{
+    pdfRendering=false;status.textContent='';updatePdfCounter();
+    if(pdfPendingPage!==null){const n=pdfPendingPage;pdfPendingPage=null;renderPdfPage(n);}
+  }).catch(err=>{
+    pdfRendering=false;status.textContent='This slide could not be rendered.';
+    console.error(err);updatePdfCounter();
+  });
+}
+function updatePdfCounter(){
+  const c=$('#pdfCounter'),prev=$('#pdfPrev'),next=$('#pdfNext');
+  const total=pdfDoc?pdfDoc.numPages:'–';
+  c.textContent=`${pdfDoc?pdfPageNum:'–'} / ${total}`;
+  if(prev)prev.disabled=!pdfDoc||pdfPageNum<=1;
+  if(next)next.disabled=!pdfDoc||pdfPageNum>=pdfDoc.numPages;
+}
+
+/* ---------- dataset configs ---------- */
+const DATASETS = {
+  gaps:{
+    title:'FY 2026 Reclassification Funding Gaps',
+    tblTitle:'Funding gaps by region',
+    statusOf:r=>r.g_deficit>0?'Deficit':'Funded',
+    statuses:['Deficit','Funded'],
+    measures:[{k:'g_deficit',n:'Total deficit'},{k:'g_charge',n:'Total chargeable'},{k:'g_budget',n:'Allocated budget'}],
+    defaultMeasure:'g_deficit',
+    primary:{title:'Total chargeable vs. allocated budget by region',sub:'Per region: FY 2025 unfunded + FY 2026 expenses (total chargeable) compared against the FY 2026 allocated budget',
+      series:[{k:'g_unfunded',n:'FY 2025 Unfunded',c:C[0]},{k:'g_expenses',n:'FY 2026 Expenses',c:C[4]}],
+      compare:{k:'g_budget',n:'FY 2026 Allocated Budget',c:'var(--green)'}},
+    donut:{title:'Share of total funding deficit',sub:'Regions with a positive deficit only',metric:'g_deficit'},
+    hist:{title:'Allocated reclassification budget',sub:'FY 2026 budget per region',metric:'g_budget',color:'var(--c3)'},
+    columns:[
+      {k:'name',n:'Region',t:'text'},
+      {k:'g_budget',n:'Reclass Budget',t:'money'},
+      {k:'g_unfunded',n:'FY25 Unfunded',t:'money'},
+      {k:'g_expenses',n:'FY26 Expenses',t:'money'},
+      {k:'g_charge',n:'Total Chargeable',t:'money'},
+      {k:'g_deficit',n:'Total Deficit',t:'money'},
+      {k:'_gstatus',n:'Status',t:'status'}
+    ]
+  },
+  strategy:{
+    title:'Proposed NSPP Funding Strategy',
+    tblTitle:'NSPP unreleased appropriations by region',
+    statusOf:r=>r.s_fill<10?'Eligible (<10% filling-up)':'Not eligible',
+    statuses:['Eligible (<10% filling-up)','Not eligible'],
+    measures:[{k:'s_unreleased',n:'Unreleased appropriations'},{k:'s_charge',n:'Chargeable amount'},{k:'s_balance',n:'Remaining balance'}],
+    defaultMeasure:'s_unreleased',
+    primary:{title:'NSPP filling-up rate by region',sub:'Regions below the 10% benchmark may augment funding deficits',mode:'threshold',metric:'s_fill',threshold:10},
+    donut:{title:'Share of unreleased NSPP appropriations',sub:'Regional share of the ₱24.87B lump sum',metric:'s_unreleased'},
+    hist:{title:'Proposed chargeable vs. remaining balance',sub:'Chargeable against unreleased appropriations per region',metric:'s_charge',color:'var(--c5)'},
+    columns:[
+      {k:'name',n:'Region',t:'text'},
+      {k:'s_fill',n:'Filling-up %',t:'pct'},
+      {k:'s_unreleased',n:'Unreleased Approp.',t:'money'},
+      {k:'s_charge',n:'Chargeable',t:'money'},
+      {k:'s_balance',n:'Remaining Balance',t:'money'},
+      {k:'_sstatus',n:'Eligibility',t:'status'}
+    ]
+  },
+  apps:{
+    title:'Pending Reclassification Applications',
+    tblTitle:'Pending applications by region',
+    statusOf:r=>r.a_remain<0?'FY 2027 deficit':'Within FY 2027 budget',
+    statuses:['FY 2027 deficit','Within FY 2027 budget'],
+    measures:[{k:'a_tot_f',n:'Total financial requirement'},{k:'a_dbm_f',n:'DBM financial requirement'},{k:'a_car_f',n:'CAReER financial requirement'},{k:'a_2027',n:'FY 2027 total budget'}],
+    defaultMeasure:'a_tot_f',
+    primary:{title:'Financial requirement by processing stage',sub:'Financial requirement under DBM approval and remaining in CAReER, per region',
+      series:[{k:'a_dbm_f',n:'Under DBM Approval',c:C[0]},{k:'a_car_f',n:'Remaining in CAReER',c:C[3]}]},
+    donut:{title:'Share of total financial requirement',sub:'Financial requirement of pending applications',metric:'a_tot_f'},
+    hist:{title:'FY 2027 reclassification requirement',sub:'Tier 1 + Tier 2 requirement per region',metric:'a_2027',color:'var(--c7)'},
+    columns:[
+      {k:'name',n:'Region',t:'text'},
+      {k:'a_dbm_p',n:'DBM (count)',t:'int'},
+      {k:'a_car_p',n:'CAReER (count)',t:'int'},
+      {k:'a_tot_p',n:'Total Apps',t:'int'},
+      {k:'a_dbm_f',n:'DBM Financial Req.',t:'money'},
+      {k:'a_car_f',n:'CAReER Financial Req.',t:'money'},
+      {k:'a_tot_f',n:'Total Financial Req.',t:'money'},
+      {k:'a_2027',n:'FY2027 Total',t:'money'},
+      {k:'a_remain',n:'Remaining/Deficit',t:'money'},
+      {k:'_astatus',n:'Status',t:'status'}
+    ]
+  }
+};
+
+/* ---------- state ---------- */
+const state={
+  ds:'gaps', search:'', status:'all', quick:'all',
+  selected:new Set(RAW.map(r=>r.code)),
+  chartSort:'value_desc', measure:'g_deficit', primMode:'stacked', appsUnit:'financial',
+  page:1, pageSize:17, tableDs:'gaps', activeTab:'gaps', sortCol:null, sortDir:1, colFilters:{}, advanced:false
+};
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+function cfg(){return DATASETS[state.ds];}
+function tableCfg(){return DATASETS[state.tableDs||state.ds];}
+const TAB_MAP={gaps:{ds:'gaps',tableDs:'gaps'},strategy:{ds:'strategy',tableDs:'strategy'},apps:{ds:'apps',tableDs:'apps'}};
+function setActiveTab(tab){
+  const t=TAB_MAP[tab]||TAB_MAP.gaps;
+  state.activeTab=tab in TAB_MAP?tab:'gaps';
+  state.ds=t.ds;state.tableDs=t.tableDs;state.measure=DATASETS[state.ds].defaultMeasure;
+  state.status='all';state.sortCol=null;state.sortDir=1;state.colFilters={};state.page=1;state.primMode='stacked';
+  const ds=$('#dataset');if(ds)ds.value=state.ds;
+  const tv=$('#tableView');if(tv)tv.value=state.tableDs;
+  const pm=$('#primMode');if(pm)pm.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m==='stacked'));
+  render();
+}
+function updateTabVisibility(){
+  const tab=state.activeTab||'gaps';
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  const show=(sel,on)=>{const el=$(sel);if(el)el.style.display=on?'':'none';};
+  show('.primary-card',tab==='gaps');
+  show('.nsp-card',tab==='strategy');
+  show('.strategy-balance-card',tab==='strategy');
+  show('.app-volume-card',tab==='apps');
+  const label={gaps:'FY 2026 Fund Gaps',strategy:'Proposed NSPP Funding Strategy',apps:'Pending Reclassification Applications'}[tab]||'Dashboard';
+  const sideTitle={gaps:'FY 2026 Fund Gaps',strategy:'Proposed NSPP Strategy',apps:'Pending Applications'}[tab]||'Dashboard';
+  const sideSub={gaps:'Budget, chargeable cost, and deficit by region',strategy:'Filling-up rate, chargeable amount, and balance',apps:'DBM and CAReER financial requirement by region'}[tab]||'';
+  const kpiTitle=$('#kpiSectionTitle'); if(kpiTitle)kpiTitle.textContent=sideTitle;
+  const kpiSub=$('#kpiSectionSub'); if(kpiSub)kpiSub.textContent=sideSub;
+  const tableNote=$('#tblSub'); if(tableNote)tableNote.textContent=`${label} table · showing all 17 regions. Sort, filter, or click any row for the full regional breakdown.`;
+}
+function activeRegions(){
+  return RAW.filter(r=>state.selected.has(r.code));
+}
+function measureVal(r){return Math.abs(r[state.measure]||0);}
+function sortRegions(list,metric){
+  const arr=[...list];
+  if(state.chartSort==='name') arr.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(state.chartSort==='value_asc') arr.sort((a,b)=>Math.abs(a[metric])-Math.abs(b[metric]));
+  else arr.sort((a,b)=>Math.abs(b[metric])-Math.abs(a[metric]));
+  return arr;
+}
+function statusVal(r){return cfg().statusOf(r);}
+
+/* tooltip */
+const tip=$('#tip');
+function showTip(html,e){tip.innerHTML=html;tip.style.display='block';moveTip(e);}
+function moveTip(e){const p=12;let x=e.clientX+p,y=e.clientY+p;const w=tip.offsetWidth,h=tip.offsetHeight;if(x+w>innerWidth)x=e.clientX-w-p;if(y+h>innerHeight)y=e.clientY-h-p;tip.style.left=x+'px';tip.style.top=y+'px';}
+function hideTip(){tip.style.display='none';}
+
+/* ---------- KPIs ---------- */
+function renderKPIs(){
+  const rs=activeRegions(), c=cfg(); let html='';
+  const sum=k=>rs.reduce((a,r)=>a+(r[k]||0),0);
+  if(state.ds==='gaps'){
+    const def=rs.filter(r=>r.g_deficit>0);
+    html+=kpi('total',peso(sum('g_budget')),'FY 2026 Allocated Budget','Total reclassification budget','g_budget');
+    html+=kpi('k-blue',peso(sum('g_unfunded')),'FY 2025 Unfunded Recurring Cost','Salary differentials, May–Dec 2025','g_unfunded');
+    html+=kpi('k-blue',peso(sum('g_expenses')),'FY 2026 Expenses','Salary differential, Jan 2026 onwards','g_expenses');
+    html+=kpi('k-orange',peso(sum('g_charge')),'Total Chargeable','FY25 unfunded + FY26 expenses','g_charge');
+    html+=kpi('k-red',peso(sum('g_deficit')),'Deficit','Chargeable less allocated budget','g_deficit');
+    html+=kpi('k-red',def.length,'Regions With Deficit','Regions with a positive funding gap','deficit_count');
+  } else if(state.ds==='strategy'){
+    const elig=rs.filter(r=>r.s_fill<10);
+    html+=kpi('total',peso(sum('s_unreleased')),'Unreleased Appropriations','NSPP lump sum available','s_unreleased');
+    html+=kpi('k-orange',peso(sum('s_charge')),'Proposed Chargeable','Amount charged to augment deficits','s_charge');
+    html+=kpi('k-green',peso(sum('s_balance')),'Remaining Balance','After proposed utilization','s_balance');
+    html+=kpi('k-blue',elig.length,'Eligible Regions','Filling-up rate below 10%','eligible_count');
+  } else {
+    const defc=rs.filter(r=>r.a_remain<0);
+    html+=kpi('total',peso(sum('a_tot_f')),'Total Financial Requirement','Financial requirement of pending applications','a_tot_f');
+    html+=kpi('k-blue',peso(sum('a_dbm_f')),'Under DBM (Financial)','Financial requirement in DBM processing','a_dbm_f');
+    html+=kpi('k-orange',peso(sum('a_car_f')),'In CAReER (Financial)','Financial requirement remaining in CAReER','a_car_f');
+    html+=kpi('k-blue',intc(sum('a_dbm_p')),'Under DBM (Applications)','Number of applications in DBM processing','a_dbm_p');
+    html+=kpi('k-orange',intc(sum('a_car_p')),'In CAReER (Applications)','Number of applications remaining in CAReER','a_car_p');
+    html+=kpi('k-red',peso(sum('a_2027')),'FY 2027 Requirement','Tier 1 + Tier 2 carryover','a_2027');
+  }
+  if(rs.length===0) html='<div class="kpi"><div class="lab">No regions selected</div><div class="cap">Use the ⚙ picker to choose regions.</div></div>';
+  $('#kpis').innerHTML=html;
+}
+function escAttr(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function kpiBreakdown(metric){
+  const rs=activeRegions();
+  let rows=[];
+  if(metric==='deficit_count') rows=rs.filter(r=>r.g_deficit>0).sort((a,b)=>b.g_deficit-a.g_deficit).map(r=>`${r.short}: ${peso(r.g_deficit)}`);
+  else if(metric==='eligible_count') rows=rs.filter(r=>r.s_fill<10).sort((a,b)=>a.s_fill-b.s_fill).map(r=>`${r.short}: ${r.s_fill.toFixed(1)}% filling-up`);
+  else rows=[...rs].sort((a,b)=>Math.abs((b[metric]||0))-Math.abs((a[metric]||0))).slice(0,12).map(r=>`${r.short}: ${metric&&metric.endsWith('_p')?intc(r[metric]||0)+' apps':peso(Math.abs(r[metric]||0))}`);
+  return rows.length ? 'Regional breakdown\n'+rows.slice(0,12).join('\n')+(rows.length>12?'\n…':'') : 'Regional breakdown\nNo matching regions';
+}
+function kpi(cls,num,lab,cap,metric){return `<div class="kpi ${cls}" data-breakdown="${escAttr(kpiBreakdown(metric))}"><div class="num">${num}</div><div class="lab">${lab}</div><div class="cap">${cap}</div></div>`;}
+
+/* ---------- HERO ---------- */
+function renderHero(){
+  const def=RAW.filter(r=>r.g_deficit>0);
+  const totalDef=def.reduce((a,r)=>a+r.g_deficit,0);
+  $('#heroNum').textContent=peso(totalDef);
+  $('#heroScope').textContent=def.length+' of 17 regions in deficit';
+  $('#heroBar').style.width=(def.length/17*100).toFixed(0)+'%';
+}
+
+/* ---------- PRIMARY CHART ---------- */
+function renderPrimary(){
+  const c=cfg(), p=c.primary;
+  $('#primTitle').textContent=p.title; $('#primSub').textContent=p.sub;
+  const modeSeg=$('#primMode'); modeSeg.style.display=(p.mode==='threshold')?'none':'inline-flex';
+  // legend placeholder above chart
+  const cr=$('#crumbs');
+  cr.innerHTML='';
+
+  const host=$('#primChart');
+  if(p.mode==='threshold'){ renderThreshold(host,p); return; }
+  const metric=p.series[0].k==='a_dbm_p'?'a_tot_p':'g_charge';
+  const base=state.ds==='gaps'?activeRegions().filter(r=>r.g_charge>0):activeRegions();
+  const rs=sortRegions(base, metric);
+  if(!rs.length){host.innerHTML='<div class="empty">No regions selected.</div>';cr.innerHTML='';$('#primLegend').innerHTML='';return;}
+  const grouped=state.primMode==='grouped';
+  const W=1000, padL=74, padR=124, padT=8, padB=26;
+  const barsFor=r=>{
+    const bars=[];
+    if(grouped){ p.series.forEach(s=>bars.push({segs:[{n:s.n,c:s.c,k:s.k,val:r[s.k]}],kind:'series'})); }
+    else { bars.push({segs:p.series.map(s=>({n:s.n,c:s.c,k:s.k,val:r[s.k]})),kind:'series'}); }
+    if(p.compare) bars.push({segs:[{n:p.compare.n,c:p.compare.c,k:p.compare.k,val:r[p.compare.k]}],kind:'compare'});
+    return bars;
+  };
+  const nBars=barsFor(rs[0]).length;
+  const barH=p.compare?14:(grouped?12:24), barGap=4, groupGap=16;
+  const groupH=nBars*barH+(nBars-1)*barGap;
+  const H=padT+padB+rs.length*(groupH+groupGap);
+  const maxTotal=Math.max(...rs.map(r=>Math.max(...barsFor(r).map(b=>b.segs.reduce((a,s)=>a+s.val,0)))),1);
+  const plotW=W-padL-padR;
+  const sc=v=>plotW*v/maxTotal;
+  let g='';
+  for(let i=0;i<=4;i++){const x=padL+plotW*i/4;g+=`<line class="gridline" x1="${x}" y1="${padT}" x2="${x}" y2="${H-padB}"/>`;g+=`<text class="axistxt" x="${x}" y="${H-padB+15}" text-anchor="middle">${peso(maxTotal*i/4)}</text>`;}
+  rs.forEach((r,i)=>{
+    const gy=padT+i*(groupH+groupGap);
+    g+=`<text class="rowlabel" x="${padL-8}" y="${gy+groupH/2+4}" text-anchor="end" data-code="${r.code}">${r.short}</text>`;
+    barsFor(r).forEach((b,bi)=>{
+      const by=gy+bi*(barH+barGap);let x=padL;const tot=b.segs.reduce((a,s)=>a+s.val,0);
+      b.segs.forEach(s=>{const w=sc(s.val);const segX=x;
+        g+=`<rect class="bar-seg" x="${x}" y="${by}" width="${Math.max(w,0)}" height="${barH}" ${b.segs.length>1?'':'rx="3"'} fill="${s.c}" data-code="${r.code}" data-k="${s.k}" data-kind="${b.kind}"/>`;
+        const lbl=fmtVal(s.k,s.val);
+        if(w>=lbl.length*5.8+12){g+=`<text class="barlbl" x="${segX+w/2}" y="${by+barH/2+3.3}" text-anchor="middle">${lbl}</text>`;}
+        x+=w;});
+      if(b.segs.length>1){g+=`<text class="axistxt" x="${x+6}" y="${by+barH/2+4}">${fmtSeriesTotal(tot)}</text>`;}
+    });
+  });
+  host.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+  const legItems=p.series.map(s=>({n:s.n,c:s.c}));
+  if(p.compare) legItems.push({n:p.compare.n,c:p.compare.c});
+  cr.innerHTML=legItems.map(s=>`<span><i class="dot" style="background:${s.c}"></i>${s.n}</span>`).join('');
+  $('#primLegend').innerHTML='';
+  wirePrimary(host,p);
+}
+function fmtSeriesTotal(t){return t>=1000&&t<100000&&Number.isInteger(t)?intc(t):(t<1000?intc(t):peso(t));}
+function wirePrimary(host,p){
+  host.querySelectorAll('.bar-seg').forEach(el=>{
+    const r=RAW.find(x=>x.code===el.dataset.code);const k=el.dataset.k,kind=el.dataset.kind;
+    const meta=kind==='compare'?p.compare:p.series.find(s=>s.k===k);
+    el.onmousemove=e=>{
+      const charge=p.series.reduce((a,ss)=>a+r[ss.k],0);
+      if(kind==='compare'){const diff=r[k]-charge;
+        showTip(`<div class="tt">${r.name}</div><div class="tr"><span>${meta.n}</span><span>${fmtVal(k,r[k])}</span></div><div class="tr"><span>Total chargeable</span><span>${fmtVal(k,charge)}</span></div><div class="tr"><span>${diff>=0?'Budget surplus':'Funding shortfall'}</span><span>${fmtVal(k,Math.abs(diff))}</span></div>`,e);
+      } else {
+        const rows=p.series.map(ss=>`<div class="tr"><span>${ss.n}</span><span>${fmtVal(ss.k,r[ss.k])}</span></div>`).join('');
+        showTip(`<div class="tt">${r.name}</div>${rows}<div class="tr"><span>Total chargeable</span><span>${fmtVal(k,charge)}</span></div>`,e);
+      }
+    };
+    el.onmouseleave=hideTip;
+    el.onclick=()=>{hideTip();kind==='compare'?openDetail(r):openDisaggregation(r,p.series);};
+  });
+  host.querySelectorAll('.rowlabel').forEach(el=>{el.onclick=()=>{hideTip();openDetail(RAW.find(r=>r.code===el.dataset.code));};});
+}
+function fmtVal(k,v){return (k.endsWith('_p')||k==='a_tot_p'||k==='a_dbm_p'||k==='a_car_p')?intc(v)+' apps':peso(v);}
+
+function renderThreshold(host,p){
+  const rs=sortRegions(activeRegions(),'s_fill');
+  if(!rs.length){host.innerHTML='<div class="empty">No regions selected.</div>';$('#crumbs').innerHTML='';$('#primLegend').innerHTML='';return;}
+  const W=1000,padL=74,padR=70,padT=12,padB=30;
+  const barH=16,gap=10;
+  const vals=rs.map(r=>r.s_fill);
+  const mn=Math.min(-6,...vals,0), mx=Math.max(25,...vals,p.threshold);
+  const plotW=W-padL-padR;
+  const x=v=>padL+plotW*(v-mn)/(mx-mn);
+  const zeroX=x(0), benchX=x(p.threshold);
+  const H=padT+padB+rs.length*(barH+gap);
+  let g='';
+  const ticks=[];
+  for(let i=0;i<=5;i++)ticks.push(mn+(mx-mn)*i/5);
+  ticks.forEach(v=>{const xx=x(v);g+=`<line class="gridline" x1="${xx}" y1="${padT}" x2="${xx}" y2="${H-padB}"/><text class="axistxt" x="${xx}" y="${H-padB+16}" text-anchor="middle">${v.toFixed(0)}%</text>`;});
+  g+=`<line class="axis" x1="${zeroX}" y1="${padT}" x2="${zeroX}" y2="${H-padB}"/>`;
+  g+=`<line class="thresh" x1="${benchX}" y1="${padT}" x2="${benchX}" y2="${H-padB}"/><text class="axistxt" x="${benchX-4}" y="${padT-3}" text-anchor="end" fill="var(--red)">10% benchmark</text>`;
+  rs.forEach((r,i)=>{
+    const y=padT+i*(barH+gap);const v=r.s_fill;
+    const xx=x(v), bx=Math.min(zeroX,xx), bw=Math.abs(xx-zeroX);
+    const col=v<10?'var(--c5)':'var(--c3)';
+    g+=`<text class="rowlabel" x="${padL-8}" y="${y+barH/2+4}" text-anchor="end" data-code="${r.code}">${r.short}</text>`;
+    g+=`<rect class="hbar" x="${bx}" y="${y}" width="${Math.max(bw,1)}" height="${barH}" rx="3" fill="${col}" data-code="${r.code}"/>`;
+    const label=v.toFixed(1)+'%';
+    if(bw>=label.length*5.8+12){g+=`<text class="barlbl" x="${bx+bw/2}" y="${y+barH/2+3.5}" text-anchor="middle">${label}</text>`;}
+    else {g+=`<text class="axistxt" x="${v>=0?xx+5:xx-5}" y="${y+barH/2+4}" text-anchor="${v>=0?'start':'end'}">${label}</text>`;}
+  });
+  host.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+  $('#crumbs').innerHTML=`<span><i class="dot" style="background:var(--c5)"></i>Eligible (&lt;10%)</span><span><i class="dot" style="background:var(--c3)"></i>Not eligible (≥10%)</span>`;
+  $('#primLegend').innerHTML='';
+  host.querySelectorAll('.hbar').forEach(el=>{const r=RAW.find(x=>x.code===el.dataset.code);
+    el.onmousemove=e=>showTip(`<div class="tt">${r.name}</div><div class="tr"><span>Filling-up rate</span><span>${r.s_fill}%</span></div><div class="tr"><span>Unreleased</span><span>${peso(r.s_unreleased)}</span></div>`,e);
+    el.onmouseleave=hideTip;
+    el.onclick=()=>{hideTip();openDisaggregation(r,null);};});
+  host.querySelectorAll('.rowlabel').forEach(el=>{el.onclick=()=>{hideTip();openDetail(RAW.find(r=>r.code===el.dataset.code));};});
+}
+
+function renderNspFill(){
+  const host=$('#nspFillChart');
+  const leg=$('#nspFillLegend');
+  if(!host||!leg)return;
+  const rs=[...activeRegions()].sort((a,b)=>a.s_fill-b.s_fill);
+  if(!rs.length){host.innerHTML='<div class="empty">No regions selected.</div>';leg.innerHTML='';return;}
+  const W=560,padL=74,padR=62,padT=12,padB=30;
+  const barH=14,gap=8;
+  const vals=rs.map(r=>r.s_fill);
+  const mn=Math.min(-6,...vals,0), mx=Math.max(25,...vals,10);
+  const plotW=W-padL-padR;
+  const x=v=>padL+plotW*(v-mn)/(mx-mn);
+  const zeroX=x(0), benchX=x(10);
+  const H=padT+padB+rs.length*(barH+gap);
+  let g='';
+  for(let i=0;i<=5;i++){
+    const vv=mn+(mx-mn)*i/5, xx=x(vv);
+    g+=`<line class="gridline" x1="${xx}" y1="${padT}" x2="${xx}" y2="${H-padB}"/><text class="axistxt" x="${xx}" y="${H-padB+16}" text-anchor="middle">${vv.toFixed(0)}%</text>`;
+  }
+  g+=`<line class="axis" x1="${zeroX}" y1="${padT}" x2="${zeroX}" y2="${H-padB}"/>`;
+  g+=`<line class="thresh" x1="${benchX}" y1="${padT}" x2="${benchX}" y2="${H-padB}"/><text class="axistxt" x="${benchX-4}" y="${padT-3}" text-anchor="end" fill="var(--red)">10% benchmark</text>`;
+  rs.forEach((r,i)=>{
+    const y=padT+i*(barH+gap);const v=r.s_fill;
+    const xx=x(v), bx=Math.min(zeroX,xx), bw=Math.abs(xx-zeroX);
+    const col=v<10?'var(--c5)':'var(--c3)';
+    g+=`<text class="rowlabel" x="${padL-8}" y="${y+barH/2+4}" text-anchor="end" data-code="${r.code}">${r.short}</text>`;
+    g+=`<rect class="hbar" x="${bx}" y="${y}" width="${Math.max(bw,1)}" height="${barH}" rx="3" fill="${col}" data-code="${r.code}"/>`;
+    const label=v.toFixed(1)+'%';
+    if(bw>=label.length*5.8+12){g+=`<text class="barlbl" x="${bx+bw/2}" y="${y+barH/2+3.5}" text-anchor="middle">${label}</text>`;}
+    else {g+=`<text class="axistxt" x="${v>=0?xx+5:xx-5}" y="${y+barH/2+4}" text-anchor="${v>=0?'start':'end'}">${label}</text>`;}
+  });
+  leg.innerHTML=`<span><i class="dot" style="background:var(--c5)"></i>Eligible (&lt;10%)</span><span><i class="dot" style="background:var(--c3)"></i>Not eligible (≥10%)</span>`;
+  host.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+  host.querySelectorAll('.hbar').forEach(el=>{const r=RAW.find(x=>x.code===el.dataset.code);
+    el.onmousemove=e=>showTip(`<div class="tt">${r.name}</div><div class="tr"><span>Filling-up rate</span><span>${r.s_fill}%</span></div><div class="tr"><span>Unreleased</span><span>${peso(r.s_unreleased)}</span></div>`,e);
+    el.onmouseleave=hideTip;
+    el.onclick=()=>{hideTip();openDetail(r);};
+  });
+}
+
+
+
+function renderStrategyBalance(){
+const host=$('#strategyBalanceChart');
+if(!host)return;
+renderStrategyStackedHist(host);
+}
+
+function renderAppsVolume(){
+  const host=$('#appsVolumeChart');
+  const leg=$('#appsVolumeLegend');
+  if(!host||!leg)return;
+  const isApps=state.appsUnit==='apps';
+  const kd=isApps?'a_dbm_p':'a_dbm_f', kc=isApps?'a_car_p':'a_car_f', kt=isApps?'a_tot_p':'a_tot_f';
+  const fmt=isApps?intc:peso;
+  const titleEl=$('#appsVolTitle'); if(titleEl)titleEl.textContent=isApps?'Application volume by processing stage':'Financial requirement by processing stage';
+  const subEl=$('#appsVolSub'); if(subEl)subEl.textContent=isApps?'Number of applications under DBM approval and remaining in CAReER, per region.':'Financial requirement under DBM approval and remaining in CAReER, per region.';
+  const au=$('#appsUnit'); if(au)au.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.u===state.appsUnit));
+  const rs=[...RAW].sort((a,b)=>b[kt]-a[kt]);
+  if(!rs.length){host.innerHTML='<div class="empty">No application data available.</div>';leg.innerHTML='';return;}
+  const W=1000,padL=82,padR=104,padT=10,padB=30;
+  const barH=16,gap=10;
+  const H=padT+padB+rs.length*(barH+gap);
+  const mx=Math.max(...rs.map(r=>r[kt]),1);
+  const plotW=W-padL-padR;
+  const sc=v=>plotW*v/mx;
+  let g='';
+  for(let i=0;i<=4;i++){
+    const vv=mx*i/4, xx=padL+plotW*i/4;
+    g+=`<line class="gridline" x1="${xx}" y1="${padT}" x2="${xx}" y2="${H-padB}"/>`;
+    g+=`<text class="axistxt" x="${xx}" y="${H-padB+16}" text-anchor="middle">${isApps?intc(Math.round(vv)):peso(vv)}</text>`;
+  }
+  rs.forEach((r,i)=>{
+    const y=padT+i*(barH+gap);
+    const dbm=Math.max(r[kd],0), car=Math.max(r[kc],0), total=Math.max(r[kt],0);
+    const dw=sc(dbm), cw=sc(car);
+    g+=`<text class="rowlabel" x="${padL-8}" y="${y+barH/2+4}" text-anchor="end" data-code="${r.code}">${r.short}</text>`;
+    g+=`<rect class="hbar" x="${padL}" y="${y}" width="${Math.max(dw,0)}" height="${barH}" rx="3" fill="var(--c1)" data-code="${r.code}" data-stage="dbm"/>`;
+    g+=`<rect class="hbar" x="${padL+dw}" y="${y}" width="${Math.max(cw,0)}" height="${barH}" rx="3" fill="var(--c4)" data-code="${r.code}" data-stage="career"/>`;
+    const dbmLbl=fmt(dbm), carLbl=fmt(car);
+    if(dw>=dbmLbl.length*5.8+12){g+=`<text class="barlbl" x="${padL+dw/2}" y="${y+barH/2+3.5}" text-anchor="middle">${dbmLbl}</text>`;}
+    if(cw>=carLbl.length*5.8+12){g+=`<text class="barlbl" x="${padL+dw+cw/2}" y="${y+barH/2+3.5}" text-anchor="middle">${carLbl}</text>`;}
+    g+=`<text class="axistxt" x="${padL+dw+cw+6}" y="${y+barH/2+4}">${fmt(total)}</text>`;
+  });
+  const totLabel=isApps?'Total = pending applications':'Total = total financial requirement';
+  leg.innerHTML=`<span><i class="dot" style="background:var(--c1)"></i>Under DBM Approval</span><span><i class="dot" style="background:var(--c4)"></i>Remaining in CAReER</span><span class="muted">${totLabel}</span>`;
+  host.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
+  host.querySelectorAll('.hbar').forEach(el=>{const r=RAW.find(x=>x.code===el.dataset.code);
+    el.onmousemove=e=>showTip(`<div class="tt">${r.name}</div><div class="tr"><span>Under DBM Approval</span><span>${fmt(r[kd])}</span></div><div class="tr"><span>Remaining in CAReER</span><span>${fmt(r[kc])}</span></div><div class="tr"><span>${isApps?'Total applications':'Total financial requirement'}</span><span>${fmt(r[kt])}</span></div>`,e);
+    el.onmouseleave=hideTip;
+    el.onclick=()=>{hideTip();openDetail(r);};
+  });
+  host.querySelectorAll('.rowlabel').forEach(el=>{el.onclick=()=>{hideTip();openDetail(RAW.find(r=>r.code===el.dataset.code));};});
+}
+
+/* ---------- DONUT ---------- */
+function renderDonut(){
+  const c=cfg(),d=c.donut;$('#donutTitle').textContent=d.title;$('#donutSub').textContent=d.sub;
+  let rs=activeRegions().filter(r=>Math.abs(r[d.metric])>0);
+  rs=sortRegions(rs,d.metric);
+  const total=rs.reduce((a,r)=>a+Math.abs(r[d.metric]),0);
+  const host=$('#donutChart');
+  if(!total){host.innerHTML='<div class="empty">No data for selected regions.</div>';$('#donutLegend').innerHTML='';return;}
+  const segs=rs.map((r,i)=>({name:r.short,full:r.name,val:Math.abs(r[d.metric]),c:C[i%C.length],code:r.code}));
+  const cx=110,cy=110,rO=100,rI=58;let a0=-Math.PI/2;let g='';
+  segs.forEach(s=>{const ang=s.val/total*Math.PI*2;const a1=a0+ang;
+    g+=`<path class="arc" d="${arc(cx,cy,rO,rI,a0,a1)}" fill="${s.c}" data-code="${s.code||''}"/>`;a0=a1;});
+  g+=`<text x="${cx}" y="${cy-4}" text-anchor="middle" style="font-size:12px;fill:var(--ink2)">Total</text><text x="${cx}" y="${cy+16}" text-anchor="middle" style="font-size:17px;font-weight:800;fill:var(--ink)">${peso(total)}</text>`;
+  host.innerHTML=`<svg viewBox="0 0 220 220" style="max-width:285px;margin:0 auto">${g}</svg>`;
+  $('#donutLegend').innerHTML=`<table class="legtable"><thead><tr><th>Segment</th><th class="n">Value</th><th class="n">Share</th></tr></thead><tbody>`+
+    segs.map(s=>`<tr><td><i class="dot" style="display:inline-block;background:${s.c}"></i> ${s.full}</td><td class="n">${peso(s.val)}</td><td class="n">${(s.val/total*100).toFixed(1)}%</td></tr>`).join('')+`</tbody></table>`;
+  host.querySelectorAll('.arc').forEach(el=>{const s=segs.find(x=>(x.code||'')===el.dataset.code);
+    el.onmousemove=e=>showTip(`<div class="tt">${s.full}</div><div class="tr"><span>Value</span><span>${peso(s.val)}</span></div><div class="tr"><span>Share</span><span>${(s.val/total*100).toFixed(1)}%</span></div>`,e);
+    el.onmouseleave=hideTip;
+    el.onclick=()=>{if(!el.dataset.code)return;hideTip();openDisaggregation(RAW.find(r=>r.code===el.dataset.code),null);};});
+}
+function arc(cx,cy,rO,rI,a0,a1){const x0=cx+rO*Math.cos(a0),y0=cy+rO*Math.sin(a0),x1=cx+rO*Math.cos(a1),y1=cy+rO*Math.sin(a1);const xi1=cx+rI*Math.cos(a1),yi1=cy+rI*Math.sin(a1),xi0=cx+rI*Math.cos(a0),yi0=cy+rI*Math.sin(a0);const laf=(a1-a0)>Math.PI?1:0;return `M${x0} ${y0} A${rO} ${rO} 0 ${laf} 1 ${x1} ${y1} L${xi1} ${yi1} A${rI} ${rI} 0 ${laf} 0 ${xi0} ${yi0} Z`;}
+
+/* ---------- HISTOGRAM ---------- */
+function renderHist(){
+  const c=cfg(),h=c.hist;$('#histTitle').textContent=h.title;$('#histSub').textContent=h.sub;
+  const host=$('#histChart');
+  if(state.ds==='strategy'){renderStrategyStackedHist(host);return;}
+  const rs=sortRegions(activeRegions().filter(r=>Math.abs(r[h.metric])>0),h.metric);
+  if(!rs.length){host.innerHTML='<div class="empty">No data for selected regions.</div>';return;}
+  const W=460,padL=40,padR=10,padT=12,padB=38,H=300;
+  const step=(W-padL-padR)/rs.length;const barW=Math.min(30,step-6);
+  const mx=Math.max(...rs.map(r=>Math.abs(r[h.metric])),1);const plotH=H-padT-padB;
+  const y=v=>padT+plotH*(1-v/mx);let g='';
+  for(let i=0;i<=4;i++){const vv=mx*i/4;const yy=y(vv);g+=`<line class="gridline" x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}"/><text class="axistxt" x="${padL-5}" y="${yy+3}" text-anchor="end">${peso(vv)}</text>`;}
+  rs.forEach((r,i)=>{const cx=padL+step*i+step/2;const v=Math.abs(r[h.metric]);const yy=y(v);
+    g+=`<rect class="hbar" x="${cx-barW/2}" y="${yy}" width="${barW}" height="${H-padB-yy}" rx="3" fill="${h.color}" data-code="${r.code}"/>`;
+    g+=`<text class="axistxt" x="${cx}" y="${H-padB+14}" text-anchor="middle" transform="rotate(35 ${cx} ${H-padB+14})">${r.short}</text>`;});
+  host.innerHTML=`<svg viewBox="0 0 ${W} ${H}">${g}</svg>`;
+  host.querySelectorAll('.hbar').forEach(el=>{const r=RAW.find(x=>x.code===el.dataset.code);
+    el.onmousemove=e=>showTip(`<div class="tt">${r.name}</div><div class="tr"><span>${h.title}</span><span>${peso(Math.abs(r[h.metric]))}</span></div>`,e);
+    el.onmouseleave=hideTip;el.onclick=()=>{hideTip();openDisaggregation(r,null);};});
+}
+
+function renderStrategyStackedHist(host){
+  const rs=activeRegions().filter(r=>Math.abs(r.s_unreleased)>0).sort((a,b)=>{
+    const ac=Math.max(a.s_charge,0), bc=Math.max(b.s_charge,0);
+    if(ac>0 || bc>0){
+      if(bc!==ac)return bc-ac;
+      return b.s_balance-a.s_balance;
+    }
+    return b.s_balance-a.s_balance;
+  });
+  if(!rs.length){host.innerHTML='<div class="empty">No data for selected regions.</div>';return;}
+  const W=560,padL=78,padR=82,padT=12,padB=30;
+  const barH=14,gap=8;
+  const H=padT+padB+rs.length*(barH+gap);
+  const mx=Math.max(...rs.map(r=>Math.abs(r.s_unreleased)),1);
+  const plotW=W-padL-padR;
+  const x=v=>padL+plotW*v/mx;
+  let g='';
+  for(let i=0;i<=4;i++){
+    const vv=mx*i/4, xx=x(vv);
+    g+=`<line class="gridline" x1="${xx}" y1="${padT}" x2="${xx}" y2="${H-padB}"/>`;
+    g+=`<text class="axistxt" x="${xx}" y="${H-padB+16}" text-anchor="middle">${peso(vv)}</text>`;
+  }
+  rs.forEach((r,i)=>{
+    const y=padT+i*(barH+gap);
+    const total=Math.max(r.s_unreleased,0);
+    const charge=Math.max(r.s_charge,0);
+    const remain=Math.max(r.s_balance,0);
+    const cw=plotW*charge/mx, rw=plotW*remain/mx;
+    g+=`<text class="rowlabel" x="${padL-8}" y="${y+barH/2+4}" text-anchor="end" data-code="${r.code}">${r.short}</text>`;
+    g+=`<rect class="hbar" x="${padL}" y="${y}" width="${Math.max(cw,0)}" height="${barH}" rx="3" fill="var(--c5)" data-code="${r.code}" data-part="charge"/>`;
+    g+=`<rect class="hbar" x="${padL+cw}" y="${y}" width="${Math.max(rw,0)}" height="${barH}" rx="3" fill="var(--green)" data-code="${r.code}" data-part="remain"/>`;
+    const chargeLbl=peso(charge), remainLbl=peso(remain);
+    if(cw>=chargeLbl.length*5.8+12){g+=`<text class="barlbl" x="${padL+cw/2}" y="${y+barH/2+3.5}" text-anchor="middle">${chargeLbl}</text>`;}
+    if(rw>=remainLbl.length*5.8+12){g+=`<text class="barlbl" x="${padL+cw+rw/2}" y="${y+barH/2+3.5}" text-anchor="middle">${remainLbl}</text>`;}
+    if(total>0){g+=`<text class="axistxt" x="${padL+cw+rw+6}" y="${y+barH/2+4}">${peso(total)}</text>`;}
+  });
+  host.innerHTML=`<div class="legend" style="margin:0 0 8px 0"><span><i class="dot" style="background:var(--c5)"></i>Chargeable</span><span><i class="dot" style="background:var(--green)"></i>Remaining balance</span><span class="muted">Total = unreleased appropriation</span></div><svg viewBox="0 0 ${W} ${H}">${g}</svg>`;
+  host.querySelectorAll('.hbar').forEach(el=>{const r=RAW.find(x=>x.code===el.dataset.code);
+    el.onmousemove=e=>showTip(`<div class="tt">${r.name}</div><div class="tr"><span>Chargeable</span><span>${peso(r.s_charge)}</span></div><div class="tr"><span>Remaining balance</span><span>${peso(r.s_balance)}</span></div><div class="tr"><span>Unreleased appropriation</span><span>${peso(r.s_unreleased)}</span></div>`,e);
+    el.onmouseleave=hideTip;
+    el.onclick=()=>{hideTip();openDisaggregation(r,null);};
+  });
+  host.querySelectorAll('.rowlabel').forEach(el=>{el.onclick=()=>{hideTip();openDetail(RAW.find(r=>r.code===el.dataset.code));};});
+}
+
+/* ---------- TABLE ---------- */
+function tableRows(){
+  const c=tableCfg();let rs=[...RAW];
+  if(state.search){const q=state.search.toLowerCase();rs=rs.filter(r=>r.name.toLowerCase().includes(q)||r.short.toLowerCase().includes(q));}
+  // column filters
+  Object.entries(state.colFilters).forEach(([k,v])=>{if(!v)return;const col=c.columns.find(x=>x.k===k);if(!col)return;
+    if(col.t==='text'||col.t==='status'){rs=rs.filter(r=>String(getCell(r,col)).toLowerCase().includes(v.toLowerCase()));}
+    else {const num=parseFloat(v.replace(/[^0-9.\-]/g,''));if(!isNaN(num))rs=rs.filter(r=>Math.abs(r[k])>=num);}
+  });
+  if(state.sortCol){const col=c.columns.find(x=>x.k===state.sortCol);
+    rs.sort((a,b)=>{let av=col.t==='text'||col.t==='status'?String(getCell(a,col)):Math.abs(a[state.sortCol]);let bv=col.t==='text'||col.t==='status'?String(getCell(b,col)):Math.abs(b[state.sortCol]);
+      if(av<bv)return -1*state.sortDir;if(av>bv)return 1*state.sortDir;return 0;});}
+  return rs;
+}
+function getCell(r,col){
+  if(col.k==='_gstatus'||col.k==='_sstatus'||col.k==='_astatus')return tableCfg().statusOf(r);
+  if(col.k==='name')return r.name;return r[col.k];
+}
+function fmtCell(r,col){
+  const v=getCell(r,col);
+  if(col.t==='money')return peso(r[col.k]);
+  if(col.t==='int')return intc(v);
+  if(col.t==='pct')return v.toFixed(1)+'%';
+  if(col.t==='status'){const st=tableCfg().statusOf(r);const good=/Funded|Within|Not eligible/.test(st);return `<span class="badge ${good?'b-green':'b-red'}">${st}</span>`;}
+  return v;
+}
+function renderTable(){
+  const c=tableCfg();$('#tblTitle').textContent=c.tblTitle;
+  const sub=$('#tblSub'); if(sub)sub.textContent='Showing all 17 regions for this table view. Sort, filter, or click any row for the full regional breakdown.';
+  const tv=$('#tableView'); if(tv)tv.value=state.tableDs||state.ds;
+  const all=tableRows();const total=all.length;
+  const pages=Math.max(1,Math.ceil(total/state.pageSize));
+  if(state.page>pages)state.page=pages;
+  const start=(state.page-1)*state.pageSize;const rows=all.slice(start,start+state.pageSize);
+  let thead=`<thead><tr>`+c.columns.map(col=>`<th data-k="${col.k}">${col.n}${state.sortCol===col.k?`<span class="sortcaret">${state.sortDir>0?'▲':'▼'}</span>`:''}</th>`).join('')+`</tr><tr class="frow">`+
+    c.columns.map(col=>{if(col.t==='status'){const opts=['<option value="">All</option>'].concat(c.statuses.map(s=>`<option ${state.colFilters[col.k]===s?'selected':''}>${s}</option>`)).join('');return `<th><select data-fk="${col.k}">${opts}</select></th>`;}return `<th><input data-fk="${col.k}" placeholder="${col.t==='text'?'contains':'≥ min'}" value="${state.colFilters[col.k]||''}"/></th>`;}).join('')+`</tr></thead>`;
+  let tbody='<tbody>';
+  if(!rows.length)tbody+=`<tr><td colspan="${c.columns.length}" class="empty">No records match the current filters.</td></tr>`;
+  else rows.forEach(r=>{tbody+=`<tr data-code="${r.code}">`+c.columns.map(col=>`<td>${fmtCell(r,col)}</td>`).join('')+`</tr>`;});
+  tbody+='</tbody>';
+  $('#table').innerHTML=thead+tbody;
+  $('#tblCount').textContent=`${total} region${total!==1?'s':''} · showing ${total?start+1:0}–${Math.min(start+state.pageSize,total)}`;
+  // pager
+  $('#pager').innerHTML=`<span>Rows ${total?start+1:0}–${Math.min(start+state.pageSize,total)} of ${total} · Page ${state.page} of ${pages}</span><span class="pg"><button class="btn" id="prev" ${state.page<=1?'disabled':''}>← Prev</button><button class="btn" id="next" ${state.page>=pages?'disabled':''}>Next →</button></span>`;
+  // wire
+  $('#table').querySelectorAll('thead tr:first-child th').forEach(th=>{th.onclick=()=>{const k=th.dataset.k;if(state.sortCol===k)state.sortDir*=-1;else{state.sortCol=k;state.sortDir=1;}renderTable();};});
+  $('#table').querySelectorAll('[data-fk]').forEach(inp=>{const ev=inp.tagName==='SELECT'?'change':'input';inp.addEventListener(ev,e=>{state.colFilters[inp.dataset.fk]=e.target.value;state.page=1;renderTableDebounced(inp.dataset.fk);});});
+  $('#table').querySelectorAll('tbody tr[data-code]').forEach(tr=>tr.onclick=()=>openDetail(RAW.find(r=>r.code===tr.dataset.code)));
+  const pv=$('#prev'),nx=$('#next');if(pv)pv.onclick=()=>{state.page--;renderTable();};if(nx)nx.onclick=()=>{state.page++;renderTable();};
+}
+let debTimer,debFocus;
+function renderTableDebounced(fk){clearTimeout(debTimer);debFocus=fk;debTimer=setTimeout(()=>{renderTable();const el=$(`[data-fk="${debFocus}"]`);if(el&&el.tagName==='INPUT'){el.focus();const val=el.value;el.value='';el.value=val;}},260);}
+
+/* ---------- MODALS ---------- */
+function openDetail(r){
+  const c=cfg();
+  let groups='';
+  const tiles=arr=>arr.map(t=>`<div class="tile"><div class="tl">${t[0]}</div><div class="tv">${t[1]}</div></div>`).join('');
+  groups+=`<div class="mgroup"><h4>Status</h4><div class="tiles">${tiles([['Region',r.name],['Dataset',c.title],['Standing',statusVal(r)]])}</div></div>`;
+  groups+=`<div class="mgroup"><h4>FY 2026 Funding Gap</h4><div class="tiles">${tiles([['Reclass Budget',full(r.g_budget)],['FY25 Unfunded',full(r.g_unfunded)],['FY26 Expenses',full(r.g_expenses)],['Total Chargeable',full(r.g_charge)],['Total Deficit',full(r.g_deficit)]])}</div></div>`;
+  groups+=`<div class="mgroup"><h4>NSPP Funding Strategy</h4><div class="tiles">${tiles([['Filling-up rate',r.s_fill+'%'],['Unreleased Approp.',full(r.s_unreleased)],['Chargeable',full(r.s_charge)],['Remaining Balance',full(r.s_balance)]])}</div></div>`;
+  groups+=`<div class="mgroup"><h4>Pending Applications</h4><div class="tiles">${tiles([['Under DBM',intc(r.a_dbm_p)],['In CAReER',intc(r.a_car_p)],['Total Apps',intc(r.a_tot_p)],['Financial Req.',full(r.a_tot_f)],['FY2027 Tier 1',full(r.a_t1)],['FY2027 Tier 2',full(r.a_t2)],['FY2027 Total',full(r.a_2027)],['Remaining/Deficit',full(r.a_remain)]])}</div></div>`;
+  openModal(r.name,'Full regional breakdown across all datasets',groups);
+}
+function openDisaggregation(r,series){
+  const c=cfg();let rows=[],label='',valfmt=full,segTotal=0;
+  if(state.ds==='gaps'){
+    rows=[['FY 2025 Unfunded',r.g_unfunded],['FY 2026 Expenses',r.g_expenses]];label='Total Chargeable';segTotal=r.g_charge;
+    rows.push(['Less: Allocated Budget',-r.g_budget]);
+  } else if(state.ds==='strategy'){
+    rows=[['Chargeable against unreleased',r.s_charge],['Remaining balance',r.s_balance]];label='Unreleased Appropriations';segTotal=r.s_unreleased;
+  } else {
+    rows=[['Under DBM Approval',r.a_dbm_f],['Remaining in CAReER',r.a_car_f]];label='Total Financial Requirement';segTotal=r.a_tot_f;
+  }
+  const shown=rows.filter(x=>x[1]!==0);
+  const sum=shown.reduce((a,x)=>a+x[1],0);
+  const body=`<table class="dis"><thead><tr><th>Component</th><th>Amount</th><th>Share of segment</th></tr></thead><tbody>`+
+    shown.map(x=>`<tr><td>${x[0]}</td><td>${full(x[1])}</td><td>${(Math.abs(x[1])/Math.abs(segTotal)*100).toFixed(1)}%</td></tr>`).join('')+
+    `</tbody><tfoot><tr><td>${label}</td><td>${full(sum)}</td><td>100%</td></tr></tfoot></table>`+
+    `<div class="reconcile">Reconciliation: components sum to <b>${full(sum)}</b>, matching the ${label.toLowerCase()} shown in the chart.</div>`;
+  openModal(r.name,`Disaggregation of ${label.toLowerCase()} — ${cfg().title}`,body);
+}
+function openModal(title,sub,body){
+  $('#modal').innerHTML=`<div class="mhead"><div><h3>${title}</h3><div class="msub">${sub}</div></div><button class="mclose" id="mclose">✕</button></div><div class="mbody">${body}</div>`;
+  $('#backdrop').classList.add('open');
+  $('#mclose').onclick=closeModal;
+}
+function closeModal(){$('#backdrop').classList.remove('open');}
+$('#backdrop').onclick=e=>{if(e.target===$('#backdrop'))closeModal();};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+/* ---------- GEAR PICKER ---------- */
+function openGear(){
+  const c=cfg();const metric=state.measure;
+  const rs=sortRegions(RAW,metric);
+  const rowsHtml=()=>rs.map(r=>`<label class="tile" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:9px 12px"><span style="display:flex;gap:9px;align-items:center"><input type="checkbox" data-code="${r.code}" ${state.selected.has(r.code)?'checked':''}/> ${r.name}</span><b style="font-variant-numeric:tabular-nums">${state.measure.endsWith('_p')?intc(r[metric]):peso(Math.abs(r[metric]))}</b></label>`).join('');
+  const body=`<input class="msearch" id="gearSearch" placeholder="Search regions…"/><div style="display:flex;gap:8px;margin-bottom:12px"><button class="btn btn-primary" id="gTop5">Top 5</button><button class="btn" id="gAll">Select all</button><button class="btn" id="gClear">Clear</button></div><div id="gearList" style="display:grid;gap:8px;max-height:46vh;overflow:auto">${rowsHtml()}</div>`;
+  openModal('Choose regions','Selection drives KPIs, charts and the table',body);
+  const relist=()=>{$('#gearList').innerHTML=rowsHtml();wireGear();};
+  function wireGear(){$('#gearList').querySelectorAll('input[data-code]').forEach(cb=>cb.onchange=()=>{if(cb.checked)state.selected.add(cb.dataset.code);else state.selected.delete(cb.dataset.code);render(false);});}
+  wireGear();
+  $('#gearSearch').oninput=e=>{const q=e.target.value.toLowerCase();$('#gearList').querySelectorAll('label').forEach(l=>{l.style.display=l.textContent.toLowerCase().includes(q)?'':'none';});};
+  $('#gTop5').onclick=()=>{state.selected=new Set(sortRegions(RAW,metric).slice(0,5).map(r=>r.code));relist();render(false);};
+  $('#gAll').onclick=()=>{state.selected=new Set(RAW.map(r=>r.code));relist();render(false);};
+  $('#gClear').onclick=()=>{state.selected=new Set();relist();render(false);};
+}
+
+/* ---------- CSV EXPORT ---------- */
+function exportCSV(){
+  const c=tableCfg();const rows=tableRows();
+  const head=c.columns.map(col=>col.n).join(',');
+  const lines=rows.map(r=>c.columns.map(col=>{const v=getCell(r,col);return typeof v==='number'?v:'"'+String(v).replace(/"/g,'""')+'"';}).join(','));
+  const blob=new Blob([head+'\n'+lines.join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`ecp_${state.ds}.csv`;a.click();
+}
+
+/* ---------- populate selects ---------- */
+function syncControls(){
+  const c=cfg();
+  const sf=$('#statusFilter');if(sf){sf.innerHTML='<option value="all">All regions</option>'+c.statuses.map(s=>`<option ${state.status===s?'selected':''}>${s}</option>`).join('');}
+  if(![...'all',...c.statuses].includes(state.status))state.status='all';
+  const qr=$('#quickRegion');if(qr){qr.innerHTML='<option value="all">All selected</option>'+RAW.map(r=>`<option value="${r.code}">${r.name}</option>`).join('');}
+  const ms=$('#measure');if(ms){ms.innerHTML=c.measures.map(m=>`<option value="${m.k}" ${state.measure===m.k?'selected':''}>${m.n}</option>`).join('');}
+}
+
+/* ---------- master render ---------- */
+function render(resetStatus){
+  renderHero();syncControls();renderKPIs();renderPrimary();renderNspFill();renderStrategyBalance();renderAppsVolume();renderTable();updateTabVisibility();
+}
+
+/* ---------- events ---------- */
+document.querySelectorAll('.tab-btn').forEach(b=>b.onclick=()=>setActiveTab(b.dataset.tab));
+$('#tableView').onchange=e=>{state.tableDs=e.target.value;state.page=1;state.sortCol=null;state.sortDir=1;state.colFilters={};renderTable();};
+$('#csv').onclick=exportCSV;
+$('#primMode').querySelectorAll('button').forEach(b=>b.onclick=()=>{state.primMode=b.dataset.m;$('#primMode').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));renderPrimary();});
+document.querySelectorAll('#appsUnit button').forEach(b=>b.onclick=()=>{state.appsUnit=b.dataset.u;document.querySelectorAll('#appsUnit button').forEach(x=>x.classList.toggle('on',x===b));renderKPIs();renderAppsVolume();});
+document.addEventListener('scroll',hideTip,true);
+setupPdfSlideshow();
+
+render();
+</script>
+</body>
+</html>```
