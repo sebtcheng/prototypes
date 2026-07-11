@@ -143,6 +143,7 @@
   .kpi .num{font-family:var(--font-heading);font-size:clamp(32px,2.5vw,43px);font-weight:950;letter-spacing:-.045em;line-height:1;color:var(--navy);white-space:nowrap;}
   .kpi .lab{font-family:var(--font-heading);font-size:12px;font-weight:950;margin-top:8px;color:var(--text);line-height:1.25;}
   .kpi .cap{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.35;font-weight:700;}
+  .kpi .asof-note{display:inline-block;margin-left:6px;font-size:10.5px;font-weight:900;color:var(--blue);white-space:nowrap;}
   .kpi.total{border-top-color:var(--navy);background:#fff;}
   .kpi.k-red{border-top-color:var(--red);}
   .kpi.k-green{border-top-color:var(--green);}
@@ -604,8 +605,8 @@ const DATASETS = {
   gaps:{
     title:'FY 2026 Reclassification Funding Gaps',
     tblTitle:'Funding gaps by region',
-    statusOf:r=>r.g_deficit>0?'Deficit':'Funded',
-    statuses:['Deficit','Funded'],
+    statusOf:r=>r.g_deficit>0?'Deficit':'With Remaining Funds',
+    statuses:['Deficit','With Remaining Funds'],
     measures:[{k:'g_deficit',n:'Total deficit'},{k:'g_charge',n:'Total chargeable'},{k:'g_budget',n:'Allocated budget'}],
     defaultMeasure:'g_deficit',
     primary:{title:'Total chargeable vs. allocated budget by region',sub:'Per region: FY 2025 unfunded + FY 2026 expenses (total chargeable) compared against the FY 2026 allocated budget',
@@ -650,7 +651,7 @@ const DATASETS = {
     measures:[{k:'a_tot_f',n:'Total financial requirement'},{k:'a_dbm_f',n:'DBM financial requirement'},{k:'a_car_f',n:'CAReER financial requirement'},{k:'a_2027',n:'FY 2027 total budget'}],
     defaultMeasure:'a_tot_f',
     primary:{title:'Financial requirement by processing stage',sub:'Financial requirement under DBM approval and remaining in CAReER, per region',
-      series:[{k:'a_dbm_f',n:'Under DBM Approval',c:C[0]},{k:'a_car_f',n:'Remaining in CAReER',c:C[3]}]},
+      series:[{k:'a_dbm_f',n:'Under DBM’s Processing',c:C[0]},{k:'a_car_f',n:'Remaining in CAReER',c:C[3]}]},
     donut:{title:'Share of total financial requirement',sub:'Financial requirement of pending applications',metric:'a_tot_f'},
     hist:{title:'FY 2027 reclassification requirement',sub:'Tier 1 + Tier 2 requirement per region',metric:'a_2027',color:'var(--c7)'},
     columns:[
@@ -739,18 +740,18 @@ function renderKPIs(){
     html+=kpi('k-red',def.length,'Regions With Deficit','Regions with a positive funding gap','deficit_count');
   } else if(state.ds==='strategy'){
     const elig=rs.filter(r=>r.s_fill<10);
-    html+=kpi('total',peso(sum('s_unreleased')),'Unreleased Appropriations','NSPP lump sum available','s_unreleased');
+    html+=kpi('total',peso(sum('s_unreleased')),'Unreleased Appropriations','NSPP lump sum available <span class="asof-note">As of June 30, 2026</span>','s_unreleased');
     html+=kpi('k-orange',peso(sum('s_charge')),'Proposed Chargeable','Amount charged to augment deficits','s_charge');
     html+=kpi('k-green',peso(sum('s_balance')),'Remaining Balance','After proposed utilization','s_balance');
     html+=kpi('k-blue',elig.length,'Eligible Regions','Filling-up rate below 10%','eligible_count');
   } else {
     const defc=rs.filter(r=>r.a_remain<0);
     html+=kpi('total',peso(sum('a_tot_f')),'Total Financial Requirement','Financial requirement of pending applications','a_tot_f');
-    html+=kpi('k-blue',peso(sum('a_dbm_f')),'Under DBM (Financial)','Financial requirement in DBM processing','a_dbm_f');
+    html+=kpi('k-blue',peso(sum('a_dbm_f')),'Under DBM’s Processing (Financial)','Financial requirement in DBM’s processing','a_dbm_f');
     html+=kpi('k-orange',peso(sum('a_car_f')),'In CAReER (Financial)','Financial requirement remaining in CAReER','a_car_f');
-    html+=kpi('k-blue',intc(sum('a_dbm_p')),'Under DBM (Applications)','Number of applications in DBM processing','a_dbm_p');
+    html+=kpi('k-blue',intc(sum('a_dbm_p')),'Under DBM’s Processing (Applications)','Number of applications in DBM’s processing','a_dbm_p');
     html+=kpi('k-orange',intc(sum('a_car_p')),'In CAReER (Applications)','Number of applications remaining in CAReER','a_car_p');
-    html+=kpi('k-red',peso(sum('a_2027')),'FY 2027 Requirement','Tier 1 + Tier 2 carryover','a_2027');
+    html+=kpi('k-red',peso(sum('a_2027')),'FY 2027 Proposed Budget','Tier 1 + Tier 2 carryover','a_2027');
   }
   if(rs.length===0) html='<div class="kpi"><div class="lab">No regions selected</div><div class="cap">Use the ⚙ picker to choose regions.</div></div>';
   $('#kpis').innerHTML=html;
@@ -942,7 +943,7 @@ function renderAppsVolume(){
   const kd=isApps?'a_dbm_p':'a_dbm_f', kc=isApps?'a_car_p':'a_car_f', kt=isApps?'a_tot_p':'a_tot_f';
   const fmt=isApps?intc:peso;
   const titleEl=$('#appsVolTitle'); if(titleEl)titleEl.textContent=isApps?'Application volume by processing stage':'Financial requirement by processing stage';
-  const subEl=$('#appsVolSub'); if(subEl)subEl.textContent=isApps?'Number of applications under DBM approval and remaining in CAReER, per region.':'Financial requirement under DBM approval and remaining in CAReER, per region.';
+  const subEl=$('#appsVolSub'); if(subEl)subEl.textContent=isApps?'Number of applications under DBM’s processing and remaining in CAReER, per region.':'Financial requirement under DBM’s processing and remaining in CAReER, per region.';
   const au=$('#appsUnit'); if(au)au.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.u===state.appsUnit));
   const rs=[...RAW].sort((a,b)=>b[kt]-a[kt]);
   if(!rs.length){host.innerHTML='<div class="empty">No application data available.</div>';leg.innerHTML='';return;}
@@ -971,10 +972,10 @@ function renderAppsVolume(){
     g+=`<text class="axistxt" x="${padL+dw+cw+6}" y="${y+barH/2+4}">${fmt(total)}</text>`;
   });
   const totLabel=isApps?'Total = pending applications':'Total = total financial requirement';
-  leg.innerHTML=`<span><i class="dot" style="background:var(--c1)"></i>Under DBM Approval</span><span><i class="dot" style="background:var(--c4)"></i>Remaining in CAReER</span><span class="muted">${totLabel}</span>`;
+  leg.innerHTML=`<span><i class="dot" style="background:var(--c1)"></i>Under DBM’s Processing</span><span><i class="dot" style="background:var(--c4)"></i>Remaining in CAReER</span><span class="muted">${totLabel}</span>`;
   host.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img">${g}</svg>`;
   host.querySelectorAll('.hbar').forEach(el=>{const r=RAW.find(x=>x.code===el.dataset.code);
-    el.onmousemove=e=>showTip(`<div class="tt">${r.name}</div><div class="tr"><span>Under DBM Approval</span><span>${fmt(r[kd])}</span></div><div class="tr"><span>Remaining in CAReER</span><span>${fmt(r[kc])}</span></div><div class="tr"><span>${isApps?'Total applications':'Total financial requirement'}</span><span>${fmt(r[kt])}</span></div>`,e);
+    el.onmousemove=e=>showTip(`<div class="tt">${r.name}</div><div class="tr"><span>Under DBM’s Processing</span><span>${fmt(r[kd])}</span></div><div class="tr"><span>Remaining in CAReER</span><span>${fmt(r[kc])}</span></div><div class="tr"><span>${isApps?'Total applications':'Total financial requirement'}</span><span>${fmt(r[kt])}</span></div>`,e);
     el.onmouseleave=hideTip;
     el.onclick=()=>{hideTip();openDetail(r);};
   });
@@ -1093,7 +1094,7 @@ function fmtCell(r,col){
   if(col.t==='money')return peso(r[col.k]);
   if(col.t==='int')return intc(v);
   if(col.t==='pct')return v.toFixed(1)+'%';
-  if(col.t==='status'){const st=tableCfg().statusOf(r);const good=/Funded|Within|Not eligible/.test(st);return `<span class="badge ${good?'b-green':'b-red'}">${st}</span>`;}
+  if(col.t==='status'){const st=tableCfg().statusOf(r);const good=/With Remaining Funds|Within|Not eligible/.test(st);return `<span class="badge ${good?'b-green':'b-red'}">${st}</span>`;}
   return v;
 }
 function renderTable(){
@@ -1131,7 +1132,7 @@ function openDetail(r){
   groups+=`<div class="mgroup"><h4>Status</h4><div class="tiles">${tiles([['Region',r.name],['Dataset',c.title],['Standing',statusVal(r)]])}</div></div>`;
   groups+=`<div class="mgroup"><h4>FY 2026 Funding Gap</h4><div class="tiles">${tiles([['Reclass Budget',full(r.g_budget)],['FY25 Unfunded',full(r.g_unfunded)],['FY26 Expenses',full(r.g_expenses)],['Total Chargeable',full(r.g_charge)],['Total Deficit',full(r.g_deficit)]])}</div></div>`;
   groups+=`<div class="mgroup"><h4>NSPP Funding Strategy</h4><div class="tiles">${tiles([['Filling-up rate',r.s_fill+'%'],['Unreleased Approp.',full(r.s_unreleased)],['Chargeable',full(r.s_charge)],['Remaining Balance',full(r.s_balance)]])}</div></div>`;
-  groups+=`<div class="mgroup"><h4>Pending Applications</h4><div class="tiles">${tiles([['Under DBM',intc(r.a_dbm_p)],['In CAReER',intc(r.a_car_p)],['Total Apps',intc(r.a_tot_p)],['Financial Req.',full(r.a_tot_f)],['FY2027 Tier 1',full(r.a_t1)],['FY2027 Tier 2',full(r.a_t2)],['FY2027 Total',full(r.a_2027)],['Remaining/Deficit',full(r.a_remain)]])}</div></div>`;
+  groups+=`<div class="mgroup"><h4>Pending Applications</h4><div class="tiles">${tiles([['Under DBM’s Processing',intc(r.a_dbm_p)],['In CAReER',intc(r.a_car_p)],['Total Apps',intc(r.a_tot_p)],['Financial Req.',full(r.a_tot_f)],['FY2027 Tier 1',full(r.a_t1)],['FY2027 Tier 2',full(r.a_t2)],['FY2027 Total',full(r.a_2027)],['Remaining/Deficit',full(r.a_remain)]])}</div></div>`;
   openModal(r.name,'Full regional breakdown across all datasets',groups);
 }
 function openDisaggregation(r,series){
@@ -1142,7 +1143,7 @@ function openDisaggregation(r,series){
   } else if(state.ds==='strategy'){
     rows=[['Chargeable against unreleased',r.s_charge],['Remaining balance',r.s_balance]];label='Unreleased Appropriations';segTotal=r.s_unreleased;
   } else {
-    rows=[['Under DBM Approval',r.a_dbm_f],['Remaining in CAReER',r.a_car_f]];label='Total Financial Requirement';segTotal=r.a_tot_f;
+    rows=[['Under DBM’s Processing',r.a_dbm_f],['Remaining in CAReER',r.a_car_f]];label='Total Financial Requirement';segTotal=r.a_tot_f;
   }
   const shown=rows.filter(x=>x[1]!==0);
   const sum=shown.reduce((a,x)=>a+x[1],0);
