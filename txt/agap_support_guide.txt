@@ -1,0 +1,742 @@
+<aside>
+🧭
+
+This guide explains how to build the AGAP Support Desk as a production-ready React + Node.js + PostgreSQL app with separate user and admin authentication.
+
+</aside>
+
+## 1. Target architecture
+
+```
+React SPA
+  ├─ User registration/login
+  ├─ User support workspace
+  ├─ Admin login
+  └─ Admin console
+
+Node.js + Express API
+  ├─ Auth routes
+  ├─ User conversation routes
+  ├─ Admin conversation routes
+  ├─ Validation middleware
+  └─ PostgreSQL access layer
+
+PostgreSQL
+  ├─ users
+  ├─ admins
+  ├─ conversations
+  ├─ messages
+  └─ refresh_tokens / audit tables
+```
+
+Use a single React app with two protected areas:
+
+- `/app` for registered users.
+- `/admin` for support administrators.
+
+Keep users and admins separate at the database and API level. A user account must never gain access to admin routes just because the token is valid.
+
+## 2. Recommended project structure
+
+```
+agap-support-desk/
+  client/
+    src/
+      main.jsx
+      App.jsx
+      routes/
+        Login.jsx
+        Register.jsx
+        UserApp.jsx
+        AdminLogin.jsx
+        AdminApp.jsx
+      components/
+        AppShell.jsx
+        Sidebar.jsx
+        ConversationList.jsx
+        ConversationCard.jsx
+        MessageThread.jsx
+        Composer.jsx
+        StatusChip.jsx
+        DivisionChip.jsx
+      lib/
+        api.js
+        auth.js
+        validation.js
+      styles/
+        tokens.css
+        app.css
+
+  server/
+    src/
+      index.js
+      config.js
+      db/
+        pool.js
+        queries/
+          users.js
+          admins.js
+          conversations.js
+          messages.js
+      routes/
+        auth.routes.js
+        user.routes.js
+        admin.routes.js
+      middleware/
+        requireUser.js
+        requireAdmin.js
+        validate.js
+        errorHandler.js
+      services/
+        auth.service.js
+        token.service.js
+        password.service.js
+      schemas/
+        auth.schema.js
+        conversation.schema.js
+      migrations/
+```
+
+## 3. Environment variables
+
+### Server
+
+```bash
+NODE_ENV=development
+PORT=4000
+DATABASE_URL=postgres://user:password@localhost:5432/agap_support
+JWT_ACCESS_SECRET=replace_with_strong_secret
+JWT_REFRESH_SECRET=replace_with_strong_secret
+ACCESS_TOKEN_TTL=15m
+REFRESH_TOKEN_TTL_DAYS=7
+CLIENT_ORIGIN=http://localhost:5173
+COOKIE_SECURE=false
+```
+
+### Client
+
+```bash
+VITE_API_BASE_URL=http://localhost:4000/api
+```
+
+In production, set `COOKIE_SECURE=true` and serve over HTTPS.
+
+## 4. Backend setup
+
+Install core dependencies:
+
+```bash
+cd server
+npm init -y
+npm install express pg cors helmet cookie-parser bcrypt jsonwebtoken zod dotenv
+npm install -D nodemon
+```
+
+Recommended `package.json` scripts:
+
+```json
+{
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js"
+  }
+}
+```
+
+## 5. Express app bootstrap
+
+```jsx
+import express from "express"
+import cors from "cors"
+import helmet from "helmet"
+import cookieParser from "cookie-parser"
+import dotenv from "dotenv"
+
+import authRoutes from "./routes/auth.routes.js"
+import userRoutes from "./routes/user.routes.js"
+import adminRoutes from "./routes/admin.routes.js"
+import { errorHandler } from "./middleware/errorHandler.js"
+
+dotenv.config()
+
+const app = express()
+
+app.use(helmet())
+app.use(express.json({ limit: "1mb" }))
+app.use(cookieParser())
+
+app.use(cors({
+  origin: process.env.CLIENT_ORIGIN,
+  credentials: true,
+}))
+
+app.use("/api/auth", authRoutes)
+app.use("/api/conversations", userRoutes)
+app.use("/api/admin", adminRoutes)
+
+app.use(errorHandler)
+
+app.listen(process.env.PORT || 4000, () => {
+  console.log(`API running on port ${process.env.PORT || 4000}`)
+})
+```
+
+## 6. PostgreSQL connection
+
+```jsx
+import pg from "pg"
+
+const { Pool } = pg
+
+export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: 10,
+  idleTimeoutMillis: 30000,
+})
+```
+
+Use parameterized queries only:
+
+```jsx
+const result = await pool.query(
+  "SELECT * FROM users WHERE email = $1",
+  [email.toLowerCase()]
+)
+```
+
+Never concatenate user input into SQL strings.
+
+## 7. Validation with Zod
+
+Create strict request schemas.
+
+```jsx
+import { z } from "zod"
+
+export const registerSchema = z.object({
+  full_name: z.string().trim().min(2).max(120),
+  email: z.string().email().refine(
+    value => value.toLowerCase().endsWith("@deped.gov.ph"),
+    "Email must end in @deped.gov.ph"
+  ),
+  region: z.string().trim().min(1),
+  division_name: z.string().trim().min(1),
+  password: z.string().min(8).max(128),
+})
+
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+})
+```
+
+Generic validation middleware:
+
+```jsx
+export function validate(schema) {
+  return (req, res, next) => {
+    const result = schema.safeParse(req.body)
+    if (!result.success) {
+      return res.status(400).json({
+        error: "VALIDATION_ERROR",
+        details: result.error.flatten(),
+      })
+    }
+    req.body = result.data
+    next()
+  }
+}
+```
+
+## 8. Password hashing
+
+```jsx
+import bcrypt from "bcrypt"
+
+const COST = 12
+
+export async function hashPassword(password) {
+  return bcrypt.hash(password, COST)
+}
+
+export async function verifyPassword(password, hash) {
+  return bcrypt.compare(password, hash)
+}
+```
+
+Store only `password_hash`. Never store plain passwords.
+
+## 9. Token model
+
+Use short-lived access tokens and refresh tokens in httpOnly cookies.
+
+Access token payload:
+
+```jsx
+{
+  sub: userOrAdminId,
+  role: "user" | "admin",
+  name: fullName
+}
+```
+
+Generate tokens:
+
+```jsx
+import jwt from "jsonwebtoken"
+
+export function signAccessToken(payload) {
+  return jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
+    expiresIn: process.env.ACCESS_TOKEN_TTL || "15m",
+  })
+}
+
+export function signRefreshToken(payload) {
+  return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: `${process.env.REFRESH_TOKEN_TTL_DAYS || 7}d`,
+  })
+}
+```
+
+Set refresh cookie:
+
+```jsx
+res.cookie("refresh_token", refreshToken, {
+  httpOnly: true,
+  secure: process.env.COOKIE_SECURE === "true",
+  sameSite: "lax",
+  path: "/api/auth/refresh",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+})
+```
+
+## 10. Auth routes
+
+### User registration
+
+`POST /api/auth/register`
+
+Request:
+
+```json
+{
+  "full_name": "Juan Dela Cruz",
+  "email": "juan.delacruz@deped.gov.ph",
+  "region": "Region IV-A",
+  "division_name": "SDO Cavite",
+  "password": "minimum8chars"
+}
+```
+
+Behavior:
+
+1. Validate all fields.
+2. Enforce `@deped.gov.ph`.
+3. Lowercase email.
+4. Hash password.
+5. Insert into `users`.
+6. Return access token and user profile.
+7. Set refresh token cookie.
+
+Response:
+
+```json
+{
+  "access_token": "jwt",
+  "user": {
+    "id": "uuid",
+    "role": "user",
+    "full_name": "Juan Dela Cruz",
+    "email": "juan.delacruz@deped.gov.ph",
+    "region": "Region IV-A",
+    "division_name": "SDO Cavite"
+  }
+}
+```
+
+### User login
+
+`POST /api/auth/login`
+
+Behavior:
+
+1. Find user by email.
+2. Verify password.
+3. Issue user token with `role: "user"`.
+4. Return user profile.
+
+### Admin login
+
+`POST /api/admin/login`
+
+Behavior:
+
+1. Find admin by email in `admins`.
+2. Verify password.
+3. Issue admin token with `role: "admin"`.
+4. Return admin profile.
+
+Admin accounts must be seeded internally. Do not expose public admin registration.
+
+## 11. Authorization middleware
+
+### User guard
+
+```jsx
+import jwt from "jsonwebtoken"
+
+export function requireUser(req, res, next) {
+  const header = req.headers.authorization || ""
+  const token = header.startsWith("Bearer ") ? header.slice(7) : null
+
+  if (!token) return res.status(401).json({ error: "MISSING_TOKEN" })
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
+    if (payload.role !== "user") {
+      return res.status(403).json({ error: "USER_ROLE_REQUIRED" })
+    }
+    req.auth = payload
+    next()
+  } catch {
+    return res.status(401).json({ error: "INVALID_TOKEN" })
+  }
+}
+```
+
+### Admin guard
+
+```jsx
+export function requireAdmin(req, res, next) {
+  const header = req.headers.authorization || ""
+  const token = header.startsWith("Bearer ") ? header.slice(7) : null
+
+  if (!token) return res.status(401).json({ error: "MISSING_TOKEN" })
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
+    if (payload.role !== "admin") {
+      return res.status(403).json({ error: "ADMIN_ROLE_REQUIRED" })
+    }
+    req.auth = payload
+    next()
+  } catch {
+    return res.status(401).json({ error: "INVALID_TOKEN" })
+  }
+}
+```
+
+## 12. User conversation API
+
+### List current user's conversations
+
+`GET /api/conversations`
+
+SQL logic:
+
+```sql
+SELECT c.*
+FROM conversations c
+WHERE c.user_id = $1
+ORDER BY c.last_message_at DESC;
+```
+
+### Start conversation
+
+`POST /api/conversations`
+
+Request:
+
+```json
+{ "body": "I cannot upload my appointment attachment." }
+```
+
+Behavior:
+
+1. Derive title from first 80 characters.
+2. Insert conversation with `status = 'unread'`.
+3. Insert first message with `author_role = 'user'`.
+4. Return conversation with messages.
+
+Use a transaction so conversation and first message are created together.
+
+### Get one conversation
+
+`GET /api/conversations/:id`
+
+Rules:
+
+- User must own the conversation.
+- User viewing the thread does not change `unread` to `read`.
+
+### Add message
+
+`POST /api/conversations/:id/messages`
+
+Rules:
+
+- User must own the conversation.
+- If conversation is `resolved`, reopen to `unread`.
+- Update `last_message_at`.
+
+### Resolve
+
+`POST /api/conversations/:id/resolve`
+
+Rules:
+
+- User must own the conversation.
+- Set `status = 'resolved'`.
+- Set `resolved_at = now()`.
+
+## 13. Admin conversation API
+
+### List all conversations
+
+`GET /api/admin/conversations?filter=all`
+
+Filters:
+
+- `all`
+- `unread`
+- `unassigned`
+- `PD`
+- `HRDD`
+- `SED`
+- `InsightED`
+- `resolved`
+
+Return each conversation with:
+
+```json
+{
+  "id": "uuid",
+  "user_name": "Juan Dela Cruz",
+  "user_region": "Region IV-A",
+  "user_division": "SDO Cavite",
+  "title": "Cannot upload attachment",
+  "status": "unread",
+  "assigned_to": null,
+  "last_message_at": "timestamp",
+  "latest_message": "..."
+}
+```
+
+### Open conversation
+
+`GET /api/admin/conversations/:id`
+
+Rules:
+
+- Return full message history.
+- If status is `unread`, update to `read`.
+- Include user name, region, and division in the response.
+
+### Assign support division
+
+`PATCH /api/admin/conversations/:id/assign`
+
+Request:
+
+```json
+{ "division": "HRDD" }
+```
+
+Allow `null` to unassign.
+
+### Admin reply
+
+`POST /api/admin/conversations/:id/messages`
+
+Rules:
+
+- Insert message with `author_role = 'admin'`.
+- Set `author_admin_id`.
+- Keep `status` as `read` unless already resolved and the product decides to reopen. Recommended: prevent replies to resolved tickets unless reopened.
+
+### Resolve
+
+`POST /api/admin/conversations/:id/resolve`
+
+Rules:
+
+- Set `status = 'resolved'`.
+- Set `resolved_at = now()`.
+
+## 14. Frontend setup
+
+```bash
+cd client
+npm create vite@latest . -- --template react
+npm install
+npm install react-router-dom
+```
+
+Basic routes:
+
+```jsx
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/app" element={<RequireUser><UserApp /></RequireUser>} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={<RequireAdmin><AdminApp /></RequireAdmin>} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
+```
+
+## 15. API client
+
+```jsx
+const API_BASE = import.meta.env.VITE_API_BASE_URL
+
+let accessToken = null
+
+export function setAccessToken(token) {
+  accessToken = token
+}
+
+export async function api(path, options = {}) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      ...(options.headers || {}),
+    },
+  })
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}))
+    throw new Error(error.error || "Request failed")
+  }
+
+  return res.json()
+}
+```
+
+## 16. Registration form behavior
+
+Fields:
+
+1. Full name
+2. Email
+3. Region dropdown
+4. Division dropdown
+5. Password
+
+Client-side validation:
+
+- Name is required.
+- Email must end in `@deped.gov.ph`.
+- Region is required.
+- Division is required.
+- Password minimum 8 characters.
+
+The backend must repeat every validation rule. Frontend validation improves UX; backend validation protects the system.
+
+## 17. User app behavior
+
+User shell:
+
+- Mobile: top bar + hamburger drawer.
+- Desktop: persistent sidebar + main panel.
+
+Main states:
+
+1. No active conversation:
+    - Show "How can we help?"
+    - Show one textarea and send button.
+2. Active conversation:
+    - Header with title and status.
+    - Message history.
+    - Bottom composer.
+    - Mark resolved button.
+
+Sidebar:
+
+- Shows only the current user's conversations.
+- Sorted by newest activity.
+- Each row shows title, status, last activity, and resolve action.
+
+## 18. Admin app behavior
+
+Admin shell:
+
+- Same responsive shell.
+- Sidebar filters: All, Unread, Unassigned, PD, HRDD, SED, InsightED, Resolved.
+- Main panel cards grouped by Unread → Read → Resolved.
+
+Each card must show:
+
+- User name
+- User region
+- User division
+- Ticket title
+- Latest message snippet
+- Ticket status
+- Assigned support division or Unassigned
+- Last activity time
+- Open / Assign / Resolve actions
+
+Admin thread header must show:
+
+- Ticket title
+- Status
+- Assigned support division
+- User name
+- User region
+- User division
+- Assign and resolve controls
+
+## 19. Error and loading states
+
+Minimum production states:
+
+- Form validation errors.
+- Invalid login credentials.
+- Network failure.
+- Loading conversations.
+- Empty admin filter.
+- Empty user conversation list.
+- Unauthorized session expiration.
+- Forbidden access if role is wrong.
+
+Use concise, user-facing messages.
+
+## 20. Security checklist
+
+- Use HTTPS in production.
+- Hash all passwords with bcrypt cost 12 or higher.
+- Store refresh tokens in httpOnly cookies.
+- Store access token in memory, not localStorage.
+- Enforce role checks server-side.
+- Enforce user ownership server-side.
+- Validate all request bodies with Zod.
+- Use parameterized SQL.
+- Rate-limit login and registration endpoints.
+- Normalize emails to lowercase.
+- Add database constraints for email domain and enum values.
+- Do not expose admin registration publicly.
+
+## 21. Build order
+
+1. Create database schema and seed one admin.
+2. Build auth routes.
+3. Build user registration and login screens.
+4. Build user conversation endpoints.
+5. Build user app shell and message thread.
+6. Build admin login.
+7. Build admin list endpoint with region/division display.
+8. Build admin cards, filters, assignment, and thread view.
+9. Add refresh-token rotation.
+10. Add rate limits, audit logging, and production deployment settings.

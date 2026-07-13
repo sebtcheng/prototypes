@@ -1,0 +1,707 @@
+<aside>
+🗄️
+
+This guide defines the PostgreSQL database for the AGAP Support Desk. It includes tables, enums, constraints, indexes, seed data, and query patterns needed by the React + Node.js app.
+
+</aside>
+
+## 1. Database goals
+
+The schema must support:
+
+- Separate user and admin accounts.
+- Required user region and division.
+- Email-domain enforcement for registered users.
+- Ticket-style conversations.
+- Threaded messages.
+- Conversation status lifecycle: `unread`, `read`, `resolved`.
+- Admin assignment to support divisions: `PD`, `HRDD`, `SED`, `InsightED`.
+- Fast admin filtering by status, assignment, and newest activity.
+- Safe auth with refresh-token storage.
+- Future auditability.
+
+## 2. Create database
+
+```sql
+CREATE DATABASE agap_support;
+```
+
+Enable UUID support:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+```
+
+`gen_random_uuid()` comes from `pgcrypto`.
+
+## 3. Enums
+
+Use enums for controlled lifecycle values.
+
+```sql
+CREATE TYPE conversation_status AS ENUM (
+  'unread',
+  'read',
+  'resolved'
+);
+
+CREATE TYPE support_division AS ENUM (
+  'PD',
+  'HRDD',
+  'SED',
+  'InsightED'
+);
+
+CREATE TYPE actor_role AS ENUM (
+  'user',
+  'admin'
+);
+```
+
+Why enums:
+
+- Prevent invalid statuses.
+- Prevent misspelled assignment values.
+- Make filters predictable.
+- Keep backend validation aligned with database rules.
+
+## 4. Users table
+
+End users register publicly, but only with a valid DepEd email domain.
+
+```sql
+CREATE TABLE users (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name       TEXT NOT NULL,
+  email           TEXT NOT NULL UNIQUE,
+  region          TEXT NOT NULL,
+  division_name   TEXT NOT NULL,
+  password_hash   TEXT NOT NULL,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  CONSTRAINT users_full_name_not_blank
+    CHECK (length(trim(full_name)) >= 2),
+
+  CONSTRAINT users_region_not_blank
+    CHECK (length(trim(region)) > 0),
+
+  CONSTRAINT users_division_name_not_blank
+    CHECK (length(trim(division_name)) > 0),
+
+  CONSTRAINT users_deped_email_chk
+    CHECK (email ~* '^[^@\s]+@deped\.gov\.ph$')
+);
+```
+
+Notes:
+
+- Store `email` in lowercase from the backend.
+- `region` and `division_name` are required.
+- Keep `division_name` as text because Schools Division Office names may change or expand.
+- The check constraint enforces the DepEd domain even if a backend bug exists.
+
+## 5. Admins table
+
+Admins are support staff. They must be seeded internally, not created from the public app.
+
+```sql
+CREATE TABLE admins (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name       TEXT NOT NULL,
+  email           TEXT NOT NULL UNIQUE,
+  password_hash   TEXT NOT NULL,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  CONSTRAINT admins_full_name_not_blank
+    CHECK (length(trim(full_name)) >= 2)
+);
+```
+
+Optional stricter admin email rule:
+
+```sql
+ALTER TABLE admins
+ADD CONSTRAINT admins_email_format_chk
+CHECK (email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$');
+```
+
+## 6. Conversations table
+
+A conversation is one support ticket.
+
+```sql
+CREATE TABLE conversations (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id           UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title             TEXT NOT NULL,
+  status            conversation_status NOT NULL DEFAULT 'unread',
+  assigned_to       support_division,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  last_message_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  resolved_at       TIMESTAMPTZ,
+
+  CONSTRAINT conversations_title_not_blank
+    CHECK (length(trim(title)) > 0),
+
+  CONSTRAINT conversations_resolved_at_chk
+    CHECK (
+      (status = 'resolved' AND resolved_at IS NOT NULL)
+      OR
+      (status <> 'resolved')
+    )
+);
+```
+
+Field rules:
+
+- `user_id`: owner of the ticket.
+- `title`: derived from the first user message.
+- `status`: starts as `unread`.
+- `assigned_to`: nullable; null means Unassigned.
+- `last_message_at`: updates whenever a message is added.
+- `resolved_at`: set when the conversation is resolved.
+
+## 7. Messages table
+
+Messages belong to a conversation and can be authored by either a user or admin.
+
+```sql
+CREATE TABLE messages (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id   UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+  author_role       actor_role NOT NULL,
+  author_user_id    UUID REFERENCES users(id) ON DELETE SET NULL,
+  author_admin_id   UUID REFERENCES admins(id) ON DELETE SET NULL,
+  body              TEXT NOT NULL,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  CONSTRAINT messages_body_not_blank
+    CHECK (length(trim(body)) > 0),
+
+  CONSTRAINT messages_author_chk
+    CHECK (
+      (author_role = 'user' AND author_user_id IS NOT NULL AND author_admin_id IS NULL)
+      OR
+      (author_role = 'admin' AND author_admin_id IS NOT NULL AND author_user_id IS NULL)
+    )
+);
+```
+
+This constraint prevents ambiguous authorship.
+
+## 8. Refresh tokens table
+
+Use this if the app supports persistent sessions and refresh-token rotation.
+
+```sql
+CREATE TABLE refresh_tokens (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  subject_id     UUID NOT NULL,
+  subject_role   actor_role NOT NULL,
+  token_hash     TEXT NOT NULL UNIQUE,
+  expires_at     TIMESTAMPTZ NOT NULL,
+  revoked_at     TIMESTAMPTZ,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  CONSTRAINT refresh_tokens_subject_role_chk
+    CHECK (subject_role IN ('user', 'admin'))
+);
+```
+
+Implementation notes:
+
+- Store only a hash of the refresh token.
+- Revoke old refresh tokens during rotation.
+- Delete expired tokens with a scheduled job.
+
+## 9. Audit log table
+
+Recommended for admin actions.
+
+```sql
+CREATE TABLE audit_logs (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  actor_role      actor_role NOT NULL,
+  actor_user_id   UUID REFERENCES users(id) ON DELETE SET NULL,
+  actor_admin_id  UUID REFERENCES admins(id) ON DELETE SET NULL,
+  action          TEXT NOT NULL,
+  entity_type     TEXT NOT NULL,
+  entity_id       UUID,
+  metadata        JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  CONSTRAINT audit_logs_actor_chk
+    CHECK (
+      (actor_role = 'user' AND actor_user_id IS NOT NULL AND actor_admin_id IS NULL)
+      OR
+      (actor_role = 'admin' AND actor_admin_id IS NOT NULL AND actor_user_id IS NULL)
+    )
+);
+```
+
+Suggested audit actions:
+
+- `conversation.created`
+- `conversation.opened_by_admin`
+- `conversation.assigned`
+- `conversation.resolved`
+- `message.created`
+- `auth.login`
+- `auth.logout`
+
+## 10. Updated-at trigger
+
+Use a shared trigger to keep `updated_at` current.
+
+```sql
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+Attach it:
+
+```sql
+CREATE TRIGGER trg_users_updated_at
+BEFORE UPDATE ON users
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TRIGGER trg_admins_updated_at
+BEFORE UPDATE ON admins
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TRIGGER trg_conversations_updated_at
+BEFORE UPDATE ON conversations
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+```
+
+## 11. Message insert trigger
+
+Keep `conversations.last_message_at` in sync.
+
+```sql
+CREATE OR REPLACE FUNCTION update_conversation_last_message_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE conversations
+  SET last_message_at = NEW.created_at
+  WHERE id = NEW.conversation_id;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+Attach it:
+
+```sql
+CREATE TRIGGER trg_messages_update_conversation_last_message_at
+AFTER INSERT ON messages
+FOR EACH ROW EXECUTE FUNCTION update_conversation_last_message_at();
+```
+
+## 12. Indexes
+
+Core lookup indexes:
+
+```sql
+CREATE INDEX idx_users_email
+ON users (lower(email));
+
+CREATE INDEX idx_admins_email
+ON admins (lower(email));
+
+CREATE INDEX idx_conversations_user
+ON conversations (user_id);
+
+CREATE INDEX idx_conversations_status
+ON conversations (status);
+
+CREATE INDEX idx_conversations_assigned_to
+ON conversations (assigned_to);
+
+CREATE INDEX idx_conversations_last_message_at
+ON conversations (last_message_at DESC);
+
+CREATE INDEX idx_messages_conversation_created
+ON messages (conversation_id, created_at);
+```
+
+Admin list optimization:
+
+```sql
+CREATE INDEX idx_conversations_admin_sort
+ON conversations (
+  status,
+  assigned_to,
+  last_message_at DESC
+);
+```
+
+Unassigned filter optimization:
+
+```sql
+CREATE INDEX idx_conversations_unassigned
+ON conversations (last_message_at DESC)
+WHERE assigned_to IS NULL AND status <> 'resolved';
+```
+
+## 13. Views for API responses
+
+Create an admin list view that includes user region and division.
+
+```sql
+CREATE VIEW admin_conversation_list AS
+SELECT
+  c.id,
+  c.user_id,
+  u.full_name AS user_name,
+  u.region AS user_region,
+  u.division_name AS user_division,
+  c.title,
+  c.status,
+  c.assigned_to,
+  c.created_at,
+  c.updated_at,
+  c.last_message_at,
+  c.resolved_at,
+  latest.body AS latest_message,
+  latest.created_at AS latest_message_created_at
+FROM conversations c
+JOIN users u ON u.id = c.user_id
+LEFT JOIN LATERAL (
+  SELECT m.body, m.created_at
+  FROM messages m
+  WHERE m.conversation_id = c.id
+  ORDER BY m.created_at DESC
+  LIMIT 1
+) latest ON true;
+```
+
+This simplifies the admin card API.
+
+## 14. User registration insert
+
+```sql
+INSERT INTO users (
+  full_name,
+  email,
+  region,
+  division_name,
+  password_hash
+)
+VALUES ($1, lower($2), $3, $4, $5)
+RETURNING
+  id,
+  full_name,
+  email,
+  region,
+  division_name,
+  created_at;
+```
+
+The database rejects invalid email domains.
+
+## 15. Admin seed
+
+Generate the bcrypt hash in Node.js, then insert.
+
+```sql
+INSERT INTO admins (
+  full_name,
+  email,
+  password_hash
+)
+VALUES (
+  'AGAP Administrator',
+  lower('admin@agap.gov.ph'),
+  '$2b$12$replace_with_real_bcrypt_hash'
+);
+```
+
+Do not commit real production passwords or hashes into a public repository.
+
+## 16. Start conversation transaction
+
+Use a transaction so the conversation and first message cannot diverge.
+
+```sql
+BEGIN;
+
+INSERT INTO conversations (
+  user_id,
+  title,
+  status,
+  last_message_at
+)
+VALUES (
+  $1,
+  $2,
+  'unread',
+  now()
+)
+RETURNING id;
+
+INSERT INTO messages (
+  conversation_id,
+  author_role,
+  author_user_id,
+  body
+)
+VALUES (
+  $3,
+  'user',
+  $1,
+  $4
+);
+
+COMMIT;
+```
+
+Backend title derivation:
+
+```jsx
+function deriveTitle(body) {
+  return body.replace(/\s+/g, " ").trim().slice(0, 80)
+}
+```
+
+## 17. List current user's conversations
+
+```sql
+SELECT
+  c.id,
+  c.title,
+  c.status,
+  c.assigned_to,
+  c.created_at,
+  c.last_message_at,
+  c.resolved_at
+FROM conversations c
+WHERE c.user_id = $1
+ORDER BY c.last_message_at DESC;
+```
+
+## 18. Get user conversation with messages
+
+```sql
+SELECT
+  c.id,
+  c.title,
+  c.status,
+  c.assigned_to,
+  c.created_at,
+  c.last_message_at,
+  c.resolved_at,
+  u.full_name AS user_name,
+  u.region AS user_region,
+  u.division_name AS user_division
+FROM conversations c
+JOIN users u ON u.id = c.user_id
+WHERE c.id = $1
+  AND c.user_id = $2;
+```
+
+Messages:
+
+```sql
+SELECT
+  id,
+  author_role,
+  author_user_id,
+  author_admin_id,
+  body,
+  created_at
+FROM messages
+WHERE conversation_id = $1
+ORDER BY created_at ASC;
+```
+
+## 19. Add user message
+
+If the ticket is resolved, reopen it.
+
+```sql
+BEGIN;
+
+UPDATE conversations
+SET
+  status = CASE
+    WHEN status = 'resolved' THEN 'unread'::conversation_status
+    ELSE status
+  END,
+  resolved_at = CASE
+    WHEN status = 'resolved' THEN NULL
+    ELSE resolved_at
+  END
+WHERE id = $1
+  AND user_id = $2;
+
+INSERT INTO messages (
+  conversation_id,
+  author_role,
+  author_user_id,
+  body
+)
+VALUES ($1, 'user', $2, $3);
+
+COMMIT;
+```
+
+## 20. Resolve conversation as user
+
+```sql
+UPDATE conversations
+SET
+  status = 'resolved',
+  resolved_at = now()
+WHERE id = $1
+  AND user_id = $2
+RETURNING *;
+```
+
+## 21. Admin list query
+
+```sql
+SELECT *
+FROM admin_conversation_list
+WHERE ($1 = 'all')
+   OR ($1 = 'unread' AND status = 'unread')
+   OR ($1 = 'resolved' AND status = 'resolved')
+   OR ($1 = 'unassigned' AND assigned_to IS NULL AND status <> 'resolved')
+   OR ($1 IN ('PD','HRDD','SED','InsightED') AND assigned_to = $1::support_division)
+ORDER BY
+  CASE status
+    WHEN 'unread' THEN 0
+    WHEN 'read' THEN 1
+    ELSE 2
+  END,
+  last_message_at DESC;
+```
+
+## 22. Admin open conversation
+
+Opening an unread conversation marks it read.
+
+```sql
+UPDATE conversations
+SET status = 'read'
+WHERE id = $1
+  AND status = 'unread';
+```
+
+Then load the conversation and messages.
+
+```sql
+SELECT
+  c.id,
+  c.title,
+  c.status,
+  c.assigned_to,
+  c.created_at,
+  c.last_message_at,
+  c.resolved_at,
+  u.full_name AS user_name,
+  u.region AS user_region,
+  u.division_name AS user_division
+FROM conversations c
+JOIN users u ON u.id = c.user_id
+WHERE c.id = $1;
+```
+
+## 23. Admin assign support division
+
+Assign:
+
+```sql
+UPDATE conversations
+SET assigned_to = $2::support_division
+WHERE id = $1
+RETURNING *;
+```
+
+Unassign:
+
+```sql
+UPDATE conversations
+SET assigned_to = NULL
+WHERE id = $1
+RETURNING *;
+```
+
+Validate allowed values in the backend before running the query.
+
+## 24. Admin reply
+
+```sql
+INSERT INTO messages (
+  conversation_id,
+  author_role,
+  author_admin_id,
+  body
+)
+VALUES ($1, 'admin', $2, $3)
+RETURNING *;
+```
+
+The trigger updates `last_message_at`.
+
+## 25. Admin resolve
+
+```sql
+UPDATE conversations
+SET
+  status = 'resolved',
+  resolved_at = now()
+WHERE id = $1
+RETURNING *;
+```
+
+## 26. Data integrity checklist
+
+- `users.email` is unique and must end in `@deped.gov.ph`.
+- `users.region` is required.
+- `users.division_name` is required.
+- `conversations.status` is always valid through enum.
+- `conversations.assigned_to` is null or a valid support division.
+- `messages.author_role` must match exactly one author ID.
+- `last_message_at` updates after every inserted message.
+- User endpoints always filter by `user_id`.
+- Admin endpoints use `requireAdmin` before querying.
+
+## 27. Migration order
+
+Run migrations in this order:
+
+1. Enable extensions.
+2. Create enums.
+3. Create users.
+4. Create admins.
+5. Create conversations.
+6. Create messages.
+7. Create refresh_tokens.
+8. Create audit_logs.
+9. Create triggers.
+10. Create indexes.
+11. Create views.
+12. Seed initial admin.
+
+## 28. Production hardening
+
+Recommended additions before launch:
+
+- Add rate limiting to auth endpoints.
+- Add `login_attempts` or audit logging for failed login attempts.
+- Add refresh-token rotation and reuse detection.
+- Add soft-delete if tickets should be hidden but retained.
+- Add backups and point-in-time recovery.
+- Add database-level read-only user for reporting.
+- Add monitoring for slow queries.
+- Add retention policy for old refresh tokens and audit logs.

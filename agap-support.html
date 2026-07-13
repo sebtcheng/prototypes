@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AGAP Support Desk — Prototype</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#08315F; --blue:#075985; --blue-600:#0284C7; --blue-100:#E0F2FE; --blue-50:#F0F9FF;
+  --gold:#FBBF24; --amber:#D97706; --red:#B91C1C; --green:#16A34A; --purple:#7C3AED;
+  --text:#0F172A; --muted:#64748B; --line:#E2E8F0; --card:#FFFFFF; --soft:#F8FAFC;
+  --radius:16px; --radius-lg:22px;
+  --fh:"Plus Jakarta Sans",ui-sans-serif,system-ui,sans-serif;
+  --fb:"DM Sans",ui-sans-serif,system-ui,sans-serif;
+  --pd:#0284C7; --hrdd:#7C3AED; --sed:#D97706; --insighted:#16A34A;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{font-family:var(--fb);color:var(--text);background:var(--blue-50);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+h1,h2,h3,h4{margin:0;font-family:var(--fh);font-weight:800;letter-spacing:-.02em;}
+button{font-family:var(--fb);cursor:pointer;}
+input,textarea,select{font-family:var(--fb);font-size:15px;}
+.hidden{display:none !important;}
+
+/* ============ AUTH SCREENS ============ */
+.auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(60% 60% at 15% 10%,rgba(7,89,133,.30) 0 35%,transparent 78%),
+            radial-gradient(55% 55% at 90% 12%,rgba(251,191,36,.32) 0 34%,transparent 80%),
+            radial-gradient(50% 55% at 85% 92%,rgba(2,132,199,.24) 0 34%,transparent 80%),var(--blue-50);}
+.auth-card{width:min(420px,100%);background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);padding:32px 28px;box-shadow:0 1px 2px rgba(0,0,0,.05),0 18px 44px rgba(8,49,95,.12);}
+.auth-logo{display:flex;align-items:center;gap:11px;margin-bottom:22px;}
+.auth-logo .mark{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:900;font-size:17px;flex:0 0 auto;}
+.auth-logo b{display:block;font-family:var(--fh);font-size:16px;font-weight:900;color:var(--navy);line-height:1.1;}
+.auth-logo span{display:block;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:2px;}
+.auth-card h2{font-size:22px;color:var(--navy);}
+.auth-card .sub{color:var(--muted);font-size:14px;margin:6px 0 22px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-family:var(--fh);font-weight:800;margin-bottom:6px;}
+.field input,.field select{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px 13px;min-height:46px;outline:none;background:#fff;color:var(--text);}
+.field select{cursor:pointer;}
+.field select:invalid{color:var(--muted);}
+.field input:focus,.field select:focus{border-color:var(--blue-600);box-shadow:0 0 0 4px rgba(2,132,199,.14);}
+.btn-primary{width:100%;min-height:48px;border:none;border-radius:12px;background:var(--blue);color:#fff;font-family:var(--fh);font-weight:800;font-size:15px;margin-top:6px;transition:.14s;}
+.btn-primary:hover{background:var(--blue-600);}
+.auth-alt{text-align:center;margin-top:18px;font-size:13.5px;color:var(--muted);}
+.auth-alt a{color:var(--blue-600);font-weight:700;text-decoration:none;cursor:pointer;}
+.auth-switch{margin-top:14px;padding-top:16px;border-top:1px dashed var(--line);text-align:center;}
+.auth-switch a{font-size:12.5px;color:var(--muted);font-weight:700;text-decoration:none;cursor:pointer;}
+.auth-switch a:hover{color:var(--navy);}
+.admin-badge{display:inline-flex;align-items:center;gap:6px;background:#FEF3C7;color:var(--amber);border-radius:999px;padding:4px 11px;font-size:11px;font-weight:800;font-family:var(--fh);letter-spacing:.04em;text-transform:uppercase;margin-bottom:16px;}
+
+/* ============ APP SHELL ============ */
+.shell{display:none;min-height:100vh;grid-template-columns:1fr;}
+.shell.active{display:block;}
+.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;padding:12px 16px;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;border-bottom:3px solid var(--gold);}
+.topbar .burger{width:40px;height:40px;border-radius:11px;border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.12);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;}
+.topbar .tb-title{font-family:var(--fh);font-weight:800;font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#E0F2FE;}
+.topbar .tb-user{width:34px;height:34px;border-radius:50%;background:var(--gold);color:var(--navy);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:900;font-size:13px;flex:0 0 auto;}
+.topbar .tb-logout{border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:8px 12px;font-size:12.5px;font-weight:700;}
+.layout{display:grid;grid-template-columns:1fr;min-height:calc(100vh - 65px);}
+
+/* Sidebar (drawer on mobile) */
+.sidebar{position:fixed;inset:0 auto 0 0;z-index:40;width:min(310px,86vw);transform:translateX(-105%);transition:transform .22s ease;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;}
+.sidebar.open{transform:translateX(0);box-shadow:24px 0 60px rgba(8,49,95,.22);}
+.scrim{position:fixed;inset:0;z-index:39;background:rgba(8,49,95,.36);opacity:0;visibility:hidden;transition:.2s;}
+.scrim.open{opacity:1;visibility:visible;}
+.sb-head{padding:16px;border-bottom:1px solid var(--line);}
+.sb-head h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800;}
+.sb-body{flex:1;overflow-y:auto;padding:10px;}
+.new-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;border:none;border-radius:12px;background:var(--blue);color:#fff;font-family:var(--fh);font-weight:800;font-size:14px;margin-bottom:6px;}
+.new-btn:hover{background:var(--blue-600);}
+
+/* User conversation rows */
+.conv-row{display:flex;flex-direction:column;gap:6px;padding:12px;border:1.5px solid var(--line);border-radius:13px;margin-bottom:8px;background:#fff;transition:.12s;cursor:pointer;}
+.conv-row:hover{border-color:var(--blue-600);background:var(--blue-50);}
+.conv-row.active{border-color:var(--blue-600);background:var(--blue-50);box-shadow:inset 3px 0 0 var(--gold);}
+.conv-row .cr-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.conv-row .cr-title{font-family:var(--fh);font-weight:700;font-size:13.5px;color:var(--text);line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.conv-row .cr-time{font-size:11px;color:var(--muted);white-space:nowrap;}
+.conv-row .cr-actions{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.resolve-mini{border:1px solid var(--line);background:#fff;color:var(--green);border-radius:9px;padding:5px 9px;font-size:11px;font-weight:800;}
+.resolve-mini:hover{background:var(--green);color:#fff;border-color:var(--green);}
+.resolve-mini:disabled{opacity:.45;cursor:default;}
+
+/* status + division chips */
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 9px;font-size:10.5px;font-weight:800;font-family:var(--fh);letter-spacing:.02em;white-space:nowrap;}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;}
+.chip.unread{background:#FEE2E2;color:var(--red);}
+.chip.read{background:var(--blue-100);color:var(--blue-600);}
+.chip.resolved{background:#DCFCE7;color:var(--green);}
+.chip.dv{}
+.chip.dv::before{display:none;}
+.chip.PD{background:rgba(2,132,199,.14);color:var(--pd);}
+.chip.HRDD{background:rgba(124,58,237,.14);color:var(--hrdd);}
+.chip.SED{background:rgba(217,119,6,.16);color:var(--sed);}
+.chip.InsightED{background:rgba(22,163,74,.14);color:var(--insighted);}
+.chip.Unassigned{background:var(--soft);color:var(--muted);border:1px dashed var(--line);}
+.chip.Unassigned::before{display:none;}
+
+/* Admin category nav */
+.cat-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;border:none;background:transparent;border-radius:11px;padding:11px 12px;text-align:left;font-family:var(--fh);font-weight:700;font-size:13.5px;color:var(--text);margin-bottom:3px;}
+.cat-btn:hover{background:var(--blue-50);}
+.cat-btn.active{background:var(--navy);color:#fff;}
+.cat-btn .count{min-width:24px;text-align:center;background:var(--blue-100);color:var(--blue-600);border-radius:999px;padding:2px 8px;font-size:11px;font-weight:800;}
+.cat-btn.active .count{background:var(--gold);color:var(--navy);}
+.cat-sep{height:1px;background:var(--line);margin:8px 4px;}
+
+/* Main panel */
+.main{min-width:0;padding:16px;}
+
+/* Empty 'how can we help' */
+.help-hero{min-height:calc(100vh - 140px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 12px;}
+.help-hero .emoji{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:20px;box-shadow:0 12px 30px rgba(8,49,95,.24);}
+.help-hero h1{font-size:clamp(26px,7vw,38px);color:var(--navy);}
+.help-hero p{color:var(--muted);font-size:15px;margin:10px 0 26px;max-width:440px;}
+.composer{width:min(560px,100%);}
+.composer textarea{width:100%;min-height:120px;resize:vertical;border:1.5px solid var(--line);border-radius:16px;padding:15px 16px;outline:none;background:#fff;font-size:15px;}
+.composer textarea:focus{border-color:var(--blue-600);box-shadow:0 0 0 4px rgba(2,132,199,.14);}
+.composer .row{display:flex;justify-content:flex-end;margin-top:12px;}
+.send-btn{min-height:46px;border:none;border-radius:12px;background:var(--blue);color:#fff;font-family:var(--fh);font-weight:800;font-size:14px;padding:0 22px;display:inline-flex;align-items:center;gap:8px;}
+.send-btn:hover{background:var(--blue-600);}
+
+/* Thread view */
+.thread{display:flex;flex-direction:column;height:calc(100vh - 97px);background:#fff;border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;}
+.thread-head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;background:var(--soft);}
+.thread-head .th-title{font-family:var(--fh);font-weight:800;font-size:15px;color:var(--navy);line-height:1.25;}
+.thread-head .th-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;}
+.thread-head .th-actions{display:flex;gap:7px;flex-wrap:wrap;flex:0 0 auto;}
+.th-btn{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:8px 11px;font-size:12px;font-weight:800;font-family:var(--fh);color:var(--text);white-space:nowrap;}
+.th-btn.green{color:var(--green);}
+.th-btn.green:hover{background:var(--green);color:#fff;border-color:var(--green);}
+.th-btn.assign:hover{background:var(--navy);color:#fff;border-color:var(--navy);}
+.msgs{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:14px;background:var(--blue-50);}
+.msg{max-width:78%;}
+.msg .who{font-size:10.5px;font-weight:800;font-family:var(--fh);color:var(--muted);margin-bottom:4px;letter-spacing:.02em;}
+.msg .bubble{padding:11px 14px;border-radius:16px;font-size:14px;line-height:1.5;}
+.msg .time{font-size:10px;color:var(--muted);margin-top:4px;}
+.msg.user{align-self:flex-end;text-align:right;}
+.msg.user .bubble{background:var(--blue);color:#fff;border-bottom-right-radius:5px;}
+.msg.admin{align-self:flex-start;}
+.msg.admin .bubble{background:#fff;border:1px solid var(--line);color:var(--text);border-bottom-left-radius:5px;}
+.thread-composer{border-top:1px solid var(--line);padding:12px 14px;display:flex;gap:10px;align-items:flex-end;background:#fff;}
+.thread-composer textarea{flex:1;min-height:44px;max-height:120px;resize:none;border:1.5px solid var(--line);border-radius:12px;padding:11px 13px;outline:none;font-size:14px;}
+.thread-composer textarea:focus{border-color:var(--blue-600);box-shadow:0 0 0 3px rgba(2,132,199,.14);}
+.thread-composer .send-btn{flex:0 0 auto;padding:0 16px;min-height:44px;}
+
+/* Admin cards */
+.group{margin-bottom:22px;}
+.group-head{display:flex;align-items:center;gap:10px;margin:0 2px 12px;}
+.group-head h3{font-size:14px;font-family:var(--fh);font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.05em;}
+.group-head .gc{background:#fff;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:2px 10px;font-size:11.5px;font-weight:800;}
+.group-head .bar{flex:1;height:1px;background:var(--line);}
+.cards{display:grid;grid-template-columns:1fr;gap:12px;}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:15px;transition:.12s;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+.card:hover{border-color:var(--blue-600);box-shadow:0 6px 18px rgba(8,49,95,.10);}
+.card.unread{border-left:5px solid var(--red);}
+.card.read{border-left:5px solid var(--blue-600);}
+.card.resolved{border-left:5px solid var(--green);}
+.card .c-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.card .c-user{display:flex;align-items:center;gap:9px;min-width:0;}
+.card .c-avatar{width:34px;height:34px;border-radius:50%;background:var(--blue-100);color:var(--blue-600);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-weight:900;font-size:13px;flex:0 0 auto;}
+.card .c-name{font-family:var(--fh);font-weight:800;font-size:13.5px;color:var(--text);line-height:1.1;}
+.card .c-time{font-size:11px;color:var(--muted);margin-top:2px;}
+.card .c-title{font-family:var(--fh);font-weight:700;font-size:14px;color:var(--navy);margin-bottom:5px;}
+.card .c-snip{font-size:13px;color:var(--muted);line-height:1.45;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:12px;}
+.card .c-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+.card .c-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.card .c-btns{display:flex;gap:7px;flex-wrap:wrap;}
+.mini-btn{border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:7px 10px;font-size:11.5px;font-weight:800;font-family:var(--fh);color:var(--text);}
+.mini-btn.open:hover{background:var(--blue-600);color:#fff;border-color:var(--blue-600);}
+.mini-btn.assign:hover{background:var(--navy);color:#fff;border-color:var(--navy);}
+.mini-btn.resolve{color:var(--green);}
+.mini-btn.resolve:hover{background:var(--green);color:#fff;border-color:var(--green);}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-state .ico{font-size:34px;margin-bottom:10px;}
+
+/* assign popover */
+.assign-menu{position:fixed;z-index:60;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 44px rgba(8,49,95,.22);padding:8px;min-width:190px;}
+.assign-menu .am-head{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:800;font-family:var(--fh);padding:6px 8px;}
+.assign-menu button{display:flex;align-items:center;gap:9px;width:100%;border:none;background:transparent;border-radius:9px;padding:9px 8px;font-size:13.5px;font-weight:700;font-family:var(--fh);color:var(--text);text-align:left;}
+.assign-menu button:hover{background:var(--blue-50);}
+.assign-menu .sw{width:11px;height:11px;border-radius:4px;flex:0 0 auto;}
+
+/* section banner in admin main */
+.admin-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;border-radius:var(--radius);padding:14px 18px;margin-bottom:18px;border-left:5px solid var(--gold);}
+.admin-banner h2{font-size:17px;color:#E0F2FE;}
+.admin-banner p{font-size:12.5px;color:rgba(224,242,254,.82);margin-top:3px;}
+.admin-banner .ab-count{font-family:var(--fh);font-weight:900;font-size:26px;color:var(--gold);}
+
+/* desktop */
+@media(min-width:768px){
+  .topbar .burger{display:none;}
+  .layout{grid-template-columns:310px 1fr;}
+  .sidebar{position:sticky;top:65px;height:calc(100vh - 65px);transform:none !important;box-shadow:none;width:auto;inset:auto;}
+  .scrim{display:none;}
+  .main{padding:22px 26px;}
+  .cards{grid-template-columns:1fr 1fr;}
+  .help-hero{min-height:calc(100vh - 160px);}
+}
+@media(min-width:1200px){
+  .cards{grid-template-columns:1fr 1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ USER LOGIN ============ -->
+<div class="auth" id="screen-userLogin">
+  <div class="auth-card">
+    <div class="auth-logo"><div class="mark">AG</div><div><b>AGAP Support</b><span>Help Desk</span></div></div>
+    <h2>Welcome back</h2>
+    <div class="sub">Sign in to view your support conversations.</div>
+    <div class="field"><label>Email</label><input id="loginEmail" type="email" value="maria.santos@deped.gov.ph"></div>
+    <div class="field"><label>Password</label><input type="password" value="password"></div>
+    <button class="btn-primary" onclick="loginUser()">Sign in</button>
+    <div class="auth-alt">New here? <a onclick="go('userRegister')">Create an account</a></div>
+    <div class="auth-switch"><a onclick="go('adminLogin')">Admin sign in →</a></div>
+  </div>
+</div>
+
+<!-- ============ USER REGISTER ============ -->
+<div class="auth hidden" id="screen-userRegister">
+  <div class="auth-card">
+    <div class="auth-logo"><div class="mark">AG</div><div><b>AGAP Support</b><span>Help Desk</span></div></div>
+    <h2>Create your account</h2>
+    <div class="sub">Register to start a conversation with support.</div>
+    <div class="field"><label>Full name</label><input id="regName" type="text" placeholder="Juan Dela Cruz"></div>
+    <div class="field"><label>Email</label><input id="regEmail" type="email" placeholder="you@deped.gov.ph"></div>
+    <div class="field"><label>Region</label>
+      <select id="regRegion" required>
+        <option value="" selected disabled>Select region</option>
+        <option>NCR</option>
+        <option>Region I</option>
+        <option>Region II</option>
+        <option>Region III</option>
+        <option>Region IV-A</option>
+        <option>Region IV-B</option>
+        <option>Region V</option>
+        <option>Region VI</option>
+        <option>Region VII</option>
+        <option>Region VIII</option>
+        <option>Region IX</option>
+        <option>Region X</option>
+        <option>Region XI</option>
+        <option>Region XII</option>
+        <option>CAR</option>
+        <option>CARAGA</option>
+        <option>BARMM</option>
+      </select>
+    </div>
+    <div class="field"><label>Division</label>
+      <select id="regDivision" required>
+        <option value="" selected disabled>Select division</option>
+        <option>SDO Manila</option>
+        <option>SDO Quezon City</option>
+        <option>SDO Cavite</option>
+        <option>SDO Cebu City</option>
+        <option>SDO Davao City</option>
+        <option>Regional Office</option>
+        <option>Central Office</option>
+      </select>
+    </div>
+    <div class="field"><label>Password</label><input id="regPassword" type="password" placeholder="Create a password"></div>
+    <button class="btn-primary" onclick="registerUser()">Create account</button>
+    <div class="auth-alt">Already registered? <a onclick="go('userLogin')">Sign in</a></div>
+  </div>
+</div>
+
+<!-- ============ ADMIN LOGIN ============ -->
+<div class="auth hidden" id="screen-adminLogin">
+  <div class="auth-card">
+    <div class="auth-logo"><div class="mark">AG</div><div><b>AGAP Support</b><span>Admin Console</span></div></div>
+    <div class="admin-badge">🔒 Administrator access</div>
+    <h2>Admin sign in</h2>
+    <div class="sub">Restricted to support staff accounts.</div>
+    <div class="field"><label>Admin email</label><input type="email" value="admin@agap.gov.ph"></div>
+    <div class="field"><label>Password</label><input type="password" value="password"></div>
+    <button class="btn-primary" onclick="go('adminApp')">Sign in to console</button>
+    <div class="auth-switch"><a onclick="go('userLogin')">← Back to user sign in</a></div>
+  </div>
+</div>
+
+<!-- ============ USER APP ============ -->
+<div class="shell" id="screen-userApp">
+  <div class="topbar">
+    <button class="burger" onclick="toggleSidebar('user')">☰</button>
+    <div class="tb-title">AGAP Support</div>
+    <div class="tb-user">MS</div>
+    <button class="tb-logout" onclick="go('userLogin')">Sign out</button>
+  </div>
+  <div class="layout">
+    <div class="scrim" id="userScrim" onclick="toggleSidebar('user')"></div>
+    <aside class="sidebar" id="userSidebar">
+      <div class="sb-head"><h3>Your conversations</h3></div>
+      <div class="sb-body">
+        <button class="new-btn" onclick="newConversation()">＋ New conversation</button>
+        <div id="userConvList"></div>
+      </div>
+    </aside>
+    <main class="main" id="userMain"></main>
+  </div>
+</div>
+
+<!-- ============ ADMIN APP ============ -->
+<div class="shell" id="screen-adminApp">
+  <div class="topbar">
+    <button class="burger" onclick="toggleSidebar('admin')">☰</button>
+    <div class="tb-title">AGAP Support · Admin Console</div>
+    <div class="tb-user">AD</div>
+    <button class="tb-logout" onclick="go('adminLogin')">Sign out</button>
+  </div>
+  <div class="layout">
+    <div class="scrim" id="adminScrim" onclick="toggleSidebar('admin')"></div>
+    <aside class="sidebar" id="adminSidebar">
+      <div class="sb-head"><h3>Categories</h3></div>
+      <div class="sb-body" id="adminCatNav"></div>
+    </aside>
+    <main class="main" id="adminMain"></main>
+  </div>
+</div>
+
+<script>
+/* ============ MOCK DATA (mirrors Postgres schema field names) ============ */
+let SEQ = 100;
+const nowISO = ()=>new Date().toISOString();
+function ago(mins){return new Date(Date.now()-mins*60000).toISOString();}
+
+let CONVERSATIONS = [
+  {id:'c1', user_name:'Maria Santos', title:'Cannot upload my appointment attachment', status:'unread', assigned_to:null, last_message_at:ago(8),
+    messages:[{role:'user',who:'Maria Santos',body:'Hi, I keep getting an error when uploading my appointment PDF. It says file too large but it is only 3MB.',time:ago(8)}]},
+  {id:'c2', user_name:'Maria Santos', title:'How do I reset my AGAP password?', status:'read', assigned_to:'HRDD', last_message_at:ago(120),
+    messages:[{role:'user',who:'Maria Santos',body:'How do I reset my password? I forgot it and the reset email never arrives.',time:ago(180)},
+              {role:'admin',who:'HRDD Support',body:'Hi Maria! Please check your spam folder. If it is not there, we can trigger a manual reset. Can you confirm your registered email?',time:ago(120)}]},
+  {id:'c3', user_name:'Maria Santos', title:'Question about reclassification eligibility', status:'resolved', assigned_to:'PD', last_message_at:ago(1440),
+    messages:[{role:'user',who:'Maria Santos',body:'Am I eligible for reclassification under the ECP if I was appointed in March 2026?',time:ago(1500)},
+              {role:'admin',who:'PD Support',body:'Yes, appointments before the April cutoff qualify. I have marked this resolved — reach out anytime!',time:ago(1440)}]},
+  {id:'c4', user_name:'Juan Dela Cruz', title:'Portal shows blank dashboard after login', status:'unread', assigned_to:null, last_message_at:ago(20),
+    messages:[{role:'user',who:'Juan Dela Cruz',body:'After I log in the dashboard is completely blank. I tried Chrome and Edge. Please help.',time:ago(20)}]},
+  {id:'c5', user_name:'Ana Reyes', title:'Request certificate of employment', status:'read', assigned_to:'SED', last_message_at:ago(300),
+    messages:[{role:'user',who:'Ana Reyes',body:'Can I request a certificate of employment through this portal?',time:ago(360)},
+              {role:'admin',who:'SED Support',body:'Looking into this for you now.',time:ago(300)}]},
+  {id:'c6', user_name:'Ana Reyes', title:'InsightED data not syncing to my region', status:'unread', assigned_to:null, last_message_at:ago(3),
+    messages:[{role:'user',who:'Ana Reyes',body:'The InsightED numbers for Region IV-A have not updated in 3 days. Who can I follow up with?',time:ago(3)}]},
+  {id:'c7', user_name:'Pedro Lim', title:'Feedback on the new appointment workflow', status:'resolved', assigned_to:'InsightED', last_message_at:ago(2880),
+    messages:[{role:'user',who:'Pedro Lim',body:'The new appointment workflow is much faster. Just sharing positive feedback!',time:ago(2900)},
+              {role:'admin',who:'InsightED Support',body:'Thank you Pedro! Really appreciate it.',time:ago(2880)}]}
+];
+
+const DIVISIONS=['PD','HRDD','SED','InsightED'];
+const DIV_COLOR={PD:'#0284C7',HRDD:'#7C3AED',SED:'#D97706',InsightED:'#16A34A'};
+let CURRENT_USER='Maria Santos';
+let CURRENT_USER_REGION='NCR';
+let CURRENT_USER_DIVISION='SDO Manila';
+
+/* ============ ROUTER ============ */
+function go(screen){
+  ['userLogin','userRegister','adminLogin','userApp','adminApp'].forEach(s=>{
+    document.getElementById('screen-'+s).classList.toggle('hidden', s!==screen && ['userLogin','userRegister','adminLogin'].includes(s));
+    if(['userApp','adminApp'].includes(s))document.getElementById('screen-'+s).classList.toggle('active', s===screen);
+  });
+  closeSidebars();
+  if(screen==='userApp'){userState.activeId=null;renderUser();}
+  if(screen==='adminApp'){adminState.filter='all';adminState.activeId=null;renderAdmin();}
+  window.scrollTo(0,0);
+}
+function closeSidebars(){document.querySelectorAll('.sidebar').forEach(s=>s.classList.remove('open'));document.querySelectorAll('.scrim').forEach(s=>s.classList.remove('open'));}
+function toggleSidebar(kind){
+  const sb=document.getElementById(kind+'Sidebar'), sc=document.getElementById(kind+'Scrim');
+  const open=!sb.classList.contains('open');sb.classList.toggle('open',open);sc.classList.toggle('open',open);
+}
+function isDepEdEmail(email){return /^[^\s@]+@deped\.gov\.ph$/i.test(email.trim());}
+function loginUser(){
+  const email=document.getElementById('loginEmail').value.trim();
+  if(!isDepEdEmail(email)){alert('Please use a valid DepEd email address ending in @deped.gov.ph.');return;}
+  go('userApp');
+}
+function registerUser(){
+  const name=document.getElementById('regName').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const region=document.getElementById('regRegion').value;
+  const division=document.getElementById('regDivision').value;
+  const password=document.getElementById('regPassword').value.trim();
+  if(!name||!email||!region||!division||!password){alert('Please complete your name, DepEd email, region, division, and password.');return;}
+  if(!isDepEdEmail(email)){alert('Please use a valid DepEd email address ending in @deped.gov.ph.');return;}
+  CURRENT_USER=name;
+  CURRENT_USER_REGION=region;
+  CURRENT_USER_DIVISION=division;
+  go('userApp');
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtTime(iso){const d=new Date(iso),diff=(Date.now()-d)/60000;
+  if(diff<1)return'just now';if(diff<60)return Math.floor(diff)+'m ago';if(diff<1440)return Math.floor(diff/60)+'h ago';return Math.floor(diff/1440)+'d ago';}
+function statusLabel(s){return{unread:'Unread',read:'Read',resolved:'Resolved'}[s];}
+function userRegion(c){return c.user_region || (c.user_name==='Juan Dela Cruz'?'Region IV-A':c.user_name==='Ana Reyes'?'Region VII':c.user_name==='Pedro Lim'?'Region XI':'NCR');}
+function userDivision(c){return c.user_division || (c.user_name==='Juan Dela Cruz'?'SDO Cavite':c.user_name==='Ana Reyes'?'SDO Cebu City':c.user_name==='Pedro Lim'?'SDO Davao City':'SDO Manila');}
+
+/* ============ USER APP ============ */
+const userState={activeId:null};
+function userConversations(){return CONVERSATIONS.filter(c=>c.user_name===CURRENT_USER).sort((a,b)=>new Date(b.last_message_at)-new Date(a.last_message_at));}
+function renderUser(){renderUserSidebar();renderUserMain();}
+function renderUserSidebar(){
+  const list=userConversations();
+  document.getElementById('userConvList').innerHTML=list.map(c=>`
+    <div class="conv-row ${c.id===userState.activeId?'active':''}" onclick="openUserConv('${c.id}')">
+      <div class="cr-top"><div class="cr-title">${esc(c.title)}</div><div class="cr-time">${fmtTime(c.last_message_at)}</div></div>
+      <div class="cr-actions">
+        <span class="chip ${c.status}">${statusLabel(c.status)}</span>
+        <button class="resolve-mini" ${c.status==='resolved'?'disabled':''} onclick="event.stopPropagation();resolveConv('${c.id}','user')">✓ Resolve</button>
+      </div>
+    </div>`).join('') || '<div class="empty-state" style="padding:30px 10px"><div class="ico">💬</div>No conversations yet</div>';
+}
+function renderUserMain(){
+  const main=document.getElementById('userMain');
+  const c=CONVERSATIONS.find(x=>x.id===userState.activeId);
+  if(!c){
+    main.innerHTML=`
+      <div class="help-hero">
+        <div class="emoji">👋</div>
+        <h1>How can we help?</h1>
+        <p>Ask a question and our support team will get back to you. Your conversations appear in the sidebar.</p>
+        <div class="composer">
+          <textarea id="helpInput" placeholder="Type your question…"></textarea>
+          <div class="row"><button class="send-btn" onclick="startConversation()">Start conversation →</button></div>
+        </div>
+      </div>`;
+    return;
+  }
+  main.innerHTML=threadHTML(c,'user');
+  scrollMsgs();
+}
+function openUserConv(id){userState.activeId=id;closeSidebars();renderUser();}
+function newConversation(){userState.activeId=null;closeSidebars();renderUserMain();}
+function startConversation(){
+  const t=document.getElementById('helpInput').value.trim();if(!t)return;
+  const id='c'+(++SEQ);
+  CONVERSATIONS.push({id,user_name:CURRENT_USER,user_region:CURRENT_USER_REGION,user_division:CURRENT_USER_DIVISION,title:t.slice(0,80),status:'unread',assigned_to:null,last_message_at:nowISO(),
+    messages:[{role:'user',who:CURRENT_USER,body:t,time:nowISO()}]});
+  userState.activeId=id;renderUser();
+}
+
+/* shared thread renderer */
+function threadHTML(c,mode){
+  const actions = mode==='user'
+    ? `<button class="th-btn green" ${c.status==='resolved'?'disabled':''} onclick="resolveConv('${c.id}','user')">✓ Mark resolved</button>`
+    : `<button class="th-btn assign" onclick="openAssignMenu(event,'${c.id}')">Assign ▾</button>
+       <button class="th-btn green" ${c.status==='resolved'?'disabled':''} onclick="resolveConv('${c.id}','admin')">✓ Resolve</button>`;
+  const backBtn = mode==='admin' ? `<button class="th-btn" onclick="adminBack()">← Back</button>` : '';
+  const divChip = c.assigned_to?`<span class="chip dv ${c.assigned_to}">${c.assigned_to}</span>`:`<span class="chip Unassigned">Unassigned</span>`;
+  const userInfo = mode==='admin'
+    ? `<span class="chip Unassigned" style="background:var(--soft);color:var(--muted);border:none">${esc(c.user_name)}</span><span class="chip Unassigned" style="background:#EFF6FF;color:var(--blue);border:none">${esc(userRegion(c))}</span><span class="chip Unassigned" style="background:#F0FDF4;color:var(--green);border:none">${esc(userDivision(c))}</span>`
+    : '';
+  return `
+    <div class="thread">
+      <div class="thread-head">
+        <div style="min-width:0">
+          <div class="th-title">${esc(c.title)}</div>
+          <div class="th-meta"><span class="chip ${c.status}">${statusLabel(c.status)}</span>${mode==='admin'?divChip:''}${userInfo}</div>
+        </div>
+        <div class="th-actions">${backBtn}${actions}</div>
+      </div>
+      <div class="msgs" id="msgs">
+        ${c.messages.map(m=>`
+          <div class="msg ${m.role}">
+            <div class="who">${esc(m.who)}</div>
+            <div class="bubble">${esc(m.body)}</div>
+            <div class="time">${fmtTime(m.time)}</div>
+          </div>`).join('')}
+      </div>
+      <div class="thread-composer">
+        <textarea id="replyInput" placeholder="${mode==='admin'?'Reply to '+esc(c.user_name)+'…':'Type your message…'}" oninput="autoGrow(this)"></textarea>
+        <button class="send-btn" onclick="sendReply('${c.id}','${mode}')">Send</button>
+      </div>
+    </div>`;
+}
+function autoGrow(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+function scrollMsgs(){const m=document.getElementById('msgs');if(m)m.scrollTop=m.scrollHeight;}
+function sendReply(id,mode){
+  const el=document.getElementById('replyInput');const t=el.value.trim();if(!t)return;
+  const c=CONVERSATIONS.find(x=>x.id===id);
+  if(mode==='user'){
+    c.messages.push({role:'user',who:CURRENT_USER,body:t,time:nowISO()});
+    if(c.status==='resolved')c.status='unread'; // reopen
+  }else{
+    c.messages.push({role:'admin',who:(c.assigned_to||'AGAP')+' Support',body:t,time:nowISO()});
+  }
+  c.last_message_at=nowISO();
+  mode==='user'?renderUser():renderAdminThread(id);
+}
+function resolveConv(id,mode){
+  const c=CONVERSATIONS.find(x=>x.id===id);c.status='resolved';c.last_message_at=nowISO();
+  mode==='user'?renderUser():renderAdmin();
+}
+
+/* ============ ADMIN APP ============ */
+const adminState={filter:'all',activeId:null};
+const CATEGORIES=[
+  {key:'all',label:'All Conversations'},
+  {key:'unread',label:'Unread'},
+  {key:'unassigned',label:'Unassigned'},
+  {key:'PD',label:'PD'},{key:'HRDD',label:'HRDD'},{key:'SED',label:'SED'},{key:'InsightED',label:'InsightED'},
+  {key:'resolved',label:'Resolved'}
+];
+function catCount(key){
+  if(key==='all')return CONVERSATIONS.length;
+  if(key==='unread')return CONVERSATIONS.filter(c=>c.status==='unread').length;
+  if(key==='resolved')return CONVERSATIONS.filter(c=>c.status==='resolved').length;
+  if(key==='unassigned')return CONVERSATIONS.filter(c=>!c.assigned_to&&c.status!=='resolved').length;
+  return CONVERSATIONS.filter(c=>c.assigned_to===key).length;
+}
+function filteredConvs(){
+  const f=adminState.filter;
+  let list=CONVERSATIONS.filter(c=>{
+    if(f==='all')return true;
+    if(f==='unread')return c.status==='unread';
+    if(f==='resolved')return c.status==='resolved';
+    if(f==='unassigned')return !c.assigned_to&&c.status!=='resolved';
+    return c.assigned_to===f;
+  });
+  const order={unread:0,read:1,resolved:2};
+  return list.sort((a,b)=>order[a.status]-order[b.status] || new Date(b.last_message_at)-new Date(a.last_message_at));
+}
+function renderAdmin(){renderAdminNav();adminState.activeId?renderAdminThread(adminState.activeId):renderAdminList();}
+function renderAdminNav(){
+  document.getElementById('adminCatNav').innerHTML=CATEGORIES.map((cat,i)=>`
+    ${cat.key==='PD'?'<div class="cat-sep"></div>':''}
+    <button class="cat-btn ${adminState.filter===cat.key?'active':''}" onclick="setFilter('${cat.key}')">
+      <span>${cat.label}</span><span class="count">${catCount(cat.key)}</span>
+    </button>`).join('');
+}
+function setFilter(k){adminState.filter=k;adminState.activeId=null;closeSidebars();renderAdmin();}
+function renderAdminList(){
+  const list=filteredConvs();
+  const label=CATEGORIES.find(c=>c.key===adminState.filter).label;
+  const banner=`<div class="admin-banner"><div><h2>${label}</h2><p>Sorted by status: Unread → Read → Resolved, newest first.</p></div><div class="ab-count">${list.length}</div></div>`;
+  if(!list.length){document.getElementById('adminMain').innerHTML=banner+'<div class="empty-state"><div class="ico">📭</div>No conversations in this category.</div>';return;}
+  let html=banner;
+  ['unread','read','resolved'].forEach(st=>{
+    const grp=list.filter(c=>c.status===st);if(!grp.length)return;
+    html+=`<div class="group"><div class="group-head"><h3>${statusLabel(st)}</h3><span class="gc">${grp.length}</span><span class="bar"></span></div><div class="cards">`+
+      grp.map(cardHTML).join('')+`</div></div>`;
+  });
+  document.getElementById('adminMain').innerHTML=html;
+}
+function cardHTML(c){
+  const last=c.messages[c.messages.length-1];
+  const initials=c.user_name.split(' ').map(w=>w[0]).slice(0,2).join('');
+  const divChip=c.assigned_to?`<span class="chip dv ${c.assigned_to}">${c.assigned_to}</span>`:`<span class="chip Unassigned">Unassigned</span>`;
+  const userMeta=`<span class="chip Unassigned" style="background:#EFF6FF;color:var(--blue);border:none">${esc(userRegion(c))}</span><span class="chip Unassigned" style="background:#F0FDF4;color:var(--green);border:none">${esc(userDivision(c))}</span>`;
+  return `<div class="card ${c.status}">
+    <div class="c-top">
+      <div class="c-user"><div class="c-avatar">${esc(initials)}</div><div style="min-width:0"><div class="c-name">${esc(c.user_name)}</div><div class="c-time">${fmtTime(c.last_message_at)}</div></div></div>
+      <span class="chip ${c.status}">${statusLabel(c.status)}</span>
+    </div>
+    <div class="c-title">${esc(c.title)}</div>
+    <div class="c-snip">${esc(last.who)}: ${esc(last.body)}</div>
+    <div class="c-foot">
+      <div class="c-chips">${divChip}${userMeta}</div>
+      <div class="c-btns">
+        <button class="mini-btn open" onclick="openAdminConv('${c.id}')">Open</button>
+        <button class="mini-btn assign" onclick="openAssignMenu(event,'${c.id}')">Assign</button>
+        <button class="mini-btn resolve" ${c.status==='resolved'?'disabled':''} onclick="resolveConv('${c.id}','admin')">✓</button>
+      </div>
+    </div>
+  </div>`;
+}
+function openAdminConv(id){
+  const c=CONVERSATIONS.find(x=>x.id===id);
+  if(c.status==='unread'){c.status='read';} // admin open flips unread -> read
+  adminState.activeId=id;renderAdmin();
+}
+function adminBack(){adminState.activeId=null;renderAdmin();}
+function renderAdminThread(id){
+  renderAdminNav();
+  const c=CONVERSATIONS.find(x=>x.id===id);
+  document.getElementById('adminMain').innerHTML=threadHTML(c,'admin');
+  scrollMsgs();
+}
+
+/* assign popover */
+function openAssignMenu(e,id){
+  e.stopPropagation();closeAssignMenu();
+  const m=document.createElement('div');m.className='assign-menu';m.id='assignMenu';
+  m.innerHTML='<div class="am-head">Assign to division</div>'+DIVISIONS.map(d=>`<button onclick="assignDiv('${id}','${d}')"><span class="sw" style="background:${DIV_COLOR[d]}"></span>${d}</button>`).join('')+
+    `<button onclick="assignDiv('${id}','')"><span class="sw" style="background:#CBD5E1"></span>Unassign</button>`;
+  document.body.appendChild(m);
+  const r=e.target.getBoundingClientRect();
+  let top=r.bottom+6, left=Math.min(r.left, window.innerWidth-210);
+  if(top+230>window.innerHeight)top=r.top-230;
+  m.style.top=top+'px';m.style.left=Math.max(10,left)+'px';
+}
+function closeAssignMenu(){const m=document.getElementById('assignMenu');if(m)m.remove();}
+function assignDiv(id,d){const c=CONVERSATIONS.find(x=>x.id===id);c.assigned_to=d||null;closeAssignMenu();adminState.activeId?renderAdminThread(id):renderAdmin();}
+document.addEventListener('click',e=>{if(!e.target.closest('.assign-menu')&&!e.target.closest('.assign'))closeAssignMenu();});
+
+/* boot */
+go('userLogin');
+</script>
+</body>
+</html>

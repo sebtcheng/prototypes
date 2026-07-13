@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AGAP Portal HRMO Application Management Guide</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-soft: #f1f5f9;
+      --text: #1f2937;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --blue: #2563eb;
+      --blue-soft: #dbeafe;
+      --green: #15803d;
+      --green-soft: #dcfce7;
+      --orange: #c2410c;
+      --orange-soft: #ffedd5;
+      --red: #b91c1c;
+      --red-soft: #fee2e2;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 8px 24px rgba(15, 23, 42, 0.06);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .page {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0 72px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 40px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: #1d4ed8;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.2;
+      margin: 0;
+    }
+
+    h1 {
+      max-width: 880px;
+      font-size: clamp(32px, 5vw, 56px);
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      max-width: 780px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .notice {
+      margin-top: 24px;
+      padding: 18px 20px;
+      border-left: 5px solid var(--orange);
+      border-radius: 12px;
+      background: var(--orange-soft);
+      color: #7c2d12;
+      font-weight: 600;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .toc {
+      position: sticky;
+      top: 24px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .toc h2 {
+      font-size: 15px;
+      margin-bottom: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .toc a {
+      display: block;
+      padding: 8px 0;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 650;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .toc a:last-child {
+      border-bottom: 0;
+    }
+
+    .toc a:hover,
+    .toc a.active {
+      color: var(--blue);
+    }
+
+    .toc a.active {
+      font-weight: 800;
+    }
+
+    .section {
+      display: none;
+      min-height: 68vh;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      margin-bottom: 0;
+      scroll-margin-top: 24px;
+    }
+
+    .section.active {
+      display: block;
+      animation: sectionFadeIn 180ms ease-out;
+    }
+
+    @keyframes sectionFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .section h2 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 26px;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    .number {
+      display: inline-grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--blue);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .step {
+      padding: 18px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .step:first-of-type {
+      border-top: 0;
+    }
+
+    .step h3 {
+      margin-bottom: 8px;
+      font-size: 19px;
+      color: #0f172a;
+    }
+
+    ol, ul {
+      margin: 10px 0 0;
+      padding-left: 24px;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface-soft);
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: #1d4ed8;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .tag.green {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .tag.orange {
+      background: var(--orange-soft);
+      color: var(--orange);
+    }
+
+    .tag.red {
+      background: var(--red-soft);
+      color: var(--red);
+    }
+
+    .status-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    .status-table th,
+    .status-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .status-table th {
+      background: var(--surface-soft);
+      color: #334155;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .status-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .checklist {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .check {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #ffffff;
+    }
+
+    .box {
+      width: 18px;
+      height: 18px;
+      margin-top: 3px;
+      border: 2px solid #94a3b8;
+      border-radius: 4px;
+      background: #ffffff;
+      flex: 0 0 auto;
+    }
+
+    .footer {
+      margin-top: 24px;
+      padding: 22px;
+      border-radius: var(--radius);
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    .footer strong {
+      color: #ffffff;
+    }
+
+    @media (max-width: 860px) {
+      .hero {
+        padding: 28px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .toc {
+        position: static;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #191919;
+        --surface: #202020;
+        --surface-soft: #2a2a2a;
+        --text: #ffffff;
+        --muted: rgba(255, 255, 255, 0.68);
+        --line: rgba(255, 255, 255, 0.16);
+        --blue: #5e9fe8;
+        --blue-soft: rgba(94, 159, 232, 0.14);
+        --green-soft: rgba(114, 188, 143, 0.14);
+        --orange-soft: rgba(222, 146, 85, 0.14);
+        --red-soft: rgba(233, 115, 102, 0.14);
+      }
+
+      .hero {
+        background: linear-gradient(135deg, #202020 0%, #1f2937 100%);
+      }
+
+      .step h3 {
+        color: #ffffff;
+      }
+
+      .check {
+        background: #202020;
+      }
+    }
+    .print-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin: 0 0 24px;
+    }
+
+    .print-button {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      font: inherit;
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1;
+      padding: 14px 18px;
+    }
+
+    .print-button:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .print-button:focus-visible {
+      outline: 3px solid var(--blue-soft);
+      outline-offset: 3px;
+    }
+
+    @media print {
+      @page {
+        size: A4;
+        margin: 16mm 14mm;
+      }
+
+      :root {
+        --bg: #ffffff;
+        --surface: #ffffff;
+        --surface-soft: #f8fafc;
+        --text: #111827;
+        --muted: #4b5563;
+        --line: #d1d5db;
+        --blue: #1d4ed8;
+        --blue-soft: #dbeafe;
+        --green: #15803d;
+        --green-soft: #dcfce7;
+        --orange: #c2410c;
+        --orange-soft: #ffedd5;
+        --red: #b91c1c;
+        --red-soft: #fee2e2;
+        --shadow: none;
+      }
+
+      * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      body {
+        background: #ffffff;
+        color: var(--text);
+        font-size: 11pt;
+        line-height: 1.45;
+      }
+
+      .page {
+        width: 100%;
+        padding: 0;
+      }
+
+      .print-actions,
+      .toc {
+        display: none !important;
+      }
+
+      .layout {
+        display: block;
+      }
+
+      .hero {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: none;
+        margin-bottom: 12mm;
+        padding: 18mm 14mm;
+      }
+
+      h1 {
+        font-size: 28pt;
+      }
+
+      .subtitle {
+        font-size: 12pt;
+      }
+
+      .section {
+        display: block !important;
+        min-height: auto;
+        break-before: page;
+        page-break-before: always;
+        break-inside: auto;
+        page-break-inside: auto;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        box-shadow: none;
+        margin: 0 0 10mm;
+        padding: 10mm;
+      }
+
+      .section:first-of-type {
+        break-before: auto;
+        page-break-before: auto;
+      }
+
+      .section h2 {
+        break-after: avoid;
+        page-break-after: avoid;
+        font-size: 18pt;
+        margin-bottom: 8mm;
+      }
+
+      .step,
+      .card,
+      .quick-card,
+      .callout,
+      .check,
+      .footer,
+      table,
+      tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .step {
+        padding: 6mm 0;
+      }
+
+      .step h3 {
+        break-after: avoid;
+        page-break-after: avoid;
+        font-size: 13pt;
+      }
+
+      .grid,
+      .quick-panel,
+      .document-grid,
+      .checklist {
+        display: block;
+      }
+
+      .card,
+      .quick-card,
+      .doc,
+      .check {
+        margin-bottom: 4mm;
+      }
+
+      .status-table {
+        width: 100%;
+        border-collapse: collapse;
+        border-radius: 0;
+      }
+
+      .status-table th,
+      .status-table td {
+        padding: 6pt 8pt;
+      }
+
+      .tag {
+        border: 1px solid currentColor;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .footer {
+        background: #111827;
+        color: #ffffff;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div class="eyebrow">AGAP Portal · HRMO Operations</div>
+      <h1>Step-by-step guide for managing applications</h1>
+      <p class="subtitle">
+        Use this guide to manage the full recruitment workflow: NOSCA upload, position publication,
+        application screening, scoring, assessment, HRMPSB deliberation, notifications, and closure.
+      </p>
+      <div class="notice">
+        The system-generated score is advisory. Final action must follow approved qualification standards,
+        applicable Department Orders, CSC rules, HR review, and the authorized selection process.
+      </div>
+    </header>
+
+    <div class="print-actions">
+      <button class="print-button" type="button" onclick="window.print()">Print / Save as PDF</button>
+    </div>
+
+    <div class="layout">
+      <nav class="toc" aria-label="Guide sections">
+        <h2>Guide sections</h2>
+        <a href="#prepare">A. Prepare position data</a>
+        <a href="#publish">B. Publish positions</a>
+        <a href="#review">C. Review applications</a>
+        <a href="#evaluate">D. Evaluate qualifications</a>
+        <a href="#filter">E. Filter and compare</a>
+        <a href="#stages">F. Move through stages</a>
+        <a href="#deliberation">G. Deliberation and results</a>
+
+      </nav>
+
+      <div>
+        <section class="section active" id="prepare">
+          <h2><span class="number">A</span>Prepare and verify source position data</h2>
+
+          <div class="step">
+            <h3>Step 1: Upload the NOSCA</h3>
+            <ol>
+              <li>Log in using an authorized HRMO account.</li>
+              <li>Open the NOSCA upload or position import module.</li>
+              <li>Upload the applicable NOSCA file.</li>
+              <li>Confirm that the upload supports extraction of the NOSCA reference, authorized position or item, office or unit, salary grade, place of assignment, vacancy or plantilla reference, and other available item details.</li>
+              <li>Submit the upload and wait for the system to read, import, or process the position information.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>Step 2: Confirm imported position records</h3>
+            <ol>
+              <li>Open the list of positions created from the NOSCA upload.</li>
+              <li>Review each position or item record against the source file.</li>
+              <li>Check that each position is linked to the correct Central Office or CSC-approved Qualification Standards record.</li>
+              <li>Confirm that the Qualification Standards and Job Description came from Central Office or CSC-approved records, not from the HRMO upload.</li>
+              <li>Flag missing, duplicated, or incorrectly linked positions before publication.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>Step 3: Verify position details</h3>
+            <div class="grid">
+              <div class="card"><strong>Core details</strong>Position title, office or unit, salary grade, employment type, and place of assignment.</div>
+              <div class="card"><strong>Qualification details</strong>CSC-approved QS, required education, experience, training, and eligibility.</div>
+              <div class="card"><strong>Recruitment details</strong>Job Description, hiring purpose, list of requirements, and application deadline.</div>
+              <div class="card"><strong>Status details</strong>Draft, Open, Screening, Shortlisted, Closed, or Filled.</div>
+            </div>
+          </div>
+
+          <div class="step">
+            <h3>Step 4: Confirm publication period</h3>
+            <ol>
+              <li>Check the publication period indicated on CS Form 9 revised 2025.</li>
+              <li>Confirm that the AGAP Portal publication period matches the CS Form 9 publication period.</li>
+              <li>Do not publish positions with incorrect publication dates.</li>
+              <li>Correct publication dates before opening applications.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section class="section" id="publish">
+          <h2><span class="number">B</span>Publish and monitor open positions</h2>
+
+          <div class="step">
+            <h3>Step 1: Open the position for applications</h3>
+            <ol>
+              <li>Select the position record.</li>
+              <li>Review all details one final time.</li>
+              <li>Confirm that the QS, JD, requirements, hiring purpose, and application deadline are complete.</li>
+              <li>Change the position status from Draft to Open.</li>
+              <li>Verify that the position appears in the applicant-facing open positions list.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>Step 2: Monitor open positions</h3>
+            <ul>
+              <li>Number of applicants per position</li>
+              <li>Uploaded credentials</li>
+              <li>Application dates and deadline compliance</li>
+              <li>Qualification match status and system-generated score</li>
+              <li>Hiring stage and document completeness</li>
+              <li>Notifications sent to applicants</li>
+            </ul>
+          </div>
+
+          <div class="step">
+            <h3>Step 3: Manage uploaded source files</h3>
+            <ol>
+              <li>Confirm that the NOSCA file remains linked to the created positions.</li>
+              <li>Keep uploaded files available for audit and verification.</li>
+              <li>Do not delete or replace source files unless the replacement is authorized and documented.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section class="section" id="review">
+          <h2><span class="number">C</span>Review incoming applications</h2>
+
+          <div class="step">
+            <h3>Step 1: Open the applications dashboard</h3>
+            <ol>
+              <li>Go to the HRMO applications dashboard.</li>
+              <li>Select the relevant open position.</li>
+              <li>Review the applicant list for that position.</li>
+              <li>Confirm that each record shows the applicant name, position applied for, application date, submitted credentials, qualification match status, score, current stage, HRMPSB recommendation field, and HR review decision field.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>Step 2: Review applicant profile information</h3>
+            <ul>
+              <li>Personal information and contact details</li>
+              <li>Educational background</li>
+              <li>Civil service eligibility, license, or certification</li>
+              <li>Work experience, duties, and accomplishments</li>
+              <li>Training and learning development records</li>
+              <li>Performance rating and other credentials</li>
+              <li>Uploaded profile documents</li>
+            </ul>
+          </div>
+
+          <div class="step">
+            <h3>Step 3: Confirm position-specific application details</h3>
+            <ol>
+              <li>Confirm the position applied for.</li>
+              <li>Confirm that the application was submitted within the deadline.</li>
+              <li>Confirm that uploaded credentials are associated with the correct application.</li>
+              <li>If the applicant applied to multiple positions, evaluate each application separately.</li>
+              <li>Do not reuse the result of one application as the automatic result for another position.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section class="section" id="evaluate">
+          <h2><span class="number">D</span>Evaluate qualification match and document completeness</h2>
+
+          <div class="step">
+            <h3>Step 1: Review education</h3>
+            <ol>
+              <li>Compare the applicant's education against the required education.</li>
+              <li>Check degree, course, level, specialization, and supporting documents.</li>
+              <li>Apply the prescribed scoring mechanism and increments table.</li>
+              <li>Mark the record as fully compliant, partially relevant if allowed, not compliant, or for manual review.</li>
+              <li>Add remarks for unclear, incomplete, or unvalidated records.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>Step 2: Review experience</h3>
+            <ol>
+              <li>Review work experience records, dates, duties, and accomplishments.</li>
+              <li>Check years or months of experience and relevance to the position.</li>
+              <li>Compare the record against the required experience in the QS.</li>
+              <li>Apply the prescribed scoring mechanism.</li>
+              <li>Add remarks for overlapping dates, unclear duties, unsupported claims, or missing documents.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>Step 3: Review training</h3>
+            <ol>
+              <li>Check training titles, providers, dates, hours, and topics.</li>
+              <li>Compare training records against required hours and topics.</li>
+              <li>Validate certificates or supporting documents.</li>
+              <li>Apply the prescribed scoring mechanism.</li>
+              <li>Add remarks for missing certificates, unclear hours, or unrelated training.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>Step 4: Review eligibility or license</h3>
+            <ol>
+              <li>Confirm that the eligibility, license, or certification matches the position requirement.</li>
+              <li>Review the uploaded Means of Verification.</li>
+              <li>Mark the requirement as met, not met, or for manual verification.</li>
+              <li>Add remarks if the document is expired, unclear, mismatched, or missing.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>Step 5: Record the QS evaluation result</h3>
+            <table class="status-table">
+              <thead>
+                <tr>
+                  <th>Option</th>
+                  <th>Use when</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="tag green">Meets the QS</span></td>
+                  <td>The applicant satisfies the CSC-approved Qualification Standards for the position based on the required education, experience, training, eligibility, and verified supporting records.</td>
+                </tr>
+                <tr>
+                  <td><span class="tag red">Did Not Meet the QS</span></td>
+                  <td>The applicant does not satisfy one or more minimum Qualification Standards for the position after HRMO review of the submitted profile and supporting records.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="step">
+            <h3>Step 6: Review other scoring areas</h3>
+            <ul>
+              <li>Performance rating</li>
+              <li>Outstanding accomplishment</li>
+              <li>Application of education</li>
+              <li>Application of learning and development</li>
+              <li>Potential</li>
+              <li>Work Sample Test, Written Examination, and Behavioral Events Interview results</li>
+            </ul>
+          </div>
+
+          <div class="step">
+            <h3>Step 7: Review the system-generated score</h3>
+            <ol>
+              <li>Open the score breakdown.</li>
+              <li>Confirm that every scoring area follows the prescribed mechanism.</li>
+              <li>Check for missing values, unsupported claims, or incorrect calculations.</li>
+              <li>Add HRMO remarks if the score appears incorrect.</li>
+              <li>If authorized, override or correct the score according to policy and system permissions.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section class="section" id="filter">
+          <h2><span class="number">E</span>Filter, sort, and compare applicants</h2>
+
+          <div class="step">
+            <h3>Step 1: Use dashboard filters</h3>
+            <div class="tag-row">
+              <span class="tag">Position</span>
+              <span class="tag">Application status</span>
+              <span class="tag">Hiring stage</span>
+              <span class="tag">Education</span>
+              <span class="tag">Experience</span>
+              <span class="tag">Training hours</span>
+              <span class="tag">Eligibility</span>
+              <span class="tag">Score range</span>
+              <span class="tag">Document completeness</span>
+            </div>
+          </div>
+
+          <div class="step">
+            <h3>Step 2: Sort applicants for review</h3>
+            <ol>
+              <li>Highest overall score</li>
+              <li>Qualification match status</li>
+              <li>Document completeness</li>
+              <li>Application date</li>
+              <li>Current stage</li>
+              <li>Relevant experience</li>
+              <li>Training and eligibility compliance</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>Step 3: Compare applicants fairly</h3>
+            <ol>
+              <li>Compare applicants only against the requirements of the same position.</li>
+              <li>Use the same scoring policy for all applicants under the same position.</li>
+              <li>Record remarks consistently.</li>
+              <li>Keep audit trails complete for every movement, score change, and reviewer decision.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section class="section" id="stages">
+          <h2><span class="number">F</span>Move applicants through hiring stages</h2>
+
+          <div class="step">
+            <h3>Step 1: Start with Application Submitted</h3>
+            <ol>
+              <li>Confirm receipt of the application.</li>
+              <li>Confirm that the applicant selected the correct position.</li>
+              <li>Confirm that submitted documents are accessible.</li>
+              <li>Confirm deadline compliance.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>Step 2: Conduct initial evaluation and paper screening</h3>
+            <ol>
+              <li>Review QS compliance.</li>
+              <li>Review document completeness.</li>
+              <li>Review education, training, experience, and eligibility.</li>
+              <li>Review submitted credentials.</li>
+              <li>Review system-generated score and score breakdown.</li>
+              <li>Add HRMO remarks.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>Step 3: Assign initial evaluation result</h3>
+            <table class="status-table">
+              <thead>
+                <tr>
+                  <th>Result</th>
+                  <th>Definition</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="tag green">Qualified</span></td>
+                  <td>The applicant met or exceeded the minimum CSC-approved QS and submitted complete and valid documentary requirements on or before the deadline.</td>
+                </tr>
+                <tr>
+                  <td><span class="tag red">Disqualified</span></td>
+                  <td>The applicant did not meet the minimum CSC-approved QS, regardless of documentary completeness.</td>
+                </tr>
+                <tr>
+                  <td><span class="tag orange">Excluded</span></td>
+                  <td>The applicant failed to submit complete and valid documentary requirements on or before the deadline, regardless of qualifications.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="step">
+            <h3>Step 4: Record the basis for the result</h3>
+            <ul>
+              <li>Reviewer name and timestamp</li>
+              <li>Result assigned</li>
+              <li>QS and document completeness basis</li>
+              <li>Score reference</li>
+              <li>Remarks and supporting observations</li>
+              <li>Manual override and reason, if applicable</li>
+            </ul>
+          </div>
+
+          <div class="step">
+            <h3>Step 5: Move qualified applicants to comparative assessment</h3>
+            <ol>
+              <li>Filter applicants marked Qualified.</li>
+              <li>Move eligible applicants to Comparative Assessment.</li>
+              <li>Schedule or record WST, WE, BEI, and Open Ranking System activities.</li>
+              <li>Notify applicants through in-app notification and registered email.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>Step 6: Enter comparative assessment results</h3>
+            <ol>
+              <li>Record assessment type, date, score, evaluator, remarks, and supporting result file.</li>
+              <li>Confirm that score breakdowns are complete.</li>
+              <li>Review ranking output and flag ties or missing results.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>Step 7: Move applicants to shortlist</h3>
+            <ol>
+              <li>Select applicants who pass the comparative assessment stage.</li>
+              <li>Move selected applicants to Shortlisted.</li>
+              <li>Confirm that all score breakdowns and remarks are complete.</li>
+              <li>Notify applicants if required by policy or local process.</li>
+            </ol>
+          </div>
+        </section>
+
+        <section class="section" id="deliberation">
+          <h2><span class="number">G</span>HRMPSB deliberation and final results</h2>
+
+          <div class="step">
+            <h3>Step 1: Prepare records for HRMPSB deliberation</h3>
+            <ul>
+              <li>Complete applicant profile and application record</li>
+              <li>QS evaluation and document completeness result</li>
+              <li>Score breakdown and comparative assessment result</li>
+              <li>HRMO remarks, assessment files, ranking result, and override history</li>
+            </ul>
+          </div>
+
+          <div class="step">
+            <h3>Step 2: Record HRMPSB deliberation results</h3>
+            <ol>
+              <li>Update the record with the deliberation result, such as With Recommended Appointment or For Republication/Reposting.</li>
+              <li>Record deliberation date, recommendation, remarks, approving or recommending authority, and supporting notes.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>Step 3: Release result of application</h3>
+            <ol>
+              <li>Prepare the correct communication: congratulatory letter, appointment requirements, regret letter, or other applicable notice.</li>
+              <li>Send notices through in-app notification and registered email.</li>
+              <li>Update the final applicant status: Selected, Hired, Not Selected, For Compliance, For Republication/Reposting, or Closed.</li>
+            </ol>
+          </div>
+
+          <div class="step">
+            <h3>Step 4: Close or fill the position</h3>
+            <ol>
+              <li>Mark the position Filled if the appointment is completed.</li>
+              <li>Mark the position for republication if no appointment proceeds and republication is required.</li>
+              <li>Mark the position Closed when the hiring cycle is complete.</li>
+              <li>Confirm that all applicant statuses and notices are documented.</li>
+            </ol>
+          </div>
+        </section>
+
+
+
+        <footer class="footer">
+          <strong>Operating rule:</strong> Every application must be evaluated against the specific position applied for. Every status movement must be traceable, policy-based, and documented.
+        </footer>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const navLinks = document.querySelectorAll('.toc a[href^="#"]');
+    const sections = document.querySelectorAll('.section');
+
+    function showSection(sectionId) {
+      sections.forEach((section) => {
+        section.classList.toggle('active', section.id === sectionId);
+      });
+
+      navLinks.forEach((link) => {
+        const linkTarget = link.getAttribute('href').slice(1);
+        link.classList.toggle('active', linkTarget === sectionId);
+      });
+    }
+
+    navLinks.forEach((link) => {
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+
+        const sectionId = link.getAttribute('href').slice(1);
+        showSection(sectionId);
+        history.replaceState(null, '', `#${sectionId}`);
+      });
+    });
+
+    const initialSectionId = window.location.hash
+      ? window.location.hash.slice(1)
+      : sections[0]?.id;
+
+    if (initialSectionId) {
+      showSection(initialSectionId);
+    }
+  </script>
+</body>
+</html>
