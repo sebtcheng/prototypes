@@ -609,15 +609,15 @@ const DATASETS = {
     statuses:['Deficit','With Remaining Funds'],
     measures:[{k:'g_deficit',n:'Total deficit'},{k:'g_charge',n:'Total chargeable'},{k:'g_budget',n:'Allocated budget'}],
     defaultMeasure:'g_deficit',
-    primary:{title:'Total chargeable vs. allocated budget by region',sub:'Per region: FY 2025 unfunded + FY 2026 expenses (total chargeable) compared against the FY 2026 allocated budget',
-      series:[{k:'g_unfunded',n:'FY 2025 Unfunded',c:C[0]},{k:'g_expenses',n:'FY 2026 Expenses',c:C[4]}],
+    primary:{title:'Total chargeable vs. allocated budget by region',sub:'Per region: Unfunded Recurring Cost + FY 2026 expenses (total chargeable) compared against the FY 2026 allocated budget',
+      series:[{k:'g_unfunded',n:'Unfunded Recurring Cost',c:C[0]},{k:'g_expenses',n:'FY 2026 Expenses',c:C[4]}],
       compare:{k:'g_budget',n:'FY 2026 Allocated Budget',c:'var(--green)'}},
-    donut:{title:'Share of total funding deficit',sub:'Regions with a positive deficit only',metric:'g_deficit'},
+    donut:{title:'Share of total funding deficit',sub:'Regions with deficit only',metric:'g_deficit'},
     hist:{title:'Allocated reclassification budget',sub:'FY 2026 budget per region',metric:'g_budget',color:'var(--c3)'},
     columns:[
       {k:'name',n:'Region',t:'text'},
       {k:'g_budget',n:'Reclass Budget',t:'money'},
-      {k:'g_unfunded',n:'FY25 Unfunded',t:'money'},
+      {k:'g_unfunded',n:'Unfunded Recurring Cost',t:'money'},
       {k:'g_expenses',n:'FY26 Expenses',t:'money'},
       {k:'g_charge',n:'Total Chargeable',t:'money'},
       {k:'g_deficit',n:'Total Deficit',t:'money'},
@@ -656,9 +656,9 @@ const DATASETS = {
     hist:{title:'FY 2027 reclassification requirement',sub:'Tier 1 + Tier 2 requirement per region',metric:'a_2027',color:'var(--c7)'},
     columns:[
       {k:'name',n:'Region',t:'text'},
-      {k:'a_dbm_p',n:'DBM (count)',t:'int'},
-      {k:'a_car_p',n:'CAReER (count)',t:'int'},
-      {k:'a_tot_p',n:'Total Apps',t:'int'},
+      {k:'a_dbm_p',n:'DBM (Applications)',t:'int'},
+      {k:'a_car_p',n:'CAReER (Applications)',t:'int'},
+      {k:'a_tot_p',n:'Total Applications',t:'int'},
       {k:'a_dbm_f',n:'DBM Financial Req.',t:'money'},
       {k:'a_car_f',n:'CAReER Financial Req.',t:'money'},
       {k:'a_tot_f',n:'Total Financial Req.',t:'money'},
@@ -725,6 +725,8 @@ const tip=$('#tip');
 function showTip(html,e){tip.innerHTML=html;tip.style.display='block';moveTip(e);}
 function moveTip(e){const p=12;let x=e.clientX+p,y=e.clientY+p;const w=tip.offsetWidth,h=tip.offsetHeight;if(x+w>innerWidth)x=e.clientX-w-p;if(y+h>innerHeight)y=e.clientY-h-p;tip.style.left=x+'px';tip.style.top=y+'px';}
 function hideTip(){tip.style.display='none';}
+/* long-press for touch/tablet: 500 ms hold opens modal */
+function addLongPress(el,fn){let t=null;el.addEventListener('touchstart',e=>{t=setTimeout(()=>{e.preventDefault();hideTip();fn();},500);},{passive:true});el.addEventListener('touchend',()=>clearTimeout(t));el.addEventListener('touchmove',()=>clearTimeout(t));}
 
 /* ---------- KPIs ---------- */
 function renderKPIs(){
@@ -733,11 +735,11 @@ function renderKPIs(){
   if(state.ds==='gaps'){
     const def=rs.filter(r=>r.g_deficit>0);
     html+=kpi('total',peso(sum('g_budget')),'FY 2026 Allocated Budget','Total reclassification budget','g_budget');
-    html+=kpi('k-blue',peso(sum('g_unfunded')),'FY 2025 Unfunded Recurring Cost','Salary differentials, May–Dec 2025','g_unfunded');
-    html+=kpi('k-blue',peso(sum('g_expenses')),'FY 2026 Expenses','Salary differential, Jan 2026 onwards','g_expenses');
-    html+=kpi('k-orange',peso(sum('g_charge')),'Total Chargeable','FY25 unfunded + FY26 expenses','g_charge');
+    html+=kpi('k-blue',peso(sum('g_unfunded')),'Unfunded Recurring Cost','PS Salary Deficiency for Appointed from May-December 2025','g_unfunded');
+    html+=kpi('k-blue',peso(sum('g_expenses')),'FY 2026 Expenses','Salary differential, Jan - June 2026','g_expenses');
+    html+=kpi('k-orange',peso(sum('g_charge')),'Total Chargeable','Unfunded Recurring Cost + FY26 expenses','g_charge');
     html+=kpi('k-red',peso(sum('g_deficit')),'Deficit','Chargeable less allocated budget','g_deficit');
-    html+=kpi('k-red',def.length,'Regions With Deficit','Regions with a positive funding gap','deficit_count');
+    html+=kpi('k-red',def.length,'Regions With Deficit','Regions with funding gap','deficit_count');
   } else if(state.ds==='strategy'){
     const elig=rs.filter(r=>r.s_fill<10);
     html+=kpi('total',peso(sum('s_unreleased')),'Unreleased Appropriations','NSPP lump sum available <span class="asof-note">As of June 30, 2026</span>','s_unreleased');
@@ -883,8 +885,8 @@ function renderThreshold(host,p){
   host.querySelectorAll('.hbar').forEach(el=>{const r=RAW.find(x=>x.code===el.dataset.code);
     el.onmousemove=e=>showTip(`<div class="tt">${r.name}</div><div class="tr"><span>Filling-up rate</span><span>${r.s_fill}%</span></div><div class="tr"><span>Unreleased</span><span>${peso(r.s_unreleased)}</span></div>`,e);
     el.onmouseleave=hideTip;
-    el.onclick=()=>{hideTip();openDisaggregation(r,null);};});
-  host.querySelectorAll('.rowlabel').forEach(el=>{el.onclick=()=>{hideTip();openDetail(RAW.find(r=>r.code===el.dataset.code));};});
+    addLongPress(el,()=>openDisaggregation(r,null));});
+  host.querySelectorAll('.rowlabel').forEach(el=>{addLongPress(el,()=>openDetail(RAW.find(r=>r.code===el.dataset.code)));});
 }
 
 function renderNspFill(){
@@ -923,7 +925,7 @@ function renderNspFill(){
   host.querySelectorAll('.hbar').forEach(el=>{const r=RAW.find(x=>x.code===el.dataset.code);
     el.onmousemove=e=>showTip(`<div class="tt">${r.name}</div><div class="tr"><span>Filling-up rate</span><span>${r.s_fill}%</span></div><div class="tr"><span>Unreleased</span><span>${peso(r.s_unreleased)}</span></div>`,e);
     el.onmouseleave=hideTip;
-    el.onclick=()=>{hideTip();openDetail(r);};
+    addLongPress(el,()=>openDetail(r));
   });
 }
 
@@ -977,9 +979,9 @@ function renderAppsVolume(){
   host.querySelectorAll('.hbar').forEach(el=>{const r=RAW.find(x=>x.code===el.dataset.code);
     el.onmousemove=e=>showTip(`<div class="tt">${r.name}</div><div class="tr"><span>Under DBM’s Processing</span><span>${fmt(r[kd])}</span></div><div class="tr"><span>Remaining in CAReER</span><span>${fmt(r[kc])}</span></div><div class="tr"><span>${isApps?'Total applications':'Total financial requirement'}</span><span>${fmt(r[kt])}</span></div>`,e);
     el.onmouseleave=hideTip;
-    el.onclick=()=>{hideTip();openDetail(r);};
+    addLongPress(el,()=>openDetail(r));
   });
-  host.querySelectorAll('.rowlabel').forEach(el=>{el.onclick=()=>{hideTip();openDetail(RAW.find(r=>r.code===el.dataset.code));};});
+  host.querySelectorAll('.rowlabel').forEach(el=>{addLongPress(el,()=>openDetail(RAW.find(r=>r.code===el.dataset.code)));});
 }
 
 /* ---------- DONUT ---------- */
@@ -1066,9 +1068,9 @@ function renderStrategyStackedHist(host){
   host.querySelectorAll('.hbar').forEach(el=>{const r=RAW.find(x=>x.code===el.dataset.code);
     el.onmousemove=e=>showTip(`<div class="tt">${r.name}</div><div class="tr"><span>Chargeable</span><span>${peso(r.s_charge)}</span></div><div class="tr"><span>Remaining balance</span><span>${peso(r.s_balance)}</span></div><div class="tr"><span>Unreleased appropriation</span><span>${peso(r.s_unreleased)}</span></div>`,e);
     el.onmouseleave=hideTip;
-    el.onclick=()=>{hideTip();openDisaggregation(r,null);};
+    addLongPress(el,()=>openDisaggregation(r,null));
   });
-  host.querySelectorAll('.rowlabel').forEach(el=>{el.onclick=()=>{hideTip();openDetail(RAW.find(r=>r.code===el.dataset.code));};});
+  host.querySelectorAll('.rowlabel').forEach(el=>{addLongPress(el,()=>openDetail(RAW.find(r=>r.code===el.dataset.code)));});
 }
 
 /* ---------- TABLE ---------- */
@@ -1130,7 +1132,7 @@ function openDetail(r){
   let groups='';
   const tiles=arr=>arr.map(t=>`<div class="tile"><div class="tl">${t[0]}</div><div class="tv">${t[1]}</div></div>`).join('');
   groups+=`<div class="mgroup"><h4>Status</h4><div class="tiles">${tiles([['Region',r.name],['Dataset',c.title],['Standing',statusVal(r)]])}</div></div>`;
-  groups+=`<div class="mgroup"><h4>FY 2026 Funding Gap</h4><div class="tiles">${tiles([['Reclass Budget',full(r.g_budget)],['FY25 Unfunded',full(r.g_unfunded)],['FY26 Expenses',full(r.g_expenses)],['Total Chargeable',full(r.g_charge)],['Total Deficit',full(r.g_deficit)]])}</div></div>`;
+  groups+=`<div class="mgroup"><h4>FY 2026 Funding Gap</h4><div class="tiles">${tiles([['Reclass Budget',full(r.g_budget)],['Unfunded Recurring Cost',full(r.g_unfunded)],['FY26 Expenses',full(r.g_expenses)],['Total Chargeable',full(r.g_charge)],['Total Deficit',full(r.g_deficit)]])}</div></div>`;
   groups+=`<div class="mgroup"><h4>NSPP Funding Strategy</h4><div class="tiles">${tiles([['Filling-up rate',r.s_fill+'%'],['Unreleased Approp.',full(r.s_unreleased)],['Chargeable',full(r.s_charge)],['Remaining Balance',full(r.s_balance)]])}</div></div>`;
   groups+=`<div class="mgroup"><h4>Pending Applications</h4><div class="tiles">${tiles([['Under DBM’s Processing',intc(r.a_dbm_p)],['In CAReER',intc(r.a_car_p)],['Total Apps',intc(r.a_tot_p)],['Financial Req.',full(r.a_tot_f)],['FY2027 Tier 1',full(r.a_t1)],['FY2027 Tier 2',full(r.a_t2)],['FY2027 Total',full(r.a_2027)],['Remaining/Deficit',full(r.a_remain)]])}</div></div>`;
   openModal(r.name,'Full regional breakdown across all datasets',groups);
@@ -1138,7 +1140,7 @@ function openDetail(r){
 function openDisaggregation(r,series){
   const c=cfg();let rows=[],label='',valfmt=full,segTotal=0;
   if(state.ds==='gaps'){
-    rows=[['FY 2025 Unfunded',r.g_unfunded],['FY 2026 Expenses',r.g_expenses]];label='Total Chargeable';segTotal=r.g_charge;
+    rows=[['Unfunded Recurring Cost',r.g_unfunded],['FY 2026 Expenses',r.g_expenses]];label='Total Chargeable';segTotal=r.g_charge;
     rows.push(['Less: Allocated Budget',-r.g_budget]);
   } else if(state.ds==='strategy'){
     rows=[['Chargeable against unreleased',r.s_charge],['Remaining balance',r.s_balance]];label='Unreleased Appropriations';segTotal=r.s_unreleased;
