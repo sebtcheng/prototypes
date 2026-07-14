@@ -846,9 +846,9 @@ function wirePrimary(host,p){
       }
     };
     el.onmouseleave=hideTip;
-    el.onclick=()=>{hideTip();kind==='compare'?openDetail(r):openDisaggregation(r,p.series);};
+    addLongPress(el,()=>openDetail(r));
   });
-  host.querySelectorAll('.rowlabel').forEach(el=>{el.onclick=()=>{hideTip();openDetail(RAW.find(r=>r.code===el.dataset.code));};});
+  host.querySelectorAll('.rowlabel').forEach(el=>{addLongPress(el,()=>openDetail(RAW.find(r=>r.code===el.dataset.code)));});
 }
 function fmtVal(k,v){return (k.endsWith('_p')||k==='a_tot_p'||k==='a_dbm_p'||k==='a_car_p')?intc(v)+' apps':peso(v);}
 
