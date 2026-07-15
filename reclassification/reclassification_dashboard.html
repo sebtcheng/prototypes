@@ -331,7 +331,7 @@
       <div class="sub">Consolidated view of FY 2026 reclassification funding gaps, the proposed NSPP funding strategy, and pending reclassification applications across all 17 regions.</div>
     </div>
     <div class="pill">
-      <div class="plabel">FY 2026 Overall Deficit</div>
+      <div class="plabel">FY 2026 Overall Deficiency</div>
       <div class="pnum" id="heroNum">–</div>
       <div class="pscope" id="heroScope">across deficit regions</div>
       <div class="pbar"><i id="heroBar" style="width:0%"></i></div>
@@ -371,7 +371,7 @@
   </div>
 <!-- PROPOSED CHARGEABLE VS REMAINING BALANCE -->
 <div class="card half strategy-balance-card">
-<div class="chart-head"><div><h3>Proposed chargeable vs. remaining balance</h3><div class="csub">Chargeable against unreleased appropriations per region</div></div></div>
+<div class="chart-head"><div><h3>Proposed chargeable vs. remaining balance</h3><div class="csub">Proposed Amount against unreleased appropriations per region</div></div></div>
 <div id="strategyBalanceChart"></div>
 </div>
 
@@ -580,9 +580,16 @@ function renderPdfPage(num){
   pdfDoc.getPage(num).then(page=>{
     const base=page.getViewport({scale:1});
     const maxW=Math.max(320,stage.clientWidth-36),maxH=Math.max(320,stage.clientHeight-36);
-    const scale=Math.min(maxW/base.width,maxH/base.height,1.7);
-    const viewport=page.getViewport({scale});
-    canvas.width=viewport.width;canvas.height=viewport.height;
+    const displayScale=Math.min(maxW/base.width,maxH/base.height,2.4);
+    // Render at a higher internal resolution so text stays crisp on HiDPI displays.
+    const dpr=Math.min(window.devicePixelRatio||1,3);
+    const renderScale=displayScale*Math.max(dpr,1)*1.5;
+    const viewport=page.getViewport({scale:renderScale});
+    const displayViewport=page.getViewport({scale:displayScale});
+    canvas.width=Math.round(viewport.width);canvas.height=Math.round(viewport.height);
+    canvas.style.width=Math.round(displayViewport.width)+'px';
+    canvas.style.height=Math.round(displayViewport.height)+'px';
+    ctx.imageSmoothingEnabled=true;if('imageSmoothingQuality' in ctx)ctx.imageSmoothingQuality='high';
     return page.render({canvasContext:ctx,viewport}).promise;
   }).then(()=>{
     pdfRendering=false;status.textContent='';updatePdfCounter();
@@ -606,11 +613,11 @@ const DATASETS = {
     title:'FY 2026 Reclassification Funding Gaps',
     tblTitle:'Funding gaps by region',
     statusOf:r=>r.g_deficit>0?'Deficit':'With Remaining Funds',
-    statuses:['Deficit','With Remaining Funds'],
-    measures:[{k:'g_deficit',n:'Total deficit'},{k:'g_charge',n:'Total chargeable'},{k:'g_budget',n:'Allocated budget'}],
+    statuses:['Deficiency','With Remaining Funds'],
+    measures:[{k:'g_deficit',n:'Total deficit'},{k:'g_charge',n:'Total Funding Requirements'},{k:'g_budget',n:'Allocated budget'}],
     defaultMeasure:'g_deficit',
-    primary:{title:'Total chargeable vs. allocated budget by region',sub:'Per region: Unfunded Recurring Cost + FY 2026 expenses (total chargeable) compared against the FY 2026 allocated budget',
-      series:[{k:'g_unfunded',n:'Unfunded Recurring Cost',c:C[0]},{k:'g_expenses',n:'FY 2026 Expenses',c:C[4]}],
+    primary:{title:'Total Funding Requirements vs. allocated budget by region',sub:'Per region: Unfunded Recurring Cost + FY 2026 Funding Requirement (Total Funding Requirements) compared against the FY 2026 allocated budget',
+      series:[{k:'g_unfunded',n:'Unfunded Recurring Cost',c:C[0]},{k:'g_expenses',n:'FY 2026 Funding Requirement',c:C[4]}],
       compare:{k:'g_budget',n:'FY 2026 Allocated Budget',c:'var(--green)'}},
     donut:{title:'Share of total funding deficit',sub:'Regions with deficit only',metric:'g_deficit'},
     hist:{title:'Allocated reclassification budget',sub:'FY 2026 budget per region',metric:'g_budget',color:'var(--c3)'},
@@ -618,9 +625,9 @@ const DATASETS = {
       {k:'name',n:'Region',t:'text'},
       {k:'g_budget',n:'Reclass Budget',t:'money'},
       {k:'g_unfunded',n:'Unfunded Recurring Cost',t:'money'},
-      {k:'g_expenses',n:'FY26 Expenses',t:'money'},
-      {k:'g_charge',n:'Total Chargeable',t:'money'},
-      {k:'g_deficit',n:'Total Deficit',t:'money'},
+      {k:'g_expenses',n:'FY26 Funding Requirement',t:'money'},
+      {k:'g_charge',n:'Total Funding Requirements',t:'money'},
+      {k:'g_deficit',n:'Total Deficiency',t:'money'},
       {k:'_gstatus',n:'Status',t:'status'}
     ]
   },
@@ -629,17 +636,17 @@ const DATASETS = {
     tblTitle:'NSPP unreleased appropriations by region',
     statusOf:r=>r.s_fill<10?'Eligible (<10% filling-up)':'Not eligible',
     statuses:['Eligible (<10% filling-up)','Not eligible'],
-    measures:[{k:'s_unreleased',n:'Unreleased appropriations'},{k:'s_charge',n:'Chargeable amount'},{k:'s_balance',n:'Remaining balance'}],
+    measures:[{k:'s_unreleased',n:'Unreleased appropriations'},{k:'s_charge',n:'Proposed Amount amount'},{k:'s_balance',n:'Remaining balance'}],
     defaultMeasure:'s_unreleased',
     primary:{title:'NSPP filling-up rate by region',sub:'Regions below the 10% benchmark may augment funding deficits',mode:'threshold',metric:'s_fill',threshold:10},
     donut:{title:'Share of unreleased NSPP appropriations',sub:'Regional share of the ₱24.87B lump sum',metric:'s_unreleased'},
-    hist:{title:'Proposed chargeable vs. remaining balance',sub:'Chargeable against unreleased appropriations per region',metric:'s_charge',color:'var(--c5)'},
+    hist:{title:'Proposed chargeable vs. remaining balance',sub:'Proposed Amount against unreleased appropriations per region',metric:'s_charge',color:'var(--c5)'},
     columns:[
       {k:'name',n:'Region',t:'text'},
       {k:'s_fill',n:'Filling-up %',t:'pct'},
       {k:'s_unreleased',n:'Unreleased Approp.',t:'money'},
-      {k:'s_charge',n:'Chargeable',t:'money'},
-      {k:'s_balance',n:'Remaining Balance',t:'money'},
+      {k:'s_charge',n:'Proposed Amount',t:'money'},
+      {k:'s_balance',n:'Net Amount After Pooling',t:'money'},
       {k:'_sstatus',n:'Eligibility',t:'status'}
     ]
   },
@@ -663,7 +670,7 @@ const DATASETS = {
       {k:'a_car_f',n:'CAReER Financial Req.',t:'money'},
       {k:'a_tot_f',n:'Total Financial Req.',t:'money'},
       {k:'a_2027',n:'FY2027 Total',t:'money'},
-      {k:'a_remain',n:'Remaining/Deficit',t:'money'},
+      {k:'a_remain',n:'Remaining/Deficiency',t:'money'},
       {k:'_astatus',n:'Status',t:'status'}
     ]
   }
@@ -736,15 +743,15 @@ function renderKPIs(){
     const def=rs.filter(r=>r.g_deficit>0);
     html+=kpi('total',peso(sum('g_budget')),'FY 2026 Allocated Budget','Total reclassification budget','g_budget');
     html+=kpi('k-blue',peso(sum('g_unfunded')),'Unfunded Recurring Cost','PS Salary Deficiency for Appointed from May-December 2025','g_unfunded');
-    html+=kpi('k-blue',peso(sum('g_expenses')),'FY 2026 Expenses','Salary differential, Jan - June 2026','g_expenses');
-    html+=kpi('k-orange',peso(sum('g_charge')),'Total Chargeable','Unfunded Recurring Cost + FY26 expenses','g_charge');
-    html+=kpi('k-red',peso(sum('g_deficit')),'Deficit','Chargeable less allocated budget','g_deficit');
-    html+=kpi('k-red',def.length,'Regions With Deficit','Regions with funding gap','deficit_count');
+    html+=kpi('k-blue',peso(sum('g_expenses')),'FY 2026 Funding Requirement','Salary differential, Jan - June 2026','g_expenses');
+    html+=kpi('k-orange',peso(sum('g_charge')),'Total Funding Requirements','Unfunded Recurring Cost + FY26 Funding Requirement','g_charge');
+    html+=kpi('k-red',peso(sum('g_deficit')),'Deficiency','Proposed Amount less allocated budget','g_deficit');
+    html+=kpi('k-red',def.length,'Regions With Deficiency','Regions with funding gap','deficit_count');
   } else if(state.ds==='strategy'){
     const elig=rs.filter(r=>r.s_fill<10);
-    html+=kpi('total',peso(sum('s_unreleased')),'Unreleased Appropriations','NSPP lump sum available <span class="asof-note">As of June 30, 2026</span>','s_unreleased');
-    html+=kpi('k-orange',peso(sum('s_charge')),'Proposed Chargeable','Amount charged to augment deficits','s_charge');
-    html+=kpi('k-green',peso(sum('s_balance')),'Remaining Balance','After proposed utilization','s_balance');
+    html+=kpi('total',peso(sum('s_unreleased')),'Unreleased Appropriations','NSPP lump sum for filling-up available <span class="asof-note">As of June 30, 2026</span>','s_unreleased');
+    html+=kpi('k-orange',peso(sum('s_charge')),'Proposed Amount to be Pooled','Amount charged to augment deficits','s_charge');
+    html+=kpi('k-green',peso(sum('s_balance')),'Net Amount After Pooling','After proposed utilization','s_balance');
     html+=kpi('k-blue',elig.length,'Eligible Regions','Filling-up rate below 10%','eligible_count');
   } else {
     const defc=rs.filter(r=>r.a_remain<0);
@@ -839,10 +846,10 @@ function wirePrimary(host,p){
     el.onmousemove=e=>{
       const charge=p.series.reduce((a,ss)=>a+r[ss.k],0);
       if(kind==='compare'){const diff=r[k]-charge;
-        showTip(`<div class="tt">${r.name}</div><div class="tr"><span>${meta.n}</span><span>${fmtVal(k,r[k])}</span></div><div class="tr"><span>Total chargeable</span><span>${fmtVal(k,charge)}</span></div><div class="tr"><span>${diff>=0?'Budget surplus':'Funding shortfall'}</span><span>${fmtVal(k,Math.abs(diff))}</span></div>`,e);
+        showTip(`<div class="tt">${r.name}</div><div class="tr"><span>${meta.n}</span><span>${fmtVal(k,r[k])}</span></div><div class="tr"><span>Total Funding Requirements</span><span>${fmtVal(k,charge)}</span></div><div class="tr"><span>${diff>=0?'Budget surplus':'Funding shortfall'}</span><span>${fmtVal(k,Math.abs(diff))}</span></div>`,e);
       } else {
         const rows=p.series.map(ss=>`<div class="tr"><span>${ss.n}</span><span>${fmtVal(ss.k,r[ss.k])}</span></div>`).join('');
-        showTip(`<div class="tt">${r.name}</div>${rows}<div class="tr"><span>Total chargeable</span><span>${fmtVal(k,charge)}</span></div>`,e);
+        showTip(`<div class="tt">${r.name}</div>${rows}<div class="tr"><span>Total Funding Requirements</span><span>${fmtVal(k,charge)}</span></div>`,e);
       }
     };
     el.onmouseleave=hideTip;
@@ -1064,9 +1071,9 @@ function renderStrategyStackedHist(host){
     if(rw>=remainLbl.length*5.8+12){g+=`<text class="barlbl" x="${padL+cw+rw/2}" y="${y+barH/2+3.5}" text-anchor="middle">${remainLbl}</text>`;}
     if(total>0){g+=`<text class="axistxt" x="${padL+cw+rw+6}" y="${y+barH/2+4}">${peso(total)}</text>`;}
   });
-  host.innerHTML=`<div class="legend" style="margin:0 0 8px 0"><span><i class="dot" style="background:var(--c5)"></i>Chargeable</span><span><i class="dot" style="background:var(--green)"></i>Remaining balance</span><span class="muted">Total = unreleased appropriation</span></div><svg viewBox="0 0 ${W} ${H}">${g}</svg>`;
+  host.innerHTML=`<div class="legend" style="margin:0 0 8px 0"><span><i class="dot" style="background:var(--c5)"></i>Proposed Amount</span><span><i class="dot" style="background:var(--green)"></i>Remaining balance</span><span class="muted">Total = unreleased appropriation</span></div><svg viewBox="0 0 ${W} ${H}">${g}</svg>`;
   host.querySelectorAll('.hbar').forEach(el=>{const r=RAW.find(x=>x.code===el.dataset.code);
-    el.onmousemove=e=>showTip(`<div class="tt">${r.name}</div><div class="tr"><span>Chargeable</span><span>${peso(r.s_charge)}</span></div><div class="tr"><span>Remaining balance</span><span>${peso(r.s_balance)}</span></div><div class="tr"><span>Unreleased appropriation</span><span>${peso(r.s_unreleased)}</span></div>`,e);
+    el.onmousemove=e=>showTip(`<div class="tt">${r.name}</div><div class="tr"><span>Proposed Amount</span><span>${peso(r.s_charge)}</span></div><div class="tr"><span>Remaining balance</span><span>${peso(r.s_balance)}</span></div><div class="tr"><span>Unreleased appropriation</span><span>${peso(r.s_unreleased)}</span></div>`,e);
     el.onmouseleave=hideTip;
     addLongPress(el,()=>openDisaggregation(r,null));
   });
@@ -1132,18 +1139,18 @@ function openDetail(r){
   let groups='';
   const tiles=arr=>arr.map(t=>`<div class="tile"><div class="tl">${t[0]}</div><div class="tv">${t[1]}</div></div>`).join('');
   groups+=`<div class="mgroup"><h4>Status</h4><div class="tiles">${tiles([['Region',r.name],['Dataset',c.title],['Standing',statusVal(r)]])}</div></div>`;
-  groups+=`<div class="mgroup"><h4>FY 2026 Funding Gap</h4><div class="tiles">${tiles([['Reclass Budget',full(r.g_budget)],['Unfunded Recurring Cost',full(r.g_unfunded)],['FY26 Expenses',full(r.g_expenses)],['Total Chargeable',full(r.g_charge)],['Total Deficit',full(r.g_deficit)]])}</div></div>`;
-  groups+=`<div class="mgroup"><h4>NSPP Funding Strategy</h4><div class="tiles">${tiles([['Filling-up rate',r.s_fill+'%'],['Unreleased Approp.',full(r.s_unreleased)],['Chargeable',full(r.s_charge)],['Remaining Balance',full(r.s_balance)]])}</div></div>`;
-  groups+=`<div class="mgroup"><h4>Pending Applications</h4><div class="tiles">${tiles([['Under DBM’s Processing',intc(r.a_dbm_p)],['In CAReER',intc(r.a_car_p)],['Total Apps',intc(r.a_tot_p)],['Financial Req.',full(r.a_tot_f)],['FY2027 Tier 1',full(r.a_t1)],['FY2027 Tier 2',full(r.a_t2)],['FY2027 Total',full(r.a_2027)],['Remaining/Deficit',full(r.a_remain)]])}</div></div>`;
+  groups+=`<div class="mgroup"><h4>FY 2026 Funding Gap</h4><div class="tiles">${tiles([['Reclass Budget',full(r.g_budget)],['Unfunded Recurring Cost',full(r.g_unfunded)],['FY26 Funding Requirement',full(r.g_expenses)],['Total Funding Requirements',full(r.g_charge)],['Total Deficiency',full(r.g_deficit)]])}</div></div>`;
+  groups+=`<div class="mgroup"><h4>NSPP Funding Strategy</h4><div class="tiles">${tiles([['Filling-up rate',r.s_fill+'%'],['Unreleased Approp.',full(r.s_unreleased)],['Proposed Amount',full(r.s_charge)],['Net Amount After Pooling',full(r.s_balance)]])}</div></div>`;
+  groups+=`<div class="mgroup"><h4>Pending Applications</h4><div class="tiles">${tiles([['Under DBM’s Processing',intc(r.a_dbm_p)],['In CAReER',intc(r.a_car_p)],['Total Apps',intc(r.a_tot_p)],['Financial Req.',full(r.a_tot_f)],['FY2027 Tier 1',full(r.a_t1)],['FY2027 Tier 2',full(r.a_t2)],['FY2027 Total',full(r.a_2027)],['Remaining/Deficiency',full(r.a_remain)]])}</div></div>`;
   openModal(r.name,'Full regional breakdown across all datasets',groups);
 }
 function openDisaggregation(r,series){
   const c=cfg();let rows=[],label='',valfmt=full,segTotal=0;
   if(state.ds==='gaps'){
-    rows=[['Unfunded Recurring Cost',r.g_unfunded],['FY 2026 Expenses',r.g_expenses]];label='Total Chargeable';segTotal=r.g_charge;
+    rows=[['Unfunded Recurring Cost',r.g_unfunded],['FY 2026 Funding Requirement',r.g_expenses]];label='Total Funding Requirements';segTotal=r.g_charge;
     rows.push(['Less: Allocated Budget',-r.g_budget]);
   } else if(state.ds==='strategy'){
-    rows=[['Chargeable against unreleased',r.s_charge],['Remaining balance',r.s_balance]];label='Unreleased Appropriations';segTotal=r.s_unreleased;
+    rows=[['Proposed Amount against unreleased',r.s_charge],['Remaining balance',r.s_balance]];label='Unreleased Appropriations';segTotal=r.s_unreleased;
   } else {
     rows=[['Under DBM’s Processing',r.a_dbm_f],['Remaining in CAReER',r.a_car_f]];label='Total Financial Requirement';segTotal=r.a_tot_f;
   }
