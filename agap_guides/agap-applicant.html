@@ -1439,16 +1439,20 @@
       body.section-active .hero,
       body.applicant-guide.cover-active .hero,
       .hero {
-        min-height: 0 !important;
-        display: block !important;
-        margin: 0 0 10mm !important;
-        padding: 0 0 7mm !important;
+        min-height: calc(100vh - 70mm) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+        padding: 0 6mm !important;
         border: 0 !important;
-        border-bottom: 1.5px solid #BAE6FD !important;
         border-radius: 0 !important;
         background: #ffffff !important;
         box-shadow: none !important;
         text-align: center !important;
+        page-break-after: always !important;
+        break-after: page !important;
       }
       body.cover-active .hero .hero-logo,
       body.applicant-guide .hero .hero-logo,
@@ -1536,7 +1540,7 @@
     <header class="hero">
       <img class="hero-logo" src="./agap_logo.png" alt="AGAP logo">
       <div class="eyebrow">AGAP Portal · Applicant Guide</div>
-      <h1>How to apply to open positions</h1>
+      <h1>Applicant Quick Guide</h1>
       <p class="subtitle">
         A simplified guide for applicants covering registration, profile creation,
         vacancy review, application submission, status tracking, assessments, and final results.

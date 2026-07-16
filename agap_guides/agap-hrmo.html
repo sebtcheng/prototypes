@@ -1384,16 +1384,20 @@
       body.section-active .hero,
       body.applicant-guide.cover-active .hero,
       .hero {
-        min-height: 0 !important;
-        display: block !important;
-        margin: 0 0 10mm !important;
-        padding: 0 0 7mm !important;
+        min-height: calc(100vh - 70mm) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+        padding: 0 6mm !important;
         border: 0 !important;
-        border-bottom: 1.5px solid #BAE6FD !important;
         border-radius: 0 !important;
         background: #ffffff !important;
         box-shadow: none !important;
         text-align: center !important;
+        page-break-after: always !important;
+        break-after: page !important;
       }
       body.cover-active .hero .hero-logo,
       body.applicant-guide .hero .hero-logo,
@@ -1438,6 +1442,33 @@
         text-align: left !important;
       }
     }
+
+    @media print {
+      /* Let long content flow across pages instead of jumping to a near-blank page */
+      .section-card {
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+      }
+      .step {
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+      }
+      .step h3 {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+      }
+      .status-table {
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+      }
+      .status-table thead {
+        display: table-header-group !important;
+      }
+      .status-table tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1449,7 +1480,7 @@
     <header class="hero">
       <img class="hero-logo" src="./agap_logo.png" alt="AGAP logo">
       <div class="eyebrow">AGAP Portal · HRMO Guide</div>
-      <h1>Managing applications</h1>
+      <h1>HRMO Quick Guide</h1>
       <p class="subtitle">
         A simplified guide for HRMOs covering position setup, publication,
         application review, qualification checking, applicant comparison, hiring-stage movement,
@@ -1629,7 +1660,7 @@
       <article class="section-card">
         <div class="section-head">
           <div class="letter">F</div>
-          <h2>Appointment</h2>
+          <h2>Appoint Applicants</h2>
         </div>
 
         <div class="step">
@@ -1652,10 +1683,7 @@
       </article>
     </section>
 
-    <div class="footer-note">
-      Operating rule: Every application must be evaluated against the specific position applied for.
-      Every decision should be traceable, policy-based, and clearly documented.
-    </div>
+
   </main>
   <script>
     (function () {
