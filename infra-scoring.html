@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BEFF Inventory — NCC</title>
+<style>
+  :root {
+    --ink: #1f2733;
+    --ink-soft: #6b7280;
+    --line: #e6e5e3;
+    --surface: #f5f6f8;
+    --blue: #2783de;
+    --blue-soft: #e5f2fc;
+    --green: #2f9e6b;
+    --green-soft: #e6f4ed;
+    --orange: #e08a37;
+    --orange-soft: #fbebde;
+    --red: #e2584c;
+    --red-soft: #fce9e7;
+    --navy1: #0a2a5e;
+    --navy2: #12488f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background:
+      radial-gradient(1200px 500px at 85% -10%, #eaf2fb 0%, rgba(234,242,251,0) 60%),
+      radial-gradient(900px 500px at 0% 110%, #fdf1e6 0%, rgba(253,241,230,0) 55%),
+      #eef1f5;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 24px 24px 130px; }
+
+  /* ============ HEADER BAR ============ */
+  .topbar {
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+    padding: 20px 22px;
+    background: linear-gradient(105deg, var(--navy1) 0%, var(--navy2) 58%, #1b6fb0 100%);
+    box-shadow: 0 10px 30px rgba(12,40,90,.22);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .topbar::after {
+    content: "";
+    position: absolute;
+    right: -40px; top: -60px;
+    width: 320px; height: 220px;
+    background: radial-gradient(closest-side, rgba(240,160,60,.9), rgba(240,160,60,0) 70%);
+    transform: rotate(12deg);
+    pointer-events: none;
+  }
+  .brand { color: #fff; flex-shrink: 0; z-index: 1; }
+  .brand .b1 { font-size: 22px; font-weight: 800; letter-spacing: .2px; }
+  .brand .b1 span { font-weight: 400; }
+  .brand .b2 { font-size: 11px; letter-spacing: 3px; opacity: .8; margin-top: 2px; }
+
+  .kpis { display: flex; gap: 8px; flex: 1; z-index: 1; }
+  .kpi {
+    flex: 1;
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 12px;
+    padding: 8px 10px;
+    color: #fff;
+    min-width: 0;
+  }
+  .kpi .lbl { font-size: 8.5px; letter-spacing: 1.2px; opacity: .78; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kpi .val { font-size: 18px; font-weight: 800; margin-top: 3px; }
+  .kpi.on .val { color: #ffd27a; }
+
+  .tools { display: flex; gap: 8px; align-items: center; z-index: 1; }
+  .icobtn {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    color: #fff; font-size: 15px;
+    display: grid; place-items: center; cursor: pointer;
+  }
+  .pillbtn {
+    height: 38px; padding: 0 14px; border-radius: 10px;
+    background: rgba(255,255,255,.16);
+    border: 1px solid rgba(255,255,255,.28);
+    color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .6px;
+    cursor: pointer; white-space: nowrap;
+  }
+
+  /* ============ GRADE LEGEND ============ */
+  .legend {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    margin: 18px 2px 4px;
+    font-size: 12px; color: var(--ink-soft);
+  }
+  .legend .title { font-weight: 700; color: var(--ink); letter-spacing: .3px; }
+  .legend .item { display: flex; align-items: center; gap: 7px; }
+  .legend .swatch {
+    width: 22px; height: 22px; border-radius: 7px;
+    display: grid; place-items: center;
+    font-weight: 800; font-size: 11px; color: #fff;
+  }
+
+  /* ============ CARD GRID ============ */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 14px;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px 16px 14px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 6px 16px rgba(20,40,80,.05);
+    display: flex; flex-direction: column;
+    position: relative;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,.06), 0 16px 34px rgba(20,40,80,.10); }
+  .card.focus { border-color: #111; box-shadow: 0 0 0 2px #111 inset, 0 10px 26px rgba(20,40,80,.12); }
+
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+
+  /* ---- ENHANCED GRADE BADGE ---- */
+  .grade {
+    position: relative;
+    width: 54px; flex-shrink: 0;
+    text-align: center;
+  }
+  .grade .chip {
+    width: 54px; height: 54px;
+    border-radius: 14px;
+    display: grid; place-items: center;
+    font-size: 24px; font-weight: 800; line-height: 1;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,.14);
+    position: relative;
+  }
+  .grade .chip .sub { position: absolute; top: 7px; right: 9px; font-size: 12px; font-weight: 800; }
+  .grade .meter { display: flex; gap: 3px; justify-content: center; margin-top: 6px; }
+  .grade .meter i { width: 8px; height: 4px; border-radius: 2px; background: var(--line); }
+  .grade .tier { font-size: 8.5px; letter-spacing: .8px; text-transform: uppercase; margin-top: 5px; font-weight: 700; }
+
+  .g-a  .chip { background: linear-gradient(150deg,#38b27f,#2f9e6b); }
+  .g-a  .tier { color: var(--green); }
+  .g-a  .meter i:nth-child(-n+4){ background: var(--green); }
+  .g-b  .chip { background: linear-gradient(150deg,#3f9be6,#2783de); }
+  .g-b  .tier { color: var(--blue); }
+  .g-b  .meter i:nth-child(-n+3){ background: var(--blue); }
+  .g-c  .chip { background: linear-gradient(150deg,#ed9a45,#e08a37); }
+  .g-c  .tier { color: var(--orange); }
+  .g-c  .meter i:nth-child(-n+2){ background: var(--orange); }
+  .g-d  .chip { background: linear-gradient(150deg,#ec6f61,#e2584c); }
+  .g-d  .tier { color: var(--red); }
+  .g-d  .meter i:nth-child(-n+1){ background: var(--red); }
+
+  .card-head { flex: 1; min-width: 0; }
+  .loc { font-size: 9.5px; letter-spacing: .8px; color: var(--ink-soft); text-transform: uppercase; font-weight: 700; }
+  .loc b { color: var(--blue); }
+  .ptitle { font-size: 13.5px; font-weight: 800; line-height: 1.3; margin: 4px 0 6px; color: var(--ink); }
+  .ipc { font-size: 9px; color: var(--ink-soft); letter-spacing: .3px; }
+  .tag { display: inline-block; margin-top: 6px; font-size: 8.5px; letter-spacing: .6px; font-weight: 700; text-transform: uppercase; color: var(--blue); background: var(--blue-soft); padding: 3px 8px; border-radius: 6px; }
+
+  .pct { text-align: right; flex-shrink: 0; }
+  .pct .n { font-size: 20px; font-weight: 800; color: var(--ink); }
+  .pct .c { font-size: 8px; letter-spacing: 1px; color: var(--green); font-weight: 700; }
+  .pct .bar { width: 46px; height: 4px; border-radius: 3px; background: var(--surface); margin-top: 4px; margin-left: auto; overflow: hidden; }
+  .pct .bar i { display:block; height: 100%; background: var(--green); }
+
+  .rows { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; display: grid; gap: 8px; }
+  .row { display: flex; align-items: flex-start; gap: 8px; font-size: 11.5px; }
+  .row .ic { width: 14px; color: var(--ink-soft); flex-shrink: 0; text-align: center; }
+  .row .k { color: var(--ink-soft); font-size: 8.5px; letter-spacing: .6px; text-transform: uppercase; }
+  .row .v { font-weight: 700; color: var(--ink); }
+  .row .v small { font-weight: 500; color: var(--ink-soft); }
+
+  .meta { display: flex; justify-content: space-between; align-items: center; margin-top: 11px; font-size: 8.5px; letter-spacing: .4px; }
+  .meta .st { color: var(--green); font-weight: 700; text-transform: uppercase; }
+  .meta .st .dot { display:inline-block; width:6px; height:6px; border-radius:50%; background: var(--green); margin-right: 4px; }
+  .meta .by { color: var(--ink-soft); text-transform: uppercase; }
+
+  .btn-main {
+    margin-top: 12px; width: 100%; height: 40px; border: none; border-radius: 10px;
+    background: linear-gradient(180deg,#f5a623,#ef9412); color: #fff;
+    font-size: 11px; font-weight: 800; letter-spacing: .8px; cursor: pointer;
+    box-shadow: 0 4px 10px rgba(239,148,18,.28);
+  }
+  .btn-row { display: flex; gap: 8px; margin-top: 8px; }
+  .btn-sub { flex: 1; height: 34px; border-radius: 9px; font-size: 10px; font-weight: 700; letter-spacing: .4px; cursor: pointer; }
+  .btn-gal { background: var(--blue); color: #fff; border: none; }
+  .btn-log { background: #fff; color: var(--ink-soft); border: 1px solid var(--line); }
+
+  /* ============ BOTTOM NAV ============ */
+  .bottomnav {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 16px;
+    display: flex; gap: 4px; background: #fff;
+    border: 1px solid var(--line); border-radius: 16px;
+    padding: 8px 10px; box-shadow: 0 8px 24px rgba(20,40,80,.14);
+  }
+  .nav-i { display: grid; place-items: center; gap: 2px; padding: 6px 16px; border-radius: 10px; color: var(--ink-soft); font-size: 9.5px; font-weight: 600; cursor: pointer; }
+  .nav-i .g { font-size: 16px; }
+  .nav-i.active { background: var(--blue-soft); color: var(--blue); }
+
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } .kpis { display: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="b1">BEFF <span>Inventory</span></div>
+      <div class="b2">NCC</div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Total Project</div><div class="val">12,530</div></div>
+      <div class="kpi"><div class="lbl">With Photos</div><div class="val">2,673</div></div>
+      <div class="kpi on"><div class="lbl">Ongoing</div><div class="val">3,510</div></div>
+      <div class="kpi"><div class="lbl">Finalized</div><div class="val">5,894</div></div>
+      <div class="kpi"><div class="lbl">Not Started</div><div class="val">3,027</div></div>
+      <div class="kpi"><div class="lbl">Others</div><div class="val">99</div></div>
+    </div>
+    <div class="tools">
+      <div class="icobtn">⬇</div>
+      <div class="icobtn">⌗</div>
+      <div class="pillbtn">ACTIVE MONITORING</div>
+    </div>
+  </div>
+
+  <!-- GRADE LEGEND -->
+  <div class="legend">
+    <span class="title">Infrastructure Grade</span>
+    <span class="item"><span class="swatch" style="background:#2f9e6b">A</span> Excellent · 90–100</span>
+    <span class="item"><span class="swatch" style="background:#2783de">B</span> Good · 75–89</span>
+    <span class="item"><span class="swatch" style="background:#e08a37">C</span> Fair · 60–74</span>
+    <span class="item"><span class="swatch" style="background:#e2584c">D</span> Needs Action · &lt;60</span>
+  </div>
+
+  <!-- CARDS -->
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottomnav">
+  <div class="nav-i"><div class="g">⌂</div>Home</div>
+  <div class="nav-i active"><div class="g">▦</div>Inventory</div>
+  <div class="nav-i"><div class="g">🗎</div>Monitor MOA</div>
+  <div class="nav-i"><div class="g">⌕</div>User Lookup</div>
+  <div class="nav-i"><div class="g">⚙</div>Settings</div>
+</div>
+
+<script>
+  const grades = {
+    A: { cls:'g-a', tier:'Excellent' },
+    B: { cls:'g-b', tier:'Good' },
+    C: { cls:'g-c', tier:'Fair' },
+    D: { cls:'g-d', tier:'Needs Action' }
+  };
+  const data = [
+    { grade:'B', mod:'-', focus:false, region:'REGION V', city:'LEGASPI CITY', title:'UPGRADING OF ELECTRICAL SYSTEM (OVERHEAD SYSTEM)', ipc:'IPC-INF-01-2024-01635', tag:'Electrification', pct:100, school:'Bogna Elementary School', sid:'114456', budget:'₱2,496,771', cycle:'FY 2024 · Batch 1', by:'Mark John Olfindo', gallery:159 },
+    { grade:'A', mod:'-', focus:true, region:'REGION IV-A', city:'LAGUNA', title:'UPGRADING OF ELECTRICAL SYSTEM', ipc:'IPC-INF-ELECTRIFICATION', tag:'New Construction', pct:100, school:'Bernaldo N. Calara ES', sid:'108308', budget:'₱4,907,472', cycle:'FY 2024 · Batch 1', by:'Catherine Jones Cantalejo', gallery:144 },
+    { grade:'B', mod:'', focus:false, region:'REGION VI', city:'GUIMARAS', title:'CONSTRUCTION OF SCHOOL BUILDING', ipc:'IPC-INF-01-2024-00608', tag:'New Construction', pct:100, school:'Buenavista National High School', sid:'300436', budget:'₱20,200,000', cycle:'FY 2025 · GAA Vol I-B', by:'Honey Grace Perez', gallery:129 },
+    { grade:'B', mod:'', focus:false, region:'REGION NIR', city:'SAN CARLOS CITY', title:'CONSTRUCTION OF SCHOOL BUILDING', ipc:'IPC-INF-01-2024-01667', tag:'New Construction', pct:100, school:'Don Carlos Ledesma NHS', sid:'303774', budget:'₱30,705,000', cycle:'FY 2024 · Batch 1', by:'Rey Anthony Vega', gallery:87 },
+    { grade:'C', mod:'', focus:false, region:'REGION V', city:'CAMARINES SUR', title:'CONSTRUCTION OF SCHOOL BUILDING', ipc:'IPC-INF-01-2024-02360', tag:'New Construction', pct:100, school:'San Jose Pili National High School', sid:'309316', budget:'₱38,286,473', cycle:'FY 2024 · Batch 2', by:'Liza M. Ferrer', gallery:63 },
+    { grade:'B', mod:'-', focus:false, region:'REGION II', city:'CAGAYAN', title:'REPAIR OF CLASSROOMS', ipc:'IPC-INF-GBF-2024-1163', tag:'Repair', pct:100, school:'Licerio Antiporda Sr. NHS', sid:'300420', budget:'₱40,000,000', cycle:'FY 2025 · GAA Vol I-B', by:'Arnold P. Cua', gallery:52 }
+  ];
+
+  const grid = document.getElementById('grid');
+  grid.innerHTML = data.map(d => {
+    const g = grades[d.grade];
+    return `
+    <div class="card ${g.cls} ${d.focus?'focus':''}">
+      <div class="card-top">
+        <div class="grade" title="Grade ${d.grade}${d.mod} — ${g.tier}">
+          <div class="chip">${d.grade}<span class="sub">${d.mod}</span></div>
+          <div class="meter"><i></i><i></i><i></i><i></i></div>
+          <div class="tier">${g.tier}</div>
+        </div>
+        <div class="card-head">
+          <div class="loc"><b>${d.region}</b> · ${d.city}</div>
+          <div class="ptitle">${d.title}</div>
+          <div class="ipc">${d.ipc}</div>
+          <span class="tag">${d.tag}</span>
+        </div>
+        <div class="pct">
+          <div class="n">${d.pct}%</div>
+          <div class="c">COMPLETED</div>
+          <div class="bar"><i style="width:${d.pct}%"></i></div>
+        </div>
+      </div>
+      <div class="rows">
+        <div class="row"><div class="ic">▤</div><div><div class="k">School</div><div class="v">${d.school} <small>· ID ${d.sid}</small></div></div></div>
+        <div class="row"><div class="ic">₱</div><div><div class="k">Approved Budget</div><div class="v">${d.budget}</div></div></div>
+        <div class="row"><div class="ic">▦</div><div><div class="k">Budget Cycle</div><div class="v">${d.cycle}</div></div></div>
+      </div>
+      <div class="meta">
+        <span class="st"><span class="dot"></span>STATUS: APPROVED</span>
+        <span class="by">UPDATED BY ${d.by}</span>
+      </div>
+      <button class="btn-main">✎ UPDATE PROJECT</button>
+      <div class="btn-row">
+        <button class="btn-sub btn-gal">▦ GALLERY (${d.gallery})</button>
+        <button class="btn-sub btn-log">PROJECT LOGS</button>
+      </div>
+    </div>`;
+  }).join('');
+</script>
+</body>
+</html>
