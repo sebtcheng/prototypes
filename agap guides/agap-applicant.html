@@ -76,10 +76,18 @@
       text-align: center;
     }
 
+    .hero-logo {
+      display: block;
+      width: min(130px, 34vw);
+      height: auto;
+      margin: 0 auto 4px;
+      object-fit: contain;
+    }
+
     .eyebrow {
       display: inline-block;
-      margin-bottom: 10px;
-      padding: 6px 12px;
+      margin-bottom: 6px;
+      padding: 5px 12px;
       border-radius: 999px;
       background: var(--accent-soft);
       color: var(--accent);
@@ -103,15 +111,15 @@
 
     .subtitle {
       max-width: 820px;
-      margin: 12px auto 0;
+      margin: 8px auto 0;
       color: var(--muted);
       font-size: 17px;
     }
 
     .quick-note {
       max-width: 920px;
-      margin: 18px auto 0;
-      padding: 14px 16px;
+      margin: 12px auto 0;
+      padding: 12px 16px;
       border: 1px solid var(--line);
       border-left: 6px solid var(--accent);
       border-radius: 14px;
@@ -635,17 +643,49 @@
       display: flex;
     }
     body.cover-active .hero {
-      min-height: calc(100vh - 112px);
+      min-height: calc(100vh - 120px);
       display: grid;
       place-content: center;
-      padding: 36px 22px;
-      border-radius: 24px;
+      padding: 56px 48px;
+      border-radius: 28px;
       background:
-        radial-gradient(circle at 18% 18%, rgba(125,211,252,.26), transparent 32%),
-        radial-gradient(circle at 82% 18%, rgba(251,191,36,.20), transparent 28%),
-        linear-gradient(135deg, #ffffff 0%, var(--accent-soft) 100%);
+        radial-gradient(circle at 15% 12%, rgba(125,211,252,.30), transparent 34%),
+        radial-gradient(circle at 85% 15%, rgba(251,191,36,.22), transparent 30%),
+        linear-gradient(160deg, #ffffff 0%, #F8FCFF 45%, var(--accent-soft) 100%);
       border: 1px solid var(--line);
-      box-shadow: 0 22px 70px rgba(8, 49, 95, .10);
+      box-shadow: 0 30px 80px rgba(8, 49, 95, .12);
+    }
+    body.cover-active .hero .hero-logo {
+      width: min(168px, 42vw);
+      margin: 0 auto 10px;
+    }
+    body.cover-active .hero .eyebrow {
+      justify-self: center;
+      margin: 0 auto 18px;
+      padding: 8px 18px;
+      font-size: 13px;
+      letter-spacing: .14em;
+      box-shadow: 0 6px 18px rgba(8, 49, 95, .10);
+    }
+    body.cover-active .hero h1 {
+      max-width: 18ch;
+      margin: 0 auto;
+      font-size: clamp(40px, 6vw, 66px);
+      line-height: 1.03;
+      letter-spacing: -.045em;
+    }
+    body.cover-active .hero .subtitle {
+      max-width: 60ch;
+      margin: 20px auto 0;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    body.cover-active .hero .notice,
+    body.cover-active .hero .quick-note {
+      max-width: 66ch;
+      margin: 28px auto 0;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(8, 49, 95, .08);
     }
 
     .section-step-nav {
@@ -777,12 +817,12 @@
       line-height: 1.65;
     }
     body.has-side-nav .sheet {
-      padding: 40px;
+      padding: 16px;
       background: rgba(255,255,255,.96);
     }
     .guide-header {
-      margin-bottom: 24px;
-      padding: 28px 32px;
+      margin-bottom: 18px;
+      padding: 20px 24px;
       border: 0;
       border-left: 8px solid var(--accent);
       border-radius: 24px;
@@ -798,7 +838,7 @@
     .section-card {
       border: 0 !important;
       border-radius: 28px;
-      padding: 40px 48px;
+      padding: 28px 32px;
       background: #ffffff;
       box-shadow: none;
     }
@@ -1392,19 +1432,113 @@
         break-after: avoid;
       }
     }
+
+    @media print {
+      /* Clean, compact cover for PDF: no oversized empty box, tighter hierarchy */
+      body.cover-active .hero,
+      body.section-active .hero,
+      body.applicant-guide.cover-active .hero,
+      .hero {
+        min-height: 0 !important;
+        display: block !important;
+        margin: 0 0 10mm !important;
+        padding: 0 0 7mm !important;
+        border: 0 !important;
+        border-bottom: 1.5px solid #BAE6FD !important;
+        border-radius: 0 !important;
+        background: #ffffff !important;
+        box-shadow: none !important;
+        text-align: center !important;
+      }
+      body.cover-active .hero .hero-logo,
+      body.applicant-guide .hero .hero-logo,
+      .hero .hero-logo {
+        width: 32mm !important;
+        margin: 0 auto 4mm !important;
+      }
+      body.cover-active .hero .eyebrow,
+      .hero .eyebrow {
+        display: inline-block !important;
+        margin: 0 auto 4mm !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--accent) !important;
+        font-size: 8.5pt !important;
+        letter-spacing: .1em !important;
+      }
+      body.cover-active .hero h1,
+      .hero h1 {
+        max-width: 100% !important;
+        margin: 0 auto !important;
+        font-size: 26pt !important;
+        line-height: 1.08 !important;
+        letter-spacing: -.035em !important;
+      }
+      body.cover-active .hero .subtitle,
+      .hero .subtitle {
+        max-width: 100% !important;
+        margin: 4mm auto 0 !important;
+        font-size: 10pt !important;
+        line-height: 1.5 !important;
+      }
+      body.cover-active .hero .notice,
+      body.cover-active .hero .quick-note,
+      .hero .notice,
+      .hero .quick-note {
+        max-width: 100% !important;
+        margin: 5mm auto 0 !important;
+        border-radius: 3mm !important;
+        box-shadow: none !important;
+        text-align: left !important;
+      }
+    }
+
+    @media print {
+      /* Let long content flow across pages instead of jumping to a near-blank page */
+      .section-card {
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+      }
+      .step {
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+      }
+      .step h3 {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+      }
+      .status-table {
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+      }
+      .status-table thead {
+        display: table-header-group !important;
+      }
+      .status-table tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+    }
   </style>
 </head>
-<body>
+<body class="applicant-guide">
+  <style>
+    body.applicant-guide.cover-active .hero {
+      padding: 56px 48px;
+    }
+  </style>
   <main class="sheet">
     <div class="print-actions">
       <button class="print-button" type="button" onclick="window.print()">Print / Save as PDF</button>
     </div>
 
     <header class="hero">
+      <img class="hero-logo" src="./agap_logo.png" alt="AGAP logo">
       <div class="eyebrow">AGAP Portal · Applicant Guide</div>
       <h1>How to apply to open positions</h1>
       <p class="subtitle">
-        A simplified two-column guide for applicants covering registration, profile creation,
+        A simplified guide for applicants covering registration, profile creation,
         vacancy review, application submission, status tracking, assessments, and final results.
       </p>
       <div class="quick-note">
@@ -1423,10 +1557,8 @@
         <div class="step">
           <h3>Step 1: Open the AGAP Portal</h3>
           <ol>
-            <li>Go to the AGAP Portal website or application.</li>
-            <li>Select Register, Sign Up, or Create Account.</li>
-            <li>Read the registration reminders and privacy notices.</li>
-            <li>Proceed only if you agree with the required terms and data-processing notices.</li>
+            <li>Go to the AGAP Portal.</li>
+            <li>Select Login or Create Account.</li>
           </ol>
         </div>
 
@@ -1437,15 +1569,6 @@
             <li>Provide an active email address and mobile number, if required.</li>
             <li>Create and confirm a secure password.</li>
             <li>Submit the registration form.</li>
-          </ol>
-        </div>
-
-        <div class="step">
-          <h3>Step 3: Verify your account</h3>
-          <ol>
-            <li>Check your registered email for a verification message.</li>
-            <li>Open the verification link or enter the verification code, if required.</li>
-            <li>Return to the AGAP Portal and log in using your registered credentials.</li>
           </ol>
         </div>
       </article>
@@ -1459,8 +1582,8 @@
         <div class="step">
           <h3>Step 1: Open your application profile</h3>
           <ol>
-            <li>After logging in, go to Profile, Applicant Profile, or My Profile.</li>
-            <li>Start completing your applicant record.</li>
+            <li>After logging in, go to My Profile.</li>
+            <li>Start completing your applicant details.</li>
             <li>Make sure your information is accurate, complete, and consistent with your documents.</li>
           </ol>
         </div>
@@ -1511,7 +1634,7 @@
         <div class="step">
           <h3>Step 1: Open the list of positions</h3>
           <ol>
-            <li>Go to Open Positions, Job Openings, Vacancies, or the equivalent section.</li>
+            <li>Go to Job Portal.</li>
             <li>Review the list of published positions.</li>
             <li>Use filters if available.</li>
           </ol>
@@ -1549,7 +1672,7 @@
           <ol>
             <li>Open the position you want to apply for.</li>
             <li>Review the full details again.</li>
-            <li>Select Apply, Submit Application, or the equivalent action.</li>
+            <li>Select Apply.</li>
           </ol>
         </div>
 
@@ -1569,7 +1692,7 @@
             <li>Review your profile and attached credentials.</li>
             <li>Confirm that the application is complete.</li>
             <li>Submit the application and wait for the confirmation message.</li>
-            <li>Take note of the application reference number, if provided.</li>
+            <li>Take note of the application reference number.</li>
           </ol>
         </div>
       </article>
@@ -1608,7 +1731,7 @@
         <div class="step">
           <h3>Step 1: Open My Applications</h3>
           <ol>
-            <li>Go to My Applications, Application Status, or the equivalent section.</li>
+            <li>Go to My Applications.</li>
             <li>Review each submitted application.</li>
             <li>Check the position, date submitted, and current status.</li>
           </ol>
@@ -1626,108 +1749,50 @@
             <tbody>
               <tr>
                 <td><span class="tag blue">Application Submitted</span></td>
-                <td>Your application was received by the portal.</td>
+                <td>Your application has been submitted and received by the portal.</td>
               </tr>
               <tr>
-                <td><span class="tag blue">Initial Evaluation</span></td>
-                <td>Your documents and qualification match are being reviewed.</td>
+                <td><span class="tag blue">Pending QS Review</span></td>
+                <td>Your application is waiting for review against the Qualification Standards.</td>
               </tr>
               <tr>
                 <td><span class="tag green">Qualified</span></td>
-                <td>You met or exceeded the minimum QS and submitted acceptable records for advancement.</td>
+                <td>You met the minimum Qualification Standards for the position.</td>
               </tr>
               <tr>
                 <td><span class="tag red">Disqualified</span></td>
-                <td>You did not meet the minimum QS.</td>
+                <td>You did not meet one or more minimum Qualification Standards for the position.</td>
               </tr>
               <tr>
-                <td><span class="tag blue">Comparative Assessment</span></td>
-                <td>You may be scheduled for WST, WE, BEI, or another assessment activity.</td>
+                <td><span class="tag orange">Excluded</span></td>
+                <td>Your submitted documents are incomplete, so the application cannot proceed.</td>
               </tr>
               <tr>
-                <td><span class="tag orange">Shortlisted / Deliberation</span></td>
-                <td>Your application may proceed to further ranking, review, or HRMPSB deliberation.</td>
+                <td><span class="tag blue">Assessment Not Started</span></td>
+                <td>The assessment stage has not started yet.</td>
               </tr>
               <tr>
-                <td><span class="tag blue">Selected / Hired / Not Selected</span></td>
-                <td>A final or later-stage result has been released.</td>
+                <td><span class="tag blue">Assessment Started</span></td>
+                <td>The assessment stage has started or is currently in progress.</td>
+              </tr>
+              <tr>
+                <td><span class="tag green">Assessment Completed</span></td>
+                <td>The required assessment stage has been completed and is ready for review.</td>
+              </tr>
+              <tr>
+                <td><span class="tag green">Appointed</span></td>
+                <td>You were selected and appointed for the position.</td>
+              </tr>
+              <tr>
+                <td><span class="tag red">Not Appointed</span></td>
+                <td>You were not selected for appointment after the final review.</td>
               </tr>
             </tbody>
           </table>
         </div>
       </article>
 
-      <article class="section-card">
-        <div class="section-head">
-          <div class="letter">G</div>
-          <h2>Respond to assessments</h2>
-        </div>
 
-        <div class="step">
-          <h3>Step 1: Monitor notifications</h3>
-          <ol>
-            <li>Check AGAP Portal notifications regularly.</li>
-            <li>Check mobile in-app notifications, if available.</li>
-            <li>Check your registered email address and spam or junk folder.</li>
-          </ol>
-        </div>
-
-        <div class="step">
-          <h3>Step 2: Review assessment notices</h3>
-          <div>
-            <span class="tag blue">Assessment type</span>
-            <span class="tag blue">Date and time</span>
-            <span class="tag blue">Venue or platform</span>
-            <span class="tag blue">Materials to prepare</span>
-            <span class="tag blue">Documents to bring</span>
-            <span class="tag blue">Instructions</span>
-          </div>
-        </div>
-
-        <div class="step">
-          <h3>Step 3: Attend or complete assessments</h3>
-          <ol>
-            <li>Follow the notice instructions.</li>
-            <li>Arrive or log in on time.</li>
-            <li>Prepare the required materials.</li>
-            <li>Complete the assessment honestly and within the allowed time.</li>
-          </ol>
-        </div>
-      </article>
-
-      <article class="section-card">
-        <div class="section-head">
-          <div class="letter">H</div>
-          <h2>Receive final results</h2>
-        </div>
-
-        <div class="step">
-          <h3>Step 1: Check final notifications</h3>
-          <ol>
-            <li>Final results may be released through portal notification, mobile notification, or registered email.</li>
-            <li>Read every notice carefully and follow the stated instructions.</li>
-          </ol>
-        </div>
-
-        <div class="step">
-          <h3>Step 2: If selected or recommended</h3>
-          <ol>
-            <li>Review the congratulatory notice or appointment-related instruction.</li>
-            <li>Prepare the attached appointment documentary requirements.</li>
-            <li>Submit required documents within the stated deadline.</li>
-            <li>Monitor your email and portal account for further updates.</li>
-          </ol>
-        </div>
-
-        <div class="step">
-          <h3>Step 3: If not selected</h3>
-          <ol>
-            <li>Review the regret notice or not-selected status.</li>
-            <li>Keep your applicant profile updated.</li>
-            <li>Apply to future open positions for which you are qualified.</li>
-          </ol>
-        </div>
-      </article>
 
 
     </section>

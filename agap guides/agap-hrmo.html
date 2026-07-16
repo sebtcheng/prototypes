@@ -74,10 +74,18 @@
       text-align: center;
     }
 
+    .hero-logo {
+      display: block;
+      width: min(130px, 34vw);
+      height: auto;
+      margin: 0 auto 4px;
+      object-fit: contain;
+    }
+
     .eyebrow {
       display: inline-block;
-      margin-bottom: 10px;
-      padding: 6px 12px;
+      margin-bottom: 6px;
+      padding: 5px 12px;
       border-radius: 999px;
       background: var(--accent-soft);
       color: var(--accent);
@@ -101,15 +109,15 @@
 
     .subtitle {
       max-width: 820px;
-      margin: 12px auto 0;
+      margin: 8px auto 0;
       color: var(--muted);
       font-size: 17px;
     }
 
     .notice {
       max-width: 920px;
-      margin: 18px auto 0;
-      padding: 14px 16px;
+      margin: 12px auto 0;
+      padding: 12px 16px;
       border: 1px solid var(--line);
       border-left: 6px solid var(--accent);
       border-radius: 14px;
@@ -580,17 +588,49 @@
       display: flex;
     }
     body.cover-active .hero {
-      min-height: calc(100vh - 112px);
+      min-height: calc(100vh - 120px);
       display: grid;
       place-content: center;
-      padding: 36px 22px;
-      border-radius: 24px;
+      padding: 56px 48px;
+      border-radius: 28px;
       background:
-        radial-gradient(circle at 18% 18%, rgba(125,211,252,.26), transparent 32%),
-        radial-gradient(circle at 82% 18%, rgba(251,191,36,.20), transparent 28%),
-        linear-gradient(135deg, #ffffff 0%, var(--accent-soft) 100%);
+        radial-gradient(circle at 15% 12%, rgba(125,211,252,.30), transparent 34%),
+        radial-gradient(circle at 85% 15%, rgba(251,191,36,.22), transparent 30%),
+        linear-gradient(160deg, #ffffff 0%, #F8FCFF 45%, var(--accent-soft) 100%);
       border: 1px solid var(--line);
-      box-shadow: 0 22px 70px rgba(8, 49, 95, .10);
+      box-shadow: 0 30px 80px rgba(8, 49, 95, .12);
+    }
+    body.cover-active .hero .hero-logo {
+      width: min(168px, 42vw);
+      margin: 0 auto 10px;
+    }
+    body.cover-active .hero .eyebrow {
+      justify-self: center;
+      margin: 0 auto 18px;
+      padding: 8px 18px;
+      font-size: 13px;
+      letter-spacing: .14em;
+      box-shadow: 0 6px 18px rgba(8, 49, 95, .10);
+    }
+    body.cover-active .hero h1 {
+      max-width: 18ch;
+      margin: 0 auto;
+      font-size: clamp(40px, 6vw, 66px);
+      line-height: 1.03;
+      letter-spacing: -.045em;
+    }
+    body.cover-active .hero .subtitle {
+      max-width: 60ch;
+      margin: 20px auto 0;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    body.cover-active .hero .notice,
+    body.cover-active .hero .quick-note {
+      max-width: 66ch;
+      margin: 28px auto 0;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(8, 49, 95, .08);
     }
 
     .section-step-nav {
@@ -722,12 +762,12 @@
       line-height: 1.65;
     }
     body.has-side-nav .sheet {
-      padding: 40px;
+      padding: 16px;
       background: rgba(255,255,255,.96);
     }
     .guide-header {
-      margin-bottom: 24px;
-      padding: 28px 32px;
+      margin-bottom: 18px;
+      padding: 20px 24px;
       border: 0;
       border-left: 8px solid var(--accent);
       border-radius: 24px;
@@ -743,7 +783,7 @@
     .section-card {
       border: 0 !important;
       border-radius: 28px;
-      padding: 40px 48px;
+      padding: 28px 32px;
       background: #ffffff;
       box-shadow: none;
     }
@@ -1337,6 +1377,67 @@
         break-after: avoid;
       }
     }
+
+    @media print {
+      /* Clean, compact cover for PDF: no oversized empty box, tighter hierarchy */
+      body.cover-active .hero,
+      body.section-active .hero,
+      body.applicant-guide.cover-active .hero,
+      .hero {
+        min-height: 0 !important;
+        display: block !important;
+        margin: 0 0 10mm !important;
+        padding: 0 0 7mm !important;
+        border: 0 !important;
+        border-bottom: 1.5px solid #BAE6FD !important;
+        border-radius: 0 !important;
+        background: #ffffff !important;
+        box-shadow: none !important;
+        text-align: center !important;
+      }
+      body.cover-active .hero .hero-logo,
+      body.applicant-guide .hero .hero-logo,
+      .hero .hero-logo {
+        width: 32mm !important;
+        margin: 0 auto 4mm !important;
+      }
+      body.cover-active .hero .eyebrow,
+      .hero .eyebrow {
+        display: inline-block !important;
+        margin: 0 auto 4mm !important;
+        padding: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: var(--accent) !important;
+        font-size: 8.5pt !important;
+        letter-spacing: .1em !important;
+      }
+      body.cover-active .hero h1,
+      .hero h1 {
+        max-width: 100% !important;
+        margin: 0 auto !important;
+        font-size: 26pt !important;
+        line-height: 1.08 !important;
+        letter-spacing: -.035em !important;
+      }
+      body.cover-active .hero .subtitle,
+      .hero .subtitle {
+        max-width: 100% !important;
+        margin: 4mm auto 0 !important;
+        font-size: 10pt !important;
+        line-height: 1.5 !important;
+      }
+      body.cover-active .hero .notice,
+      body.cover-active .hero .quick-note,
+      .hero .notice,
+      .hero .quick-note {
+        max-width: 100% !important;
+        margin: 5mm auto 0 !important;
+        border-radius: 3mm !important;
+        box-shadow: none !important;
+        text-align: left !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1346,10 +1447,11 @@
     </div>
 
     <header class="hero">
+      <img class="hero-logo" src="./agap_logo.png" alt="AGAP logo">
       <div class="eyebrow">AGAP Portal · HRMO Guide</div>
       <h1>Managing applications</h1>
       <p class="subtitle">
-        A simplified two-column guide for HRMOs covering position setup, publication,
+        A simplified guide for HRMOs covering position setup, publication,
         application review, qualification checking, applicant comparison, hiring-stage movement,
         and final deliberation.
       </p>
@@ -1373,33 +1475,13 @@
             <li>Log in using an authorized HRMO account.</li>
             <li>Open the NOSCA upload or position import module.</li>
             <li>Upload the applicable NOSCA file.</li>
-            <li>Confirm that the upload contains or supports extraction of the NOSCA reference, authorized position or item, office or unit, salary grade, place of assignment, vacancy or plantilla reference, and other item details.</li>
-            <li>Submit the upload and wait for processing.</li>
+            <li>Confirm that the system correctly extracted the item number and position title from the uploaded NOSCA.</li>
+            <li>Tick the relevant item number and position title that should be added into the Vacancies List of your Division.</li>
           </ol>
         </div>
 
         <div class="step">
-          <h3>Step 2: Confirm imported records</h3>
-          <ol>
-            <li>Open the created position records.</li>
-            <li>Review each record against the source file.</li>
-            <li>Confirm that each position is linked to the correct Central Office or CSC-approved QS record.</li>
-            <li>Flag missing, duplicated, or incorrectly linked positions before publication.</li>
-          </ol>
-        </div>
-
-        <div class="step">
-          <h3>Step 3: Verify key fields</h3>
-          <div class="mini-grid">
-            <div class="mini-card"><strong>Core details</strong>Position title, office or unit, salary grade, employment type, and place of assignment.</div>
-            <div class="mini-card"><strong>QS details</strong>Required education, experience, training, and eligibility.</div>
-            <div class="mini-card"><strong>Recruitment details</strong>Job Description, hiring purpose, requirements, and deadline.</div>
-            <div class="mini-card"><strong>Status details</strong>Draft, Open, Screening, Shortlisted, Closed, or Filled.</div>
-          </div>
-        </div>
-
-        <div class="step">
-          <h3>Step 4: Confirm publication period</h3>
+          <h3>Step 2: Confirm publication period</h3>
           <ol>
             <li>Check the publication period in CS Form 9 revised 2025.</li>
             <li>Confirm that the portal publication period matches it.</li>
@@ -1420,32 +1502,12 @@
             <li>Select the position record.</li>
             <li>Review all details one final time.</li>
             <li>Confirm that the QS, JD, requirements, hiring purpose, and application deadline are complete.</li>
-            <li>Change the position status from Draft to Open.</li>
+            <li>Change the position status from Closed to Open.</li>
             <li>Verify that the position appears in the applicant-facing open positions list.</li>
           </ol>
         </div>
 
-        <div class="step">
-          <h3>Step 2: Monitor open positions</h3>
-          <div>
-            <span class="tag blue">Applicant count</span>
-            <span class="tag blue">Uploaded credentials</span>
-            <span class="tag blue">Application dates</span>
-            <span class="tag blue">Qualification status</span>
-            <span class="tag blue">Scores</span>
-            <span class="tag blue">Hiring stage</span>
-            <span class="tag blue">Deadline compliance</span>
-          </div>
-        </div>
 
-        <div class="step">
-          <h3>Step 3: Manage uploaded source files</h3>
-          <ol>
-            <li>Keep the NOSCA file linked to the created positions.</li>
-            <li>Retain source files for audit and verification.</li>
-            <li>Do not replace source files unless the replacement is authorized and documented.</li>
-          </ol>
-        </div>
       </article>
 
       <article class="section-card">
@@ -1495,35 +1557,25 @@
         </div>
 
         <div class="step">
-          <h3>Step 1: Review education</h3>
+          <h3>Step 1: Check document completeness</h3>
           <ol>
-            <li>Compare the applicant's education against the required education.</li>
-            <li>Check degree, course, level, specialization, and supporting documents.</li>
-            <li>Apply the prescribed scoring mechanism and add remarks for unclear or incomplete records.</li>
+            <li>Check the completeness of the documents submitted by the applicant.</li>
+            <li>Confirm that the required Means of Verification are uploaded, readable, and attached to the correct application.</li>
+            <li>Unlock the scoring and assessment section only after the submitted documents are complete.</li>
           </ol>
         </div>
 
         <div class="step">
-          <h3>Step 2: Review experience and training</h3>
+          <h3>Step 2: Review documents against QS</h3>
           <ol>
-            <li>Review experience dates, duties, and accomplishments.</li>
-            <li>Check years or months of experience and relevance to the position.</li>
-            <li>Review training titles, providers, dates, hours, and topics.</li>
-            <li>Validate certificates and note missing or unclear records.</li>
+            <li>Review the applicant's submitted documents against the Qualification Standards of the position applied for.</li>
+            <li>Check the education, experience, training, eligibility, license, certification, and other required credentials as one complete QS review.</li>
+            <li>Add remarks for missing, unclear, mismatched, expired, or incomplete documents.</li>
           </ol>
         </div>
 
         <div class="step">
-          <h3>Step 3: Review eligibility or license</h3>
-          <ol>
-            <li>Confirm that the eligibility, license, or certification matches the position requirement.</li>
-            <li>Review the uploaded Means of Verification.</li>
-            <li>Add remarks if the document is expired, unclear, mismatched, or missing.</li>
-          </ol>
-        </div>
-
-        <div class="step">
-          <h3>Step 4: Record the QS evaluation result</h3>
+          <h3>Step 3: Record the QS evaluation result</h3>
           <table class="status-table">
             <thead>
               <tr>
@@ -1533,79 +1585,43 @@
             </thead>
             <tbody>
               <tr>
-                <td><span class="tag green">Meets the QS</span></td>
-                <td>The applicant satisfies the CSC-approved Qualification Standards based on the required education, experience, training, eligibility, and verified supporting records.</td>
+                <td><span class="tag blue">Pending QS Review</span></td>
+                <td>The application is awaiting HRMO review against the Qualification Standards of the position applied for.</td>
               </tr>
               <tr>
-                <td><span class="tag red">Did Not Meet the QS</span></td>
+                <td><span class="tag orange">Excluded</span></td>
+                <td>The submitted documents are incomplete, so the application cannot proceed to scoring and assessment.</td>
+              </tr>
+              <tr>
+                <td><span class="tag green">Qualified</span></td>
+                <td>The applicant satisfies the Qualification Standards based on the required education, experience, training, eligibility, and verified supporting records.</td>
+              </tr>
+              <tr>
+                <td><span class="tag red">Disqualified</span></td>
                 <td>The applicant does not satisfy one or more minimum Qualification Standards after HRMO review of the submitted profile and records.</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <div class="step">
-          <h3>Step 5: Review other scoring areas</h3>
-          <ul>
-            <li>Performance rating</li>
-            <li>Outstanding accomplishment</li>
-            <li>Application of education</li>
-            <li>Application of learning and development</li>
-            <li>Potential</li>
-            <li>WST, WE, and BEI results</li>
-          </ul>
-        </div>
 
-        <div class="step">
-          <h3>Step 6: Review the system-generated score</h3>
-          <ol>
-            <li>Open the score breakdown.</li>
-            <li>Confirm that each scoring area follows the prescribed mechanism.</li>
-            <li>Check for missing values, unsupported claims, or incorrect calculations.</li>
-            <li>Add HRMO remarks if the score appears incorrect.</li>
-          </ol>
-        </div>
       </article>
 
       <article class="section-card">
         <div class="section-head">
           <div class="letter">E</div>
-          <h2>Filter and compare</h2>
+          <h2>Start Assessment</h2>
         </div>
 
         <div class="step">
-          <h3>Step 1: Use dashboard filters</h3>
-          <div>
-            <span class="tag blue">Position</span>
-            <span class="tag blue">Application status</span>
-            <span class="tag blue">Hiring stage</span>
-            <span class="tag blue">Education</span>
-            <span class="tag blue">Experience</span>
-            <span class="tag blue">Training hours</span>
-            <span class="tag blue">Eligibility</span>
-            <span class="tag blue">Score range</span>
-          </div>
-        </div>
-
-        <div class="step">
-          <h3>Step 2: Sort applicants for review</h3>
+          <h3>Step 1: Start applicant assessment</h3>
           <ol>
-            <li>Highest overall score</li>
-            <li>Qualification match status</li>
-            <li>Application date</li>
-            <li>Current stage</li>
-            <li>Relevant experience</li>
-            <li>Training and eligibility compliance</li>
-          </ol>
-        </div>
-
-        <div class="step">
-          <h3>Step 3: Compare applicants fairly</h3>
-          <ol>
-            <li>Compare applicants only against the requirements of the same position.</li>
-            <li>Use the same scoring policy for all applicants under the same position.</li>
-            <li>Record remarks consistently.</li>
-            <li>Keep audit-ready notes for each decision.</li>
+            <li>Initially, qualified applicants will have an assessment status of <strong>Assessment Not Started</strong>.</li>
+            <li>Click any qualified applicant to open the modal.</li>
+            <li>Use the modal to check and view the submitted documents.</li>
+            <li>Score the applicant based on the Qualification Standards of the position applied for.</li>
+            <li>Once all required areas are appropriately scored, the applicant's assessment status will become <strong>Assessment Completed</strong>.</li>
+            <li>When the assessment status becomes <strong>Assessment Completed</strong>, the <strong>Appoint</strong> button will be activated for that applicant.</li>
           </ol>
         </div>
       </article>
@@ -1613,129 +1629,24 @@
       <article class="section-card">
         <div class="section-head">
           <div class="letter">F</div>
-          <h2>Move through hiring stages</h2>
+          <h2>Appointment</h2>
         </div>
 
         <div class="step">
-          <h3>Step 1: Start with Application Submitted</h3>
+          <h3>Step 1: Confirm assessment completion</h3>
           <ol>
-            <li>Confirm receipt of the application.</li>
-            <li>Confirm the correct position.</li>
-            <li>Confirm that submitted documents are accessible.</li>
-            <li>Confirm deadline compliance.</li>
+            <li>Once the assessment phase has been completed, print the Comparative Assessment Results.</li>
+            <li>Present the Comparative Assessment Results to the Appointing Authority.</li>
+            <li>The HRMO must confirm that the results have been presented to the Appointing Authority before confirming the appointment of the applicant.</li>
           </ol>
         </div>
 
         <div class="step">
-          <h3>Step 2: Conduct initial screening</h3>
+          <h3>Step 2: Confirm the appointment</h3>
           <ol>
-            <li>Review QS compliance.</li>
-            <li>Review education, training, experience, and eligibility.</li>
-            <li>Review submitted credentials and score breakdown.</li>
-            <li>Add HRMO remarks.</li>
-          </ol>
-        </div>
-
-        <div class="step">
-          <h3>Step 3: Assign the initial evaluation result</h3>
-          <table class="status-table">
-            <thead>
-              <tr>
-                <th>Result</th>
-                <th>Definition</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><span class="tag green">Qualified</span></td>
-                <td>The applicant met or exceeded the minimum CSC-approved QS and satisfied the required review basis for advancement.</td>
-              </tr>
-              <tr>
-                <td><span class="tag red">Disqualified</span></td>
-                <td>The applicant did not meet the minimum CSC-approved QS.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="step">
-          <h3>Step 4: Record the basis for the result</h3>
-          <ul>
-            <li>Reviewer name and timestamp</li>
-            <li>Result assigned</li>
-            <li>QS basis</li>
-            <li>Score reference</li>
-            <li>Remarks and supporting observations</li>
-            <li>Manual override and reason, if applicable</li>
-          </ul>
-        </div>
-
-        <div class="step">
-          <h3>Step 5: Move qualified applicants to comparative assessment</h3>
-          <ol>
-            <li>Filter applicants marked Qualified.</li>
-            <li>Move eligible applicants to Comparative Assessment.</li>
-            <li>Schedule or record WST, WE, BEI, and Open Ranking System activities.</li>
-          </ol>
-        </div>
-
-        <div class="step">
-          <h3>Step 6: Enter comparative assessment results</h3>
-          <ol>
-            <li>Record assessment type, date, score, evaluator, remarks, and supporting result file.</li>
-            <li>Confirm that score breakdowns are complete.</li>
-            <li>Review ranking output and flag ties or missing results.</li>
-          </ol>
-        </div>
-
-        <div class="step">
-          <h3>Step 7: Move applicants to shortlist</h3>
-          <ol>
-            <li>Select applicants who pass the comparative assessment stage.</li>
-            <li>Move selected applicants to Shortlisted.</li>
-            <li>Confirm that all score breakdowns and remarks are complete.</li>
-          </ol>
-        </div>
-      </article>
-
-      <article class="section-card">
-        <div class="section-head">
-          <div class="letter">G</div>
-          <h2>Deliberation and final results</h2>
-        </div>
-
-        <div class="step">
-          <h3>Step 1: Prepare records for HRMPSB deliberation</h3>
-          <ul>
-            <li>Complete applicant profile and application record</li>
-            <li>QS evaluation result</li>
-            <li>Score breakdown and comparative assessment result</li>
-            <li>HRMO remarks, ranking result, and override history</li>
-          </ul>
-        </div>
-
-        <div class="step">
-          <h3>Step 2: Record deliberation results</h3>
-          <ol>
-            <li>Update the record with the deliberation result.</li>
-            <li>Record deliberation date, recommendation, remarks, approving or recommending authority, and supporting notes.</li>
-          </ol>
-        </div>
-
-        <div class="step">
-          <h3>Step 3: Release result of application</h3>
-          <ol>
-            <li>Prepare the correct communication: congratulatory letter, appointment requirements, regret letter, or other applicable notice.</li>
-            <li>Update the final applicant status.</li>
-          </ol>
-        </div>
-
-        <div class="step">
-          <h3>Step 4: Close or fill the position</h3>
-          <ol>
-            <li>Mark the position Filled if the appointment is completed.</li>
-            <li>Mark the position for republication if needed.</li>
-            <li>Mark the position Closed when the hiring cycle is complete.</li>
+            <li>The Appointing Authority shall select which applicant to appoint.</li>
+            <li>After the Appointing Authority has selected an applicant, click the <strong>Appoint</strong> button for that applicant.</li>
+            <li>Confirm the appointment of the selected applicant in the portal.</li>
           </ol>
         </div>
       </article>
