@@ -100,6 +100,28 @@
       margin: 0;
     }
 
+    .section-video {
+      margin: 0 0 22px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #000000;
+      box-shadow: 0 12px 32px rgba(8, 49, 95, .12);
+    }
+    .section-video video {
+      display: block;
+      width: 100%;
+      max-height: 460px;
+      aspect-ratio: 16 / 9;
+      background: #000000;
+      object-fit: contain;
+    }
+    @media print {
+      .section-video {
+        display: none !important;
+      }
+    }
+
     h1 {
       font-family: var(--font-heading);
       font-size: clamp(28px, 4vw, 42px);
@@ -1500,6 +1522,13 @@
           <h2>Prepare position data</h2>
         </div>
 
+        <div class="section-video">
+          <video class="tab-video" controls playsinline preload="metadata">
+            <source src="hrmo_registration.mp4" type="video/mp4">
+            Your browser does not support embedded video.
+          </video>
+        </div>
+
         <div class="step">
           <h3>Step 1: Upload the NOSCA</h3>
           <ol>
@@ -1525,6 +1554,13 @@
         <div class="section-head">
           <div class="letter">B</div>
           <h2>Publish positions</h2>
+        </div>
+
+        <div class="section-video">
+          <video class="tab-video" controls playsinline preload="metadata">
+            <source src="hrmo_opening_job.mp4" type="video/mp4">
+            Your browser does not support embedded video.
+          </video>
         </div>
 
         <div class="step">
@@ -1587,11 +1623,18 @@
           <h2>Evaluate qualifications</h2>
         </div>
 
+        <div class="section-video">
+          <video class="tab-video" controls playsinline preload="metadata">
+            <source src="hrmo_qs_review.mp4" type="video/mp4">
+            Your browser does not support embedded video.
+          </video>
+        </div>
+
         <div class="step">
           <h3>Step 1: Check document completeness</h3>
           <ol>
             <li>Check the completeness of the documents submitted by the applicant.</li>
-            <li>Confirm that the required Means of Verification are uploaded, readable, and attached to the correct application.</li>
+
             <li>Unlock the scoring and assessment section only after the submitted documents are complete.</li>
           </ol>
         </div>
@@ -1644,6 +1687,13 @@
           <h2>Start Assessment</h2>
         </div>
 
+        <div class="section-video">
+          <video class="tab-video" controls playsinline preload="metadata">
+            <source src="hrmo_assessment.mp4" type="video/mp4">
+            Your browser does not support embedded video.
+          </video>
+        </div>
+
         <div class="step">
           <h3>Step 1: Start applicant assessment</h3>
           <ol>
@@ -1661,6 +1711,13 @@
         <div class="section-head">
           <div class="letter">F</div>
           <h2>Appoint Applicants</h2>
+        </div>
+
+        <div class="section-video">
+          <video class="tab-video" controls playsinline preload="metadata">
+            <source src="hrmo_appointment.mp4" type="video/mp4">
+            Your browser does not support embedded video.
+          </video>
         </div>
 
         <div class="step">
@@ -1730,6 +1787,29 @@
 
       var links = [];
       var currentCard = null;
+
+      function resetSectionVideos() {
+        Array.prototype.slice.call(document.querySelectorAll('.section-video video')).forEach(function (v) {
+          try { v.pause(); v.currentTime = 0; } catch (e) {}
+        });
+      }
+
+      function playSectionVideo(card) {
+        if (!card) return;
+        var video = card.querySelector('.section-video video');
+        if (!video) return;
+        try {
+          video.currentTime = 0;
+          var attempt = video.play();
+          if (attempt && typeof attempt.catch === 'function') {
+            attempt.catch(function () {
+              video.muted = true;
+              var retry = video.play();
+              if (retry && typeof retry.catch === 'function') { retry.catch(function () {}); }
+            });
+          }
+        } catch (e) {}
+      }
 
       function showSidebar() {
         clearTimeout(nav._hideTimer);
@@ -1917,6 +1997,7 @@
         document.body.classList.add('cover-active');
         document.body.classList.remove('section-active');
         cards.forEach(function (c) { c.classList.remove('is-active'); });
+        resetSectionVideos();
         guideHeader.querySelector('.guide-kicker').textContent = guideLabel;
         guideHeader.querySelector('.guide-title').textContent = guideTitle;
         resetProgress();
@@ -1936,6 +2017,9 @@
 
         var activeCard = cards[index];
         currentCard = activeCard;
+
+        resetSectionVideos();
+        playSectionVideo(activeCard);
 
         var sectionTitle = activeCard.querySelector('.section-head h2');
         var titleText = sectionTitle ? sectionTitle.textContent : ('Section ' + (index + 1));
