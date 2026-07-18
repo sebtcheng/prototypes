@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DepEd Third Level Officials Portal Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #ffffff;
+      --canvas: #F0F6FF;
+      --ink: #0F172A;
+      --muted: #64748B;
+      --line: #C7DBF5;
+      --accent: #124E9C;
+      --accent-soft: #E4EDFA;
+      --radius: 18px;
+      --font-heading: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-body: "DM Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      --print-header: "DepEd · Third Level Officials Portal";
+      --print-footer: "DepEd Third Level Officials Portal Guide";
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    .sheet {
+      width: min(860px, calc(100% - 32px));
+      margin: 24px auto;
+      padding: 32px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+    }
+
+    .print-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 18px;
+    }
+
+    .print-button {
+      appearance: none;
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: #ffffff;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .print-button:hover { opacity: 0.92; }
+
+    .hero {
+      margin-bottom: 22px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: var(--font-heading);
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.1;
+      letter-spacing: -.03em;
+    }
+
+    .subtitle {
+      max-width: 60ch;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .section-video {
+      margin: 0 0 26px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #000000;
+      box-shadow: 0 12px 32px rgba(18, 78, 156, .12);
+    }
+    .section-video video {
+      display: block;
+      width: 100%;
+      max-height: 460px;
+      aspect-ratio: 16 / 9;
+      background: #000000;
+      object-fit: contain;
+    }
+
+    .steps { display: grid; gap: 16px; }
+
+    .step {
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--accent);
+      border-radius: 14px;
+      background: linear-gradient(180deg, #ffffff 0%, #F8FBFF 100%);
+    }
+
+    .step h3 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0;
+      font-family: var(--font-heading);
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    .step-number {
+      display: inline-grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .step-title { font-weight: 800; }
+
+    .step p {
+      margin: 8px 0 0 42px;
+      color: #334155;
+    }
+
+    @media (max-width: 640px) {
+      .sheet { padding: 20px; }
+      .step p { margin-left: 0; }
+    }
+
+    @media print {
+      @page { size: A4; margin: 12mm; }
+
+      body { background: #ffffff; }
+
+      .print-actions,
+      .section-video { display: none !important; }
+
+      .sheet {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: #ffffff;
+      }
+
+      .hero { margin-bottom: 8mm; padding-bottom: 4mm; }
+
+      h1 { font-size: 22pt; }
+
+      .step {
+        margin: 0 0 5mm;
+        padding: 4mm 5mm;
+        border: 1px solid var(--line);
+        border-left: 4mm solid var(--accent);
+        border-radius: 3mm;
+        background: #ffffff !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .step h3 { font-size: 13pt; page-break-after: avoid; break-after: avoid; }
+      .step-number { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+      .print-wrap { width: 100% !important; border-collapse: collapse !important; }
+      .print-wrap thead { display: table-header-group !important; }
+      .print-wrap tfoot { display: table-footer-group !important; }
+      .print-wrap td { padding: 0 !important; border: 0 !important; vertical-align: top !important; }
+      .print-head {
+        margin: 0 0 6mm; padding: 0 0 3mm; border-bottom: 1px solid var(--line);
+        color: var(--accent); font-family: var(--font-heading); font-size: 9pt;
+        font-weight: 900; letter-spacing: .08em; text-transform: uppercase;
+      }
+      .print-foot {
+        margin: 6mm 0 0; padding: 3mm 0 0; border-top: 1px solid var(--line);
+        color: var(--muted); font-family: var(--font-body); font-size: 8.5pt; font-weight: 700;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <div class="print-actions">
+      <button class="print-button" type="button" onclick="window.print()">Print / Save as PDF</button>
+    </div>
+
+    <header class="hero">
+      <div class="eyebrow">DepEd · Third Level Officials Portal</div>
+      <h1>Third Level Officials Portal Guide</h1>
+      <p class="subtitle">How to register, secure, and set up your DepEd Third Level Officials Portal account.</p>
+    </header>
+
+    <div class="section-video">
+      <video controls playsinline autoplay muted preload="metadata">
+        <source src="tlo_video_guide.mp4" type="video/mp4">
+        Your browser does not support embedded video.
+      </video>
+    </div>
+
+    <section class="steps">
+      <div class="step">
+        <h3><span class="step-number">1</span><span class="step-title">Go to Records Management</span></h3>
+        <p>Open the Records Management section to begin.</p>
+      </div>
+      <div class="step">
+        <h3><span class="step-number">2</span><span class="step-title">Register your account</span></h3>
+        <p>Register using your official DepEd email address.</p>
+      </div>
+      <div class="step">
+        <h3><span class="step-number">3</span><span class="step-title">Create your password</span></h3>
+        <p>Set a strong password for your account.</p>
+      </div>
+      <div class="step">
+        <h3><span class="step-number">4</span><span class="step-title">Create your passcode</span></h3>
+        <p>Create a passcode as an additional security measure and backup password.</p>
+      </div>
+      <div class="step">
+        <h3><span class="step-number">5</span><span class="step-title">Enter the Authorization Code</span></h3>
+        <p>Input <strong>INSIGHTED-TLO</strong> as the Authorization Code.</p>
+      </div>
+      <div class="step">
+        <h3><span class="step-number">6</span><span class="step-title">Log in to your account</span></h3>
+        <p>Sign in using your registered credentials.</p>
+      </div>
+      <div class="step">
+        <h3><span class="step-number">7</span><span class="step-title">Complete your profile</span></h3>
+        <p>Fill out the required Third Level Official profile information.</p>
+      </div>
+      <div class="step">
+        <h3><span class="step-number">8</span><span class="step-title">Keep your profile updated</span></h3>
+        <p>Log in regularly to review and update your profile information.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      function stripQuotes(v) { return String(v || '').trim().replace(/^["']+|["']+$/g, ''); }
+
+      function buildPrintFrame() {
+        var main = document.querySelector('.sheet');
+        if (!main || main._printFramed) return;
+        var s = getComputedStyle(document.documentElement);
+        var headerText = stripQuotes(s.getPropertyValue('--print-header')) || document.title;
+        var footerText = stripQuotes(s.getPropertyValue('--print-footer')) || headerText;
+
+        var table = document.createElement('table');
+        table.className = 'print-wrap';
+
+        var thead = document.createElement('thead');
+        thead.innerHTML = '<tr><td><div class="print-head"></div></td></tr>';
+        thead.querySelector('.print-head').textContent = headerText;
+
+        var tfoot = document.createElement('tfoot');
+        tfoot.innerHTML = '<tr><td><div class="print-foot"></div></td></tr>';
+        tfoot.querySelector('.print-foot').textContent = footerText;
+
+        var tbody = document.createElement('tbody');
+        var cell = document.createElement('td');
+        cell.className = 'print-body-cell';
+        while (main.firstChild) cell.appendChild(main.firstChild);
+        var row = document.createElement('tr');
+        row.appendChild(cell);
+        tbody.appendChild(row);
+
+        table.appendChild(thead);
+        table.appendChild(tfoot);
+        table.appendChild(tbody);
+        main.appendChild(table);
+        main._printFramed = true;
+        main._printTable = table;
+      }
+
+      function teardownPrintFrame() {
+        var main = document.querySelector('.sheet');
+        if (!main || !main._printFramed) return;
+        var t = main._printTable, cell = t && t.querySelector('.print-body-cell');
+        while (cell && cell.firstChild) main.insertBefore(cell.firstChild, t);
+        if (t && t.parentNode) t.parentNode.removeChild(t);
+        main._printFramed = false;
+        main._printTable = null;
+      }
+
+      window.addEventListener('beforeprint', buildPrintFrame);
+      window.addEventListener('afterprint', teardownPrintFrame);
+      if (window.matchMedia) {
+        var mql = window.matchMedia('print');
+        var fn = function (e) { e.matches ? buildPrintFrame() : teardownPrintFrame(); };
+        mql.addEventListener ? mql.addEventListener('change', fn) : mql.addListener(fn);
+      }
+    })();
+  </script>
+</body>
+</html>
